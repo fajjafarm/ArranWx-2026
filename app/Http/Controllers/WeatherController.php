@@ -1,3 +1,4 @@
+```php
 <?php
 
 namespace App\Http\Controllers;
@@ -19,8 +20,9 @@ class WeatherController extends Controller
         // Get lat and lon from query parameters, default to Arran center
         $lat = $request->query('lat', 55.5820);
         $lon = $request->query('lon', -5.2093);
+        $title = 'Arran Weather'; // Set page title
 
-        return view('index', compact('lat', 'lon'));
+        return view('index', compact('lat', 'lon', 'title'));
     }
 
     /**
@@ -91,3 +93,4 @@ class WeatherController extends Controller
         }
     }
 }
+```
