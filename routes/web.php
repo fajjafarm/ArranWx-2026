@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ResourcesController;
+use App\Http\Controllers\WeatherController;
 use App\Http\Controllers\RoutingController;
 
 /*
