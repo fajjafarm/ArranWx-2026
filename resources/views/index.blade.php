@@ -72,8 +72,13 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
+        // Get query parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialLat = parseFloat(urlParams.get('lat')) || 55.5820; // Default to Arran center
+        const initialLon = parseFloat(urlParams.get('lon')) || -5.2093;
+
         // Initialize Leaflet Map
-        var map = L.map('map').setView([55.5820, -5.2093], 11); // Centered on Isle of Arran
+        var map = L.map('map').setView([initialLat, initialLon], 11);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
@@ -95,32 +100,36 @@
                 });
             });
 
-        // Weather data fetch from yr.no (using a proxy API for simplicity)
-        function fetchWeather(lat = 55.5820, lon = -5.2093) {
-            fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`, {
-                headers: {
-                    'User-Agent': 'ArranWeather/1.0 (contact@arranweather.com)'
-                }
-            })
+        // Weather data fetch from WeatherController
+        function fetchWeather(lat = initialLat, lon = initialLon) {
+            fetch(`/api/weather?lat=${lat}&lon=${lon}`)
                 .then(response => response.json())
                 .then(data => {
                     let weatherTable = document.getElementById('weather-data');
                     weatherTable.innerHTML = '';
-                    data.properties.timeseries.slice(0, 5).forEach(time => {
-                        let row = `
-                            <tr>
-                                <td>${new Date(time.time).toLocaleString()}</td>
-                                <td>${time.data.instant.details.air_temperature}</td>
-                                <td>${time.data.next_1_hours?.summary.symbol_code || 'N/A'}</td>
-                                <td>${time.data.next_1_hours?.details.precipitation_amount || 0}</td>
-                                <td>${time.data.instant.details.wind_speed}</td>
-                            </tr>`;
-                        weatherTable.innerHTML += row;
-                    });
+                    if (data.status === 'success') {
+                        data.data.forEach(forecast => {
+                            let row = `
+                                <tr>
+                                    <td>${new Date(forecast.time).toLocaleString()}</td>
+                                    <td>${forecast.temperature}</td>
+                                    <td>${forecast.condition}</td>
+                                    <td>${forecast.precipitation}</td>
+                                    <td>${forecast.wind_speed}</td>
+                                </tr>`;
+                            weatherTable.innerHTML += row;
+                        });
+                    } else {
+                        weatherTable.innerHTML = `<tr><td colspan="5">${data.message}</td></tr>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching weather:', error);
+                    document.getElementById('weather-data').innerHTML = '<tr><td colspan="5">Unable to fetch weather data</td></tr>';
                 });
         }
 
-        // Initial weather fetch for Arran
+        // Initial weather fetch
         fetchWeather();
 
         // Location search functionality
@@ -135,9 +144,15 @@
                         let { lat, lon } = data[0];
                         map.setView([lat, lon], 11);
                         fetchWeather(lat, lon);
+                        // Update URL with new coordinates
+                        window.history.pushState({}, '', `/?lat=${lat}&lon=${lon}`);
                     } else {
                         alert('Location not found');
                     }
+                })
+                .catch(error => {
+                    console.error('Error searching location:', error);
+                    alert('Error searching location');
                 });
         });
     </script>
