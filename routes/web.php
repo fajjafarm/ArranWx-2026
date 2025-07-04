@@ -8,7 +8,7 @@ use App\Http\Controllers\WeatherController;
 Route::get('/', [WeatherController::class, 'index'])->name('index');
 
 Route::get('/locations', function () {
-    return App\Models\Locations::all();
+    return App\Models\Location::all();
 });
 
 Route::get('/weather', [WeatherController::class, 'getWeather']);
