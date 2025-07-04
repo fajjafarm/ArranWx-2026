@@ -9,6 +9,21 @@ use Illuminate\Support\Facades\Log;
 class WeatherController extends Controller
 {
     /**
+     * Display the main weather dashboard.
+     *
+     * @param Request $request
+     * @return \Illuminate\View\View
+     */
+    public function index(Request $request)
+    {
+        // Get lat and lon from query parameters, default to Arran center
+        $lat = $request->query('lat', 55.5820);
+        $lon = $request->query('lon', -5.2093);
+
+        return view('index', compact('lat', 'lon'));
+    }
+
+    /**
      * Fetch weather forecast for a given latitude and longitude.
      *
      * @param Request $request
