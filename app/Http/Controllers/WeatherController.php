@@ -21,9 +21,12 @@ class WeatherController extends Controller
         // Get lat and lon from query parameters, default to Arran center
         $lat = $request->query('lat', 55.5820);
         $lon = $request->query('lon', -5.2093);
-        $title = 'Arran Weather'; // Default title for homepage
+        $title = 'Arran Weather';
 
-        return view('index', compact('lat', 'lon', 'title'));
+        // Fetch 10-day forecast
+        $forecasts = $this->getTenDayForecast($lat, $lon);
+
+        return view('index', compact('lat', 'lon', 'title', 'forecasts'));
     }
 
     /**
@@ -41,7 +44,18 @@ class WeatherController extends Controller
         $lon = $location->longitude;
         $title = "{$location->name} Weather";
 
-        return view('index', compact('lat', 'lon', 'title'));
+        // Fetch 10-day forecast
+        $forecasts = $this->getTenDayForecast($lat, $lon);
+
+        // Select template based on location type
+        $template = match ($location->type) {
+            'Village' => 'locations.village',
+            'Hill' => 'locations.hill',
+            'Marine' => 'locations.marine',
+            default => 'index', // Fallback
+        };
+
+        return view($template, compact('lat', 'lon', 'title', 'forecasts'));
     }
 
     /**
@@ -54,11 +68,79 @@ class WeatherController extends Controller
      */
     public static function indexWithParams($lat, $lon, $title)
     {
-        return view('index', compact('lat', 'lon', 'title'));
+        $forecasts = (new self)->getTenDayForecast($lat, $lon);
+        return view('index', compact('lat', 'lon', 'title', 'forecasts'));
     }
 
     /**
-     * Fetch weather forecast for a given latitude and longitude.
+     * Fetch 10-day weather forecast for a given latitude and longitude.
+     *
+     * @param float $lat
+     * @param float $lon
+     * @return array
+     */
+    protected function getTenDayForecast($lat, $lon)
+    {
+        try {
+            // Fetch data from yr.no complete endpoint
+            $response = Http::withHeaders([
+                'User-Agent' => 'ArranWeather/1.0 (contact@arranweather.com)',
+            ])->timeout(30)->get("https://api.met.no/weatherapi/locationforecast/2.0/complete?lat={$lat}&lon={$lon}");
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                // Aggregate daily forecasts (10 days)
+                $forecasts = collect($data['properties']['timeseries'])
+                    ->groupBy(function ($entry) {
+                        return date('Y-m-d', strtotime($entry['time']));
+                    })
+                    ->take(10)
+                    ->map(function ($dayData, $date) {
+                        // Get daily summary
+                        $firstEntry = $dayData->first();
+                        $temperatures = $dayData->pluck('data.instant.details.air_temperature');
+                        $precipitations = $dayData->pluck('data.next_1_hours.details.precipitation_amount')
+                            ->filter()->sum();
+                        $windSpeeds = $dayData->pluck('data.instant.details.wind_speed');
+                        $windGusts = $dayData->pluck('data.instant.details.wind_speed_of_gust');
+                        $cloudAreaFractions = $dayData->pluck('data.instant.details.cloud_area_fraction');
+
+                        return [
+                            'date' => $date,
+                            'condition' => $firstEntry['data']['next_1_hours']['summary']['symbol_code'] ?? 'N/A',
+                            'temperature_avg' => round($temperatures->avg(), 1),
+                            'temperature_min' => round($temperatures->min(), 1),
+                            'temperature_max' => round($temperatures->max(), 1),
+                            'precipitation' => round($precipitations, 1),
+                            'wind_speed' => round($windSpeeds->avg(), 1),
+                            'wind_gust' => round($windGusts->max(), 1),
+                            'fog' => round($cloudAreaFractions->avg(), 1), // Proxy for fog
+                        ];
+                    })
+                    ->values()
+                    ->toArray();
+
+                return $forecasts;
+            } else {
+                Log::error('yr.no API request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return [];
+            }
+        } catch (\Exception $e) {
+            Log::error('Error fetching 10-day forecast', [
+                'error' => $e->getMessage(),
+                'lat' => $lat,
+                'lon' => $lon,
+            ]);
+            return [];
+        }
+    }
+
+    /**
+     * Fetch weather forecast for a given latitude and longitude (API endpoint).
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -74,54 +156,12 @@ class WeatherController extends Controller
         $lat = $request->query('lat');
         $lon = $request->query('lon');
 
-        try {
-            // Fetch weather data from yr.no (Met.no) API
-            $response = Http::withHeaders([
-                'User-Agent' => 'ArranWeather/1.0 (contact@arranweather.com)',
-            ])->timeout(30)->get("https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={$lat}&lon={$lon}");
+        $forecasts = $this->getTenDayForecast($lat, $lon);
 
-            if ($response->successful()) {
-                $data = $response->json();
-
-                // Extract and format the first 5 forecast entries
-                $forecasts = collect($data['properties']['timeseries'])
-                    ->take(5)
-                    ->map(function ($entry) {
-                        return [
-                            'time' => date('Y-m-d H:i:s', strtotime($entry['time'])),
-                            'temperature' => $entry['data']['instant']['details']['air_temperature'] ?? 'N/A',
-                            'condition' => $entry['data']['next_1_hours']['summary']['symbol_code'] ?? 'N/A',
-                            'precipitation' => $entry['data']['next_1_hours']['details']['precipitation_amount'] ?? 0,
-                            'wind_speed' => $entry['data']['instant']['details']['wind_speed'] ?? 'N/A',
-                        ];
-                    });
-
-                return response()->json([
-                    'status' => 'success',
-                    'data' => $forecasts,
-                ]);
-            } else {
-                Log::error('yr.no API request failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Unable to fetch weather data from yr.no',
-                ], 500);
-            }
-        } catch (\Exception $e) {
-            Log::error('Error fetching weather data', [
-                'error' => $e->getMessage(),
-                'lat' => $lat,
-                'lon' => $lon,
-            ]);
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'An error occurred while fetching weather data',
-            ], 500);
-        }
+        return response()->json([
+            'status' => $forecasts ? 'success' : 'error',
+            'data' => $forecasts,
+            'message' => $forecasts ? null : 'Unable to fetch weather data',
+        ], $forecasts ? 200 : 500);
     }
 }
