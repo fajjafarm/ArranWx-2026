@@ -1,14 +1,16 @@
-@extends('layouts.vertical')
+extends('layouts.vertical')
 
 @section('html-attribute')
     lang="en"
 @endsection
 
+@section('title', $title)
+
 @section('content')
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
-                <h1 class="h3 mb-4">Arran Weather</h1>
+                <h1 class="h3 mb-4">{{ $title }}</h1>
             </div>
         </div>
 
@@ -72,29 +74,68 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Get query parameters from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const initialLat = parseFloat(urlParams.get('lat')) || 55.5820; // Default to Arran center
-        const initialLon = parseFloat(urlParams.get('lon')) || -5.2093;
+        // Initialize with lat and lon from controller
+        const initialLat = {{ $lat }};
+        const initialLon = {{ $lon }};
 
-        // Initialize Leaflet Map
-        var map = L.map('map').setView([initialLat, initialLon], 11);
+        // Initialize Leaflet Map with zoom level 10
+        var map = L.map('map').setView([initialLat, initialLon], 10);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+
+        // Define custom icons for each location type
+        const villageIcon = L.divIcon({
+            className: 'custom-icon',
+            html: '<i class="leaflet-marker-icon" style="color: green; font-size: 24px;">●</i>',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+            popupAnchor: [0, -12]
+        });
+
+        const hillIcon = L.divIcon({
+            className: 'custom-icon',
+            html: '<i class="leaflet-marker-icon" style="color: gray; font-size: 24px;">●</i>',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+            popupAnchor: [0, -12]
+        });
+
+        const marineIcon = L.divIcon({
+            className: 'custom-icon',
+            html: '<i class="leaflet-marker-icon" style="color: blue; font-size: 24px;">●</i>',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+            popupAnchor: [0, -12]
+        });
 
         // Fetch locations from Laravel backend
         fetch('/api/locations')
             .then(response => response.json())
             .then(locations => {
                 locations.forEach(location => {
+                    let icon;
+                    switch (location.type) {
+                        case 'Village':
+                            icon = villageIcon;
+                            break;
+                        case 'Hill':
+                            icon = hillIcon;
+                            break;
+                        case 'Marine':
+                            icon = marineIcon;
+                            break;
+                        default:
+                            icon = L.Icon.Default; // Fallback
+                    }
+
                     let popupContent = `
                         <b>${location.name}</b><br>
                         ${location.alternative_name ? `Alternative Name: ${location.alternative_name}<br>` : ''}
                         Type: ${location.type}<br>
                         Altitude: ${location.altitude} m
                     `;
-                    L.marker([location.latitude, location.longitude])
+                    L.marker([location.latitude, location.longitude], { icon: icon })
                         .addTo(map)
                         .bindPopup(popupContent);
                 });
@@ -112,10 +153,10 @@
                             let row = `
                                 <tr>
                                     <td>${new Date(forecast.time).toLocaleString()}</td>
-                                    <td>${forecast.temp}</td>
-                                    <td>${forecast.weather}</td>
-                                    <td>${forecast.rain}</td>
-                                    <td>${forecast.wind}</td>
+                                    <td>${forecast.temperature}</td>
+                                    <td>${forecast.condition}</td>
+                                    <td>${forecast.precipitation}</td>
+                                    <td>${forecast.wind_speed}</td>
                                 </tr>`;
                             weatherTable.innerHTML += row;
                         });
@@ -142,7 +183,7 @@
                 .then(data => {
                     if (data.length > 0) {
                         let { lat, lon } = data[0];
-                        map.setView([lat, lon], 11);
+                        map.setView([lat, lon], 10);
                         fetchWeather(lat, lon);
                         // Update URL with new coordinates
                         window.history.pushState({}, '', `/?lat=${lat}&lon=${lon}`);
