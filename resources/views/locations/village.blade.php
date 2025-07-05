@@ -7,7 +7,7 @@
 @section('title', $title)
 
 @section('css')
-    <link rel="stylesheet" href="https://unpkg.com/@nrk/yr-weather-symbols@14.0.0/dist/yr-weather-symbols.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons.min.css" />
     <style>
         .header-village {
             background: linear-gradient(90deg, #28a745, #34c759);
@@ -56,6 +56,12 @@
         .humidity-cell { background: linear-gradient(90deg, #a1c4fd, #c2e9fb); color: black; }
         .pressure-cell { background: linear-gradient(90deg, #d4fc79, #96e6a1); color: black; }
         .direction-cell { background: linear-gradient(90deg, #ffecd2, #fcb69f); color: black; }
+        .condition-cell i {
+            font-size: 24px;
+        }
+        .direction-cell span {
+            font-size: 20px;
+        }
         .forecast-table td {
             vertical-align: middle;
         }
@@ -99,7 +105,7 @@
                                         <th>Fog (%)</th>
                                         <th>Humidity (%)</th>
                                         <th>Pressure (hPa)</th>
-                                        <th>Wind Direction (°)</th>
+                                        <th>Wind Direction</th>
                                         <th>Wind Dir (Ordinal)</th>
                                     </tr>
                                 </thead>
@@ -110,8 +116,27 @@
                                         </tr>
                                         @foreach ($day['forecasts'] as $forecast)
                                             @php
-                                                // Map yr.no symbol_code to Yr weather symbols
-                                                $iconClass = 'yr-icon-' . $forecast['condition'];
+                                                // Map yr.no symbol_code to Weather Icons
+                                                $iconMap = [
+                                                    'clearsky_day' => 'wi-day-sunny',
+                                                    'clearsky_night' => 'wi-night-clear',
+                                                    'fair_day' => 'wi-day-sunny-overcast',
+                                                    'fair_night' => 'wi-night-partly-cloudy',
+                                                    'partlycloudy_day' => 'wi-day-cloudy',
+                                                    'partlycloudy_night' => 'wi-night-cloudy',
+                                                    'cloudy' => 'wi-cloudy',
+                                                    'rain' => 'wi-rain',
+                                                    'lightrain' => 'wi-sprinkle',
+                                                    'heavyrain' => 'wi-rain-wind',
+                                                    'rainshowers_day' => 'wi-day-showers',
+                                                    'rainshowers_night' => 'wi-night-showers',
+                                                    'snow' => 'wi-snow',
+                                                    'sleet' => 'wi-sleet',
+                                                    'fog' => 'wi-fog',
+                                                    // Add more mappings as needed
+                                                    'default' => 'wi-na',
+                                                ];
+                                                $iconClass = $iconMap[$forecast['condition']] ?? $iconMap['default'];
 
                                                 // Beaufort scale for wind (m/s)
                                                 $beaufort = match (true) {
@@ -156,7 +181,7 @@
                                             <tr>
                                                 <td>{{ \Carbon\Carbon::parse($forecast['time'])->format('H:i') }}</td>
                                                 <td class="condition-cell">
-                                                    <i class="{{ $iconClass }}"></i>
+                                                    <i class="wi {{ $iconClass }}"></i>
                                                 </td>
                                                 <td class="{{ $tempClass }}">{{ is_numeric($forecast['temperature']) ? round($forecast['temperature'], 1) : $forecast['temperature'] }}</td>
                                                 <td class="rain-cell">{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}</td>
@@ -168,7 +193,6 @@
                                                 <td class="direction-cell">
                                                     @if (is_numeric($direction))
                                                         <span style="display: inline-block; transform: rotate({{ $arrowRotation }}deg);">➮</span>
-                                                        {{ round($direction, 1) }}
                                                     @else
                                                         {{ $forecast['wind_direction'] }}
                                                     @endif
