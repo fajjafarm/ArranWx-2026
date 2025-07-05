@@ -23,7 +23,7 @@ class WeatherController extends Controller
         $lon = $request->query('lon', -5.2093);
         $title = 'Arran Weather';
 
-        // Fetch 10-day forecast
+        // Fetch all available forecast data
         $forecasts = $this->getTenDayForecast($lat, $lon);
 
         return view('index', compact('lat', 'lon', 'title', 'forecasts'));
@@ -44,7 +44,7 @@ class WeatherController extends Controller
         $lon = $location->longitude;
         $title = "{$location->name} Weather";
 
-        // Fetch 10-day forecast
+        // Fetch all available forecast data
         $forecasts = $this->getTenDayForecast($lat, $lon);
 
         // Select template based on location type
@@ -73,7 +73,7 @@ class WeatherController extends Controller
     }
 
     /**
-     * Fetch 10-day weather forecast for a given latitude and longitude.
+     * Fetch all available weather forecast data for a given latitude and longitude.
      *
      * @param float $lat
      * @param float $lon
@@ -90,32 +90,33 @@ class WeatherController extends Controller
             if ($response->successful()) {
                 $data = $response->json();
 
-                // Aggregate daily forecasts (10 days)
+                // Extract all timeseries data
                 $forecasts = collect($data['properties']['timeseries'])
-                    ->groupBy(function ($entry) {
-                        return date('Y-m-d', strtotime($entry['time']));
-                    })
-                    ->take(10)
-                    ->map(function ($dayData, $date) {
-                        // Get daily summary
-                        $firstEntry = $dayData->first();
-                        $temperatures = $dayData->pluck('data.instant.details.air_temperature');
-                        $precipitations = $dayData->pluck('data.next_1_hours.details.precipitation_amount')
-                            ->filter()->sum();
-                        $windSpeeds = $dayData->pluck('data.instant.details.wind_speed');
-                        $windGusts = $dayData->pluck('data.instant.details.wind_speed_of_gust');
-                        $cloudAreaFractions = $dayData->pluck('data.instant.details.cloud_area_fraction');
+                    ->map(function ($entry) {
+                        $details = $entry['data']['instant']['details'] ?? [];
+                        $next_1_hours = $entry['data']['next_1_hours'] ?? null;
+                        $next_6_hours = $entry['data']['next_6_hours'] ?? null;
 
                         return [
+                            'time' => $entry['time'],
+                            'condition' => $next_1_hours ? ($next_1_hours['summary']['symbol_code'] ?? 'N/A') : ($next_6_hours['summary']['symbol_code'] ?? 'N/A'),
+                            'temperature' => $details['air_temperature'] ?? 'N/A',
+                            'precipitation' => $next_1_hours ? ($next_1_hours['details']['precipitation_amount'] ?? 0) : ($next_6_hours['details']['precipitation_amount'] ?? 0),
+                            'wind_speed' => $details['wind_speed'] ?? 'N/A',
+                            'wind_gust' => $details['wind_speed_of_gust'] ?? 'N/A',
+                            'cloud_area_fraction' => $details['cloud_area_fraction'] ?? 'N/A',
+                            'relative_humidity' => $details['relative_humidity'] ?? 'N/A',
+                            'air_pressure' => $details['air_pressure_at_sea_level'] ?? 'N/A',
+                            'wind_direction' => $details['wind_from_direction'] ?? 'N/A',
+                        ];
+                    })
+                    ->groupBy(function ($entry) {
+                        return \Carbon\Carbon::parse($entry['time'])->format('Y-m-d');
+                    })
+                    ->map(function ($dayData, $date) {
+                        return [
                             'date' => $date,
-                            'condition' => $firstEntry['data']['next_1_hours']['summary']['symbol_code'] ?? 'N/A',
-                            'temperature_avg' => round($temperatures->avg(), 1),
-                            'temperature_min' => round($temperatures->min(), 1),
-                            'temperature_max' => round($temperatures->max(), 1),
-                            'precipitation' => round($precipitations, 1),
-                            'wind_speed' => round($windSpeeds->avg(), 1),
-                            'wind_gust' => round($windGusts->max(), 1),
-                            'fog' => round($cloudAreaFractions->avg(), 1), // Proxy for fog
+                            'forecasts' => $dayData->toArray(),
                         ];
                     })
                     ->values()
@@ -130,7 +131,7 @@ class WeatherController extends Controller
                 return [];
             }
         } catch (\Exception $e) {
-            Log::error('Error fetching 10-day forecast', [
+            Log::error('Error fetching forecast data', [
                 'error' => $e->getMessage(),
                 'lat' => $lat,
                 'lon' => $lon,
