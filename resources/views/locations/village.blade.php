@@ -7,7 +7,7 @@
 @section('title', $title)
 
 @section('css')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://unpkg.com/@nrk/yr-weather-symbols@14.0.0/dist/yr-weather-symbols.min.css" />
     <style>
         .header-village {
             background: linear-gradient(90deg, #28a745, #34c759);
@@ -110,27 +110,8 @@
                                         </tr>
                                         @foreach ($day['forecasts'] as $forecast)
                                             @php
-                                                // Map yr.no symbol_code to Font Awesome icons
-                                                $iconMap = [
-                                                    'clearsky_day' => 'fa-sun',
-                                                    'clearsky_night' => 'fa-moon',
-                                                    'fair_day' => 'fa-cloud-sun',
-                                                    'fair_night' => 'fa-cloud-moon',
-                                                    'partlycloudy_day' => 'fa-cloud-sun',
-                                                    'partlycloudy_night' => 'fa-cloud-moon',
-                                                    'cloudy' => 'fa-cloud',
-                                                    'rain' => 'fa-cloud-rain',
-                                                    'lightrain' => 'fa-cloud-rain',
-                                                    'heavyrain' => 'fa-cloud-showers-heavy',
-                                                    'rainshowers_day' => 'fa-cloud-rain',
-                                                    'rainshowers_night' => 'fa-cloud-rain',
-                                                    'snow' => 'fa-snowflake',
-                                                    'sleet' => 'fa-cloud-meatball',
-                                                    'fog' => 'fa-fog',
-                                                    // Add more mappings as needed
-                                                    'default' => 'fa-question',
-                                                ];
-                                                $iconClass = $iconMap[$forecast['condition']] ?? $iconMap['default'];
+                                                // Map yr.no symbol_code to Yr weather symbols
+                                                $iconClass = 'yr-icon-' . $forecast['condition'];
 
                                                 // Beaufort scale for wind (m/s)
                                                 $beaufort = match (true) {
@@ -175,7 +156,7 @@
                                             <tr>
                                                 <td>{{ \Carbon\Carbon::parse($forecast['time'])->format('H:i') }}</td>
                                                 <td class="condition-cell">
-                                                    <i class="fas {{ $iconClass }}"></i>
+                                                    <i class="{{ $iconClass }}"></i>
                                                 </td>
                                                 <td class="{{ $tempClass }}">{{ is_numeric($forecast['temperature']) ? round($forecast['temperature'], 1) : $forecast['temperature'] }}</td>
                                                 <td class="rain-cell">{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}</td>
@@ -186,7 +167,7 @@
                                                 <td class="pressure-cell">{{ is_numeric($forecast['air_pressure']) ? round($forecast['air_pressure'], 1) : $forecast['air_pressure'] }}</td>
                                                 <td class="direction-cell">
                                                     @if (is_numeric($direction))
-                                                        <i class="fas fa-arrow-up" style="transform: rotate({{ $arrowRotation }}deg);"></i>
+                                                        <span style="display: inline-block; transform: rotate({{ $arrowRotation }}deg);">➮</span>
                                                         {{ round($direction, 1) }}
                                                     @else
                                                         {{ $forecast['wind_direction'] }}
