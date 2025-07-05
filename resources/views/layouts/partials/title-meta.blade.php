@@ -4,4 +4,5 @@
 <meta name="description" content="Weather forecasts for the Isle of Arran using data from yr.no">
 <meta name="keywords" content="Arran, weather, forecast, Isle of Arran, yr.no">
 <meta name="author" content="Arranweather.com">
-<link rel="shortcut icon" href="/images/arran-favicon.ico">
+<!-- Comment out if favicon is missing -->
+<!-- <link rel="shortcut icon" href="/images/arran-favicon.ico"> -->
