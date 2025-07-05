@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\Location;
+use Illuminate\Support\Str;
 
 class WeatherController extends Controller
 {
@@ -19,8 +21,39 @@ class WeatherController extends Controller
         // Get lat and lon from query parameters, default to Arran center
         $lat = $request->query('lat', 55.5820);
         $lon = $request->query('lon', -5.2093);
-        $title = 'Arran Weather'; // Set page title
+        $title = 'Arran Weather'; // Default title for homepage
 
+        return view('index', compact('lat', 'lon', 'title'));
+    }
+
+    /**
+     * Display the weather dashboard for a specific location using a slug.
+     *
+     * @param string $slug
+     * @return \Illuminate\View\View
+     */
+    public function indexBySlug($slug)
+    {
+        // Find location by slug (case-insensitive, replacing hyphens with spaces)
+        $location = Location::whereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [Str::lower($slug)])->firstOrFail();
+
+        $lat = $location->latitude;
+        $lon = $location->longitude;
+        $title = "{$location->name} Weather";
+
+        return view('index', compact('lat', 'lon', 'title'));
+    }
+
+    /**
+     * Display the weather dashboard for a specific location with manual parameters.
+     *
+     * @param float $lat
+     * @param float $lon
+     * @param string $title
+     * @return \Illuminate\View\View
+     */
+    public static function indexWithParams($lat, $lon, $title)
+    {
         return view('index', compact('lat', 'lon', 'title'));
     }
 
@@ -45,7 +78,7 @@ class WeatherController extends Controller
             // Fetch weather data from yr.no (Met.no) API
             $response = Http::withHeaders([
                 'User-Agent' => 'ArranWeather/1.0 (contact@arranweather.com)',
-            ])->get("https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={$lat}&lon={$lon}");
+            ])->timeout(30)->get("https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={$lat}&lon={$lon}");
 
             if ($response->successful()) {
                 $data = $response->json();
