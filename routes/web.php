@@ -12,3 +12,7 @@ Route::get('/locations', function () {
 });
 
 Route::get('/weather', [WeatherController::class, 'getWeather']);
+
+Route::get('/{first}/{second}', function ($first, $second) {
+    return view("{$first}.{$second}");
+})->name('second');
