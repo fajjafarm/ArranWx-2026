@@ -112,10 +112,10 @@
                             let row = `
                                 <tr>
                                     <td>${new Date(forecast.time).toLocaleString()}</td>
-                                    <td>${forecast.temperature}</td>
-                                    <td>${forecast.condition}</td>
-                                    <td>${forecast.precipitation}</td>
-                                    <td>${forecast.wind_speed}</td>
+                                    <td>${forecast.temp}</td>
+                                    <td>${forecast.weather}</td>
+                                    <td>${forecast.rain}</td>
+                                    <td>${forecast.wind}</td>
                                 </tr>`;
                             weatherTable.innerHTML += row;
                         });
