@@ -60,7 +60,8 @@
             font-size: 24px;
         }
         .direction-cell i {
-            font-size: 30px;
+            font-size: 34px;
+            font-weight: bold;
         }
         .forecast-table td {
             vertical-align: middle;
@@ -106,15 +107,14 @@
                                         <th>Humidity (%)</th>
                                         <th>Pressure (hPa)</th>
                                         <th>Wind Direction</th>
-                                        <th>Wind Dir (Ordinal)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($forecasts as $day)
                                         <tr class="date-header">
-                                            <td colspan="11">{{ \Carbon\Carbon::parse($day['date'])->format('D, M d') }}</td>
+                                            <td colspan="10">{{ \Carbon\Carbon::parse($day['date'])->format('D, M d') }}</td>
                                         </tr>
-                                        @foreach ($day['forecasts'] as $forecast)
+                                        @foreach ($day['forecasts'] as $index => $forecast)
                                             @php
                                                 // Map yr.no symbol_code to Weather Icons
                                                 $iconMap = [
@@ -158,16 +158,24 @@
                                                 $gustClass = "wind-cell-$beaufort";
 
                                                 // Met Office-inspired temperature scale
-                                                $tempClass = match (true) {
-                                                    $forecast['temperature'] <= 0 => 'temp-cell-cold',
-                                                    $forecast['temperature'] <= 10 => 'temp-cell-cool',
-                                                    $forecast['temperature'] <= 20 => 'temp-cell-mild',
-                                                    $forecast['temperature'] <= 30 => 'temp-cell-warm',
+                                                $tempValue = is_numeric($forecast['temperature']) ? floatval($forecast['temperature']) : null;
+                                                $tempClass = $tempValue !== null ? match (true) {
+                                                    $tempValue <= 0 => 'temp-cell-cold',
+                                                    $tempValue <= 10 => 'temp-cell-cool',
+                                                    $tempValue <= 20 => 'temp-cell-mild',
+                                                    $tempValue <= 30 => 'temp-cell-warm',
                                                     default => 'temp-cell-hot',
-                                                };
+                                                } : '';
+
+                                                // Row gradient based on temperature progression
+                                                $rowGradient = '';
+                                                if ($tempValue !== null) {
+                                                    $hue = min(max(($tempValue + 5) / 40 * 360, 180), 360); // Map -5°C to 35°C to hues 180 (blue) to 360 (red)
+                                                    $rowGradient = "background: linear-gradient(90deg, hsl($hue, 20%, 95%), hsl($hue, 20%, 85%));";
+                                                }
 
                                                 // Compass ordinal for wind direction
-                                                $direction = is_numeric($forecast['wind_direction']) ? $forecast['wind_direction'] : null;
+                                                $direction = is_numeric($forecast['wind_direction']) ? floatval($forecast['wind_direction']) : null;
                                                 $ordinal = '';
                                                 if ($direction !== null) {
                                                     $angle = fmod($direction + 11.25, 360) / 22.5;
@@ -178,7 +186,7 @@
                                                 // Arrow rotation (opposite direction)
                                                 $arrowRotation = is_numeric($direction) ? ($direction + 180) % 360 : 0;
                                             @endphp
-                                            <tr>
+                                            <tr style="{{ $rowGradient }}">
                                                 <td>{{ \Carbon\Carbon::parse($forecast['time'])->format('H:i') }}</td>
                                                 <td class="condition-cell">
                                                     <i class="wi {{ $iconClass }}"></i>
@@ -193,11 +201,11 @@
                                                 <td class="direction-cell">
                                                     @if (is_numeric($direction))
                                                         <i class="wi wi-direction-up" style="transform: rotate({{ $arrowRotation }}deg);"></i>
+                                                        {{ $ordinal }}
                                                     @else
                                                         {{ $forecast['wind_direction'] }}
                                                     @endif
                                                 </td>
-                                                <td>{{ $ordinal ?: 'N/A' }}</td>
                                             </tr>
                                         @endforeach
                                     @endforeach
