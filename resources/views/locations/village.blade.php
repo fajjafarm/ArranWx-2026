@@ -59,8 +59,8 @@
         .condition-cell i {
             font-size: 24px;
         }
-        .direction-cell span {
-            font-size: 20px;
+        .direction-cell i {
+            font-size: 30px;
         }
         .forecast-table td {
             vertical-align: middle;
@@ -192,7 +192,7 @@
                                                 <td class="pressure-cell">{{ is_numeric($forecast['air_pressure']) ? round($forecast['air_pressure'], 1) : $forecast['air_pressure'] }}</td>
                                                 <td class="direction-cell">
                                                     @if (is_numeric($direction))
-                                                        <span style="display: inline-block; transform: rotate({{ $arrowRotation }}deg);">➮</span>
+                                                        <i class="wi wi-direction-up" style="transform: rotate({{ $arrowRotation }}deg);"></i>
                                                     @else
                                                         {{ $forecast['wind_direction'] }}
                                                     @endif
