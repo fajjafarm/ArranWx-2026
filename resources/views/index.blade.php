@@ -1,4 +1,4 @@
-extends('layouts.vertical')
+@extends('layouts.vertical')
 
 @section('html-attribute')
     lang="en"
