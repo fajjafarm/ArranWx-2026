@@ -56,15 +56,6 @@
         .humidity-cell { background: linear-gradient(90deg, #a1c4fd, #c2e9fb); color: black; }
         .pressure-cell { background: linear-gradient(90deg, #d4fc79, #96e6a1); color: black; }
         .direction-cell { background: linear-gradient(90deg, #ffecd2, #fcb69f); color: black; }
-        .condition-cell i {
-            font-size: 24px;
-        }
-        .condition-cell .fa-sun, .condition-cell .fa-cloud-sun { color: #ffc107; } /* Yellow for sun */
-        .condition-cell .fa-cloud, .condition-cell .fa-cloud-rain, .condition-cell .fa-cloud-showers-heavy, .condition-cell .fa-fog { color: #007bff; } /* Blue for rain/clouds */
-        .direction-cell i {
-            font-size: 20px;
-            color: #444;
-        }
         .forecast-table td {
             vertical-align: middle;
         }
