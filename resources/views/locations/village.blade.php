@@ -24,11 +24,20 @@
             background: #f8f9fa;
             font-weight: 600;
         }
-        .forecast-table .date-header {
-            background: #e9ecef;
-            font-size: 1.2em;
+        .day-heading {
+            font-size: 1.3em;
             font-weight: bold;
-            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .day-heading .sun-moon-info {
+            font-size: 0.9em;
+            color: #555;
+            margin-left: 20px;
+        }
+        .day-heading .sun-moon-info i {
+            font-size: 20px;
+            margin-right: 5px;
         }
         /* Temperature gradients (Met Office-inspired) */
         .temp-cell-cold { background: linear-gradient(90deg, #1e3c72, #2a5298); color: white; }
@@ -94,26 +103,34 @@
                     </div>
                     <div class="card-body">
                         @if (!empty($forecasts))
-                            <table class="table table-striped table-bordered forecast-table">
-                                <thead>
-                                    <tr>
-                                        <th>Time</th>
-                                        <th>Condition</th>
-                                        <th>Temperature (°C)</th>
-                                        <th>Rainfall (mm)</th>
-                                        <th>Wind (m/s)</th>
-                                        <th>Wind Gust (m/s)</th>
-                                        <th>Fog (%)</th>
-                                        <th>Humidity (%)</th>
-                                        <th>Pressure (hPa)</th>
-                                        <th>Wind Direction</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($forecasts as $day)
-                                        <tr class="date-header">
-                                            <td colspan="10">{{ \Carbon\Carbon::parse($day['date'])->format('D, M d') }}</td>
+                            @foreach ($forecasts as $day)
+                                <div class="day-heading">
+                                    {{ \Carbon\Carbon::parse($day['date'])->format('D, M d') }}
+                                    <span class="sun-moon-info">
+                                        <i class="wi wi-sunrise"></i> {{ $day['sunrise'] ?? 'N/A' }} |
+                                        <i class="wi wi-sunset"></i> {{ $day['sunset'] ?? 'N/A' }} |
+                                        <i class="wi wi-moonrise"></i> {{ $day['moonrise'] ?? 'N/A' }} |
+                                        <i class="wi wi-moonset"></i> {{ $day['moonset'] ?? 'N/A' }} |
+                                        <i class="wi {{ $day['moonphase'] ? ($day['moonphase'] <= 0.125 ? 'wi-moon-new' : ($day['moonphase'] <= 0.375 ? 'wi-moon-first-quarter' : ($day['moonphase'] <= 0.625 ? 'wi-moon-full' : ($day['moonphase'] <= 0.875 ? 'wi-moon-last-quarter' : 'wi-moon-new')))) : 'wi-moon-new' }}"></i> {{ $day['moonphase'] ? round($day['moonphase'] * 100) . '%' : 'N/A' }}
+                                    </span>
+                                </div>
+                                <table class="table table-striped table-bordered forecast-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th>Condition</th>
+                                            <th>Temperature (°C)</th>
+                                            <th>Rainfall (mm)</th>
+                                            <th>Wind (m/s)</th>
+                                            <th>Wind Gust (m/s)</th>
+                                            <th>Fog (%)</th>
+                                            <th>Humidity (%)</th>
+                                            <th>Pressure (hPa)</th>
+                                            <th>Wind Direction</th>
+                                            <th>Wind Dir (Ordinal)</th>
                                         </tr>
+                                    </thead>
+                                    <tbody>
                                         @foreach ($day['forecasts'] as $index => $forecast)
                                             @php
                                                 // Map yr.no symbol_code to Weather Icons
@@ -201,16 +218,16 @@
                                                 <td class="direction-cell">
                                                     @if (is_numeric($direction))
                                                         <i class="wi wi-direction-up" style="transform: rotate({{ $arrowRotation }}deg);"></i>
-                                                        {{ $ordinal }}
                                                     @else
                                                         {{ $forecast['wind_direction'] }}
                                                     @endif
                                                 </td>
+                                                <td>{{ $ordinal ?: 'N/A' }}</td>
                                             </tr>
                                         @endforeach
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                    </tbody>
+                                </table>
+                            @endforeach
                         @else
                             <p class="text-danger">Unable to load forecast data. Please try again later.</p>
                         @endif
