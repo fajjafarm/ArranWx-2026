@@ -7,7 +7,7 @@
 @section('title', $title)
 
 @section('css')
-    <link rel="stylesheet" href="https://unpkg.com/meteocons@2.2.0/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         .header-village {
             background: linear-gradient(90deg, #28a745, #34c759);
@@ -59,8 +59,12 @@
         .condition-cell i {
             font-size: 24px;
         }
-        .condition-cell .icon-sunny, .condition-cell .icon-clear { color: #ffc107; } /* Yellow for sun */
-        .condition-cell .icon-rainy, .condition-cell .icon-cloudy, .condition-cell .icon-drizzle, .condition-cell .icon-showers, .condition-cell .icon-fog { color: #007bff; } /* Blue for rain/clouds */
+        .condition-cell .fa-sun, .condition-cell .fa-cloud-sun { color: #ffc107; } /* Yellow for sun */
+        .condition-cell .fa-cloud, .condition-cell .fa-cloud-rain, .condition-cell .fa-cloud-showers-heavy, .condition-cell .fa-fog { color: #007bff; } /* Blue for rain/clouds */
+        .direction-cell i {
+            font-size: 20px;
+            color: #444;
+        }
         .forecast-table td {
             vertical-align: middle;
         }
@@ -105,34 +109,35 @@
                                         <th>Humidity (%)</th>
                                         <th>Pressure (hPa)</th>
                                         <th>Wind Direction (°)</th>
+                                        <th>Wind Dir (Ordinal)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($forecasts as $day)
                                         <tr class="date-header">
-                                            <td colspan="10">{{ \Carbon\Carbon::parse($day['date'])->format('D, M d') }}</td>
+                                            <td colspan="11">{{ \Carbon\Carbon::parse($day['date'])->format('D, M d') }}</td>
                                         </tr>
                                         @foreach ($day['forecasts'] as $forecast)
                                             @php
-                                                // Map yr.no symbol_code to Meteocons
+                                                // Map yr.no symbol_code to Font Awesome icons
                                                 $iconMap = [
-                                                    'clearsky_day' => 'icon-sunny',
-                                                    'clearsky_night' => 'icon-clear',
-                                                    'fair_day' => 'icon-cloudy',
-                                                    'fair_night' => 'icon-cloudy',
-                                                    'partlycloudy_day' => 'icon-cloudy',
-                                                    'partlycloudy_night' => 'icon-cloudy',
-                                                    'cloudy' => 'icon-cloudy',
-                                                    'rain' => 'icon-rainy',
-                                                    'lightrain' => 'icon-drizzle',
-                                                    'heavyrain' => 'icon-rainy',
-                                                    'rainshowers_day' => 'icon-showers',
-                                                    'rainshowers_night' => 'icon-showers',
-                                                    'snow' => 'icon-snowy',
-                                                    'sleet' => 'icon-sleet',
-                                                    'fog' => 'icon-fog',
+                                                    'clearsky_day' => 'fa-sun',
+                                                    'clearsky_night' => 'fa-moon',
+                                                    'fair_day' => 'fa-cloud-sun',
+                                                    'fair_night' => 'fa-cloud-moon',
+                                                    'partlycloudy_day' => 'fa-cloud-sun',
+                                                    'partlycloudy_night' => 'fa-cloud-moon',
+                                                    'cloudy' => 'fa-cloud',
+                                                    'rain' => 'fa-cloud-rain',
+                                                    'lightrain' => 'fa-cloud-rain',
+                                                    'heavyrain' => 'fa-cloud-showers-heavy',
+                                                    'rainshowers_day' => 'fa-cloud-rain',
+                                                    'rainshowers_night' => 'fa-cloud-rain',
+                                                    'snow' => 'fa-snowflake',
+                                                    'sleet' => 'fa-cloud-meatball',
+                                                    'fog' => 'fa-fog',
                                                     // Add more mappings as needed
-                                                    'default' => 'icon-na',
+                                                    'default' => 'fa-question',
                                                 ];
                                                 $iconClass = $iconMap[$forecast['condition']] ?? $iconMap['default'];
 
@@ -153,7 +158,7 @@
                                                     default => 12,
                                                 };
                                                 $windClass = "wind-cell-$beaufort";
-                                                $gustClass = "wind-cell-$beaufort"; // Apply same scale to gusts
+                                                $gustClass = "wind-cell-$beaufort";
 
                                                 // Met Office-inspired temperature scale
                                                 $tempClass = match (true) {
@@ -163,11 +168,23 @@
                                                     $forecast['temperature'] <= 30 => 'temp-cell-warm',
                                                     default => 'temp-cell-hot',
                                                 };
+
+                                                // Compass ordinal for wind direction
+                                                $direction = is_numeric($forecast['wind_direction']) ? $forecast['wind_direction'] : null;
+                                                $ordinal = '';
+                                                if ($direction !== null) {
+                                                    $angle = fmod($direction + 11.25, 360) / 22.5;
+                                                    $ordinals = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+                                                    $ordinal = $ordinals[floor($angle)];
+                                                }
+
+                                                // Arrow rotation (opposite direction)
+                                                $arrowRotation = is_numeric($direction) ? ($direction + 180) % 360 : 0;
                                             @endphp
                                             <tr>
                                                 <td>{{ \Carbon\Carbon::parse($forecast['time'])->format('H:i') }}</td>
                                                 <td class="condition-cell">
-                                                    <i class="meteocons {{ $iconClass }}"></i>
+                                                    <i class="fas {{ $iconClass }}"></i>
                                                 </td>
                                                 <td class="{{ $tempClass }}">{{ is_numeric($forecast['temperature']) ? round($forecast['temperature'], 1) : $forecast['temperature'] }}</td>
                                                 <td class="rain-cell">{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}</td>
@@ -176,7 +193,15 @@
                                                 <td class="fog-cell">{{ is_numeric($forecast['cloud_area_fraction']) ? round($forecast['cloud_area_fraction'], 1) : $forecast['cloud_area_fraction'] }}</td>
                                                 <td class="humidity-cell">{{ is_numeric($forecast['relative_humidity']) ? round($forecast['relative_humidity'], 1) : $forecast['relative_humidity'] }}</td>
                                                 <td class="pressure-cell">{{ is_numeric($forecast['air_pressure']) ? round($forecast['air_pressure'], 1) : $forecast['air_pressure'] }}</td>
-                                                <td class="direction-cell">{{ is_numeric($forecast['wind_direction']) ? round($forecast['wind_direction'], 1) : $forecast['wind_direction'] }}</td>
+                                                <td class="direction-cell">
+                                                    @if (is_numeric($direction))
+                                                        <i class="fas fa-arrow-up" style="transform: rotate({{ $arrowRotation }}deg);"></i>
+                                                        {{ round($direction, 1) }}
+                                                    @else
+                                                        {{ $forecast['wind_direction'] }}
+                                                    @endif
+                                                </td>
+                                                <td>{{ $ordinal ?: 'N/A' }}</td>
                                             </tr>
                                         @endforeach
                                     @endforeach
