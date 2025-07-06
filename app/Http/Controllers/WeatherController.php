@@ -100,6 +100,8 @@ class WeatherController extends Controller
                 Log::error('yr.no complete API request failed', [
                     'status' => $response->status(),
                     'body' => $response->body(),
+                    'lat' => $lat,
+                    'lon' => $lon,
                 ]);
                 return [];
             }
@@ -117,11 +119,15 @@ class WeatherController extends Controller
 
                 if ($sunMoonResponse->successful()) {
                     $sunMoon = $sunMoonResponse->json()['location']['time'][0] ?? [];
+                    Log::info('Sun/moon API response', [
+                        'date' => $date,
+                        'response' => $sunMoon,
+                    ]);
                     $sunMoonData[$date] = [
-                        'sunrise' => $sunMoon['sunrise']['time'] ?? 'N/A',
-                        'sunset' => $sunMoon['sunset']['time'] ?? 'N/A',
-                        'moonrise' => $sunMoon['moonrise']['time'] ?? 'N/A',
-                        'moonset' => $sunMoon['moonset']['time'] ?? 'N/A',
+                        'sunrise' => isset($sunMoon['sunrise']['time']) ? Carbon::parse($sunMoon['sunrise']['time'])->tz($timezone)->format('H:i') : 'N/A',
+                        'sunset' => isset($sunMoon['sunset']['time']) ? Carbon::parse($sunMoon['sunset']['time'])->tz($timezone)->format('H:i') : 'N/A',
+                        'moonrise' => isset($sunMoon['moonrise']['time']) ? Carbon::parse($sunMoon['moonrise']['time'])->tz($timezone)->format('H:i') : 'N/A',
+                        'moonset' => isset($sunMoon['moonset']['time']) ? Carbon::parse($sunMoon['moonset']['time'])->tz($timezone)->format('H:i') : 'N/A',
                         'moonphase' => isset($sunMoon['moonphase']) ? floatval($sunMoon['moonphase']) / 360 : null,
                     ];
                 } else {
@@ -129,6 +135,8 @@ class WeatherController extends Controller
                         'status' => $sunMoonResponse->status(),
                         'body' => $sunMoonResponse->body(),
                         'date' => $date,
+                        'lat' => $lat,
+                        'lon' => $lon,
                     ]);
                     $sunMoonData[$date] = [
                         'sunrise' => 'N/A',
@@ -176,10 +184,10 @@ class WeatherController extends Controller
                     ];
                     return [
                         'date' => $date,
-                        'sunrise' => $daySunMoon['sunrise'] !== 'N/A' ? Carbon::parse($daySunMoon['sunrise'], $timezone)->format('H:i') : 'N/A',
-                        'sunset' => $daySunMoon['sunset'] !== 'N/A' ? Carbon::parse($daySunMoon['sunset'], $timezone)->format('H:i') : 'N/A',
-                        'moonrise' => $daySunMoon['moonrise'] !== 'N/A' ? Carbon::parse($daySunMoon['moonrise'], $timezone)->format('H:i') : 'N/A',
-                        'moonset' => $daySunMoon['moonset'] !== 'N/A' ? Carbon::parse($daySunMoon['moonset'], $timezone)->format('H:i') : 'N/A',
+                        'sunrise' => $daySunMoon['sunrise'],
+                        'sunset' => $daySunMoon['sunset'],
+                        'moonrise' => $daySunMoon['moonrise'],
+                        'moonset' => $daySunMoon['moonset'],
                         'moonphase' => $daySunMoon['moonphase'],
                         'forecasts' => $dayData->toArray(),
                     ];
