@@ -39,12 +39,53 @@
             font-size: 20px;
             margin-right: 5px;
         }
-        /* Temperature gradients (Met Office-inspired) */
-        .temp-cell-cold { background: linear-gradient(90deg, #1e3c72, #2a5298); color: white; }
-        .temp-cell-cool { background: linear-gradient(90deg, #3b5998, #8b9dc3); color: white; }
-        .temp-cell-mild { background: linear-gradient(90deg, #dfe3ee, #f7f7f7); color: black; }
-        .temp-cell-warm { background: linear-gradient(90deg, #f7e1b5, #f4c542); color: black; }
-        .temp-cell-hot { background: linear-gradient(90deg, #ff9a9e, #ff6a61); color: white; }
+        /* Met Office temperature colour scale (2°C increments from -40°C to +50°C) */
+        .temp-cell-minus-40 { background: linear-gradient(90deg, #1e3c72, #2a5298); color: white; }
+        .temp-cell-minus-38 { background: linear-gradient(90deg, #213f77, #2f5aa0); color: white; }
+        .temp-cell-minus-36 { background: linear-gradient(90deg, #24427c, #345fa8); color: white; }
+        .temp-cell-minus-34 { background: linear-gradient(90deg, #274581, #3a65b0); color: white; }
+        .temp-cell-minus-32 { background: linear-gradient(90deg, #2a4886, #3f6ab8); color: white; }
+        .temp-cell-minus-30 { background: linear-gradient(90deg, #2d4b8b, #4470c0); color: white; }
+        .temp-cell-minus-28 { background: linear-gradient(90deg, #304e90, #4a75c8); color: white; }
+        .temp-cell-minus-26 { background: linear-gradient(90deg, #335195, #4f7bd0); color: white; }
+        .temp-cell-minus-24 { background: linear-gradient(90deg, #36549a, #5480d8); color: white; }
+        .temp-cell-minus-22 { background: linear-gradient(90deg, #39579f, #5a86e0); color: white; }
+        .temp-cell-minus-20 { background: linear-gradient(90deg, #3c5aa4, #5f8be8); color: white; }
+        .temp-cell-minus-18 { background: linear-gradient(90deg, #3f5da9, #6490f0); color: white; }
+        .temp-cell-minus-16 { background: linear-gradient(90deg, #4260ae, #6a96f8); color: white; }
+        .temp-cell-minus-14 { background: linear-gradient(90deg, #4563b3, #6f9bff); color: white; }
+        .temp-cell-minus-12 { background: linear-gradient(90deg, #4866b8, #74a0ff); color: white; }
+        .temp-cell-minus-10 { background: linear-gradient(90deg, #4b69bd, #7aa6ff); color: white; }
+        .temp-cell-minus-8 { background: linear-gradient(90deg, #4e6cc2, #7fabff); color: white; }
+        .temp-cell-minus-6 { background: linear-gradient(90deg, #516fc7, #84b0ff); color: white; }
+        .temp-cell-minus-4 { background: linear-gradient(90deg, #5472cc, #8ab6ff); color: white; }
+        .temp-cell-minus-2 { background: linear-gradient(90deg, #5775d1, #8fbbff); color: white; }
+        .temp-cell-0 { background: linear-gradient(90deg, #5a78d6, #94c0ff); color: white; }
+        .temp-cell-2 { background: linear-gradient(90deg, #6c85d9, #9cc7fc); color: black; }
+        .temp-cell-4 { background: linear-gradient(90deg, #7e92dc, #a3cdfa); color: black; }
+        .temp-cell-6 { background: linear-gradient(90deg, #909edf, #abd4f8); color: black; }
+        .temp-cell-8 { background: linear-gradient(90deg, #a2abe2, #b2daf6); color: black; }
+        .temp-cell-10 { background: linear-gradient(90deg, #b3b8e5, #bae1f4); color: black; }
+        .temp-cell-12 { background: linear-gradient(90deg, #c5c5e8, #c1e7f2); color: black; }
+        .temp-cell-14 { background: linear-gradient(90deg, #d7d2eb, #c9eef0); color: black; }
+        .temp-cell-16 { background: linear-gradient(90deg, #a4c37b, #9ccc65); color: black; }
+        .temp-cell-18 { background: linear-gradient(90deg, #8fb96a, #83c155); color: black; }
+        .temp-cell-20 { background: linear-gradient(90deg, #7aaf58, #6ab645); color: black; }
+        .temp-cell-22 { background: linear-gradient(90deg, #65a547, #52ac35); color: black; }
+        .temp-cell-24 { background: linear-gradient(90deg, #509b36, #39a225); color: black; }
+        .temp-cell-26 { background: linear-gradient(90deg, #fbc02d, #f9a825); color: black; }
+        .temp-cell-28 { background: linear-gradient(90deg, #f9a825, #f57c00); color: black; }
+        .temp-cell-30 { background: linear-gradient(90deg, #f57c00, #ef6c00); color: black; }
+        .temp-cell-32 { background: linear-gradient(90deg, #ef6c00, #e84e1b); color: white; }
+        .temp-cell-34 { background: linear-gradient(90deg, #e84e1b, #e33b1e); color: white; }
+        .temp-cell-36 { background: linear-gradient(90deg, #e33b1e, #de2821); color: white; }
+        .temp-cell-38 { background: linear-gradient(90deg, #de2821, #d91624); color: white; }
+        .temp-cell-40 { background: linear-gradient(90deg, #d91624, #d40327); color: white; }
+        .temp-cell-42 { background: linear-gradient(90deg, #d40327, #ce002a); color: white; }
+        .temp-cell-44 { background: linear-gradient(90deg, #ce002a, #c9002c); color: white; }
+        .temp-cell-46 { background: linear-gradient(90deg, #c9002c, #c4002f); color: white; }
+        .temp-cell-48 { background: linear-gradient(90deg, #c4002f, #bf0032); color: white; }
+        .temp-cell-50 { background: linear-gradient(90deg, #bf0032, #b71c1c); color: white; }
         /* Beaufort scale gradients for wind */
         .wind-cell-0 { background: linear-gradient(90deg, #e6f3e6, #b3d9b3); color: black; } /* Calm */
         .wind-cell-1 { background: linear-gradient(90deg, #d4edda, #a3d8a9); color: black; } /* Light air */
@@ -189,15 +230,14 @@
                                                 $windClass = "wind-cell-$beaufort";
                                                 $gustClass = "wind-cell-$beaufort";
 
-                                                // Met Office-inspired temperature scale
+                                                // Met Office temperature colour scale (2°C increments)
                                                 $tempValue = is_numeric($forecast['temperature']) ? floatval($forecast['temperature']) : null;
-                                                $tempClass = $tempValue !== null ? match (true) {
-                                                    $tempValue <= 0 => 'temp-cell-cold',
-                                                    $tempValue <= 10 => 'temp-cell-cool',
-                                                    $tempValue <= 20 => 'temp-cell-mild',
-                                                    $tempValue <= 30 => 'temp-cell-warm',
-                                                    default => 'temp-cell-hot',
-                                                } : '';
+                                                $tempClass = '';
+                                                if ($tempValue !== null) {
+                                                    // Round to nearest 2°C increment, clamping between -40 and +50
+                                                    $tempKey = min(50, max(-40, round($tempValue / 2) * 2));
+                                                    $tempClass = 'temp-cell-' . ($tempKey < 0 ? 'minus-' . abs($tempKey) : $tempKey);
+                                                }
 
                                                 // Row gradient based on temperature progression
                                                 $rowGradient = '';
