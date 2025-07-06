@@ -107,47 +107,32 @@ class WeatherController extends Controller
 
             $data = $response->json();
 
-            // Fetch sun/moon data from sunrise/3.0/sun endpoint
+            // Fetch sun/moon data from SunriseSunset.io API
             $sunMoonData = [];
             $today = Carbon::today($timezone);
             for ($i = 0; $i < 10; $i++) { // Fetch for 10 days
                 $date = $today->copy()->addDays($i)->format('Y-m-d');
-                $sunMoonUrl = "https://api.met.no/weatherapi/sunrise/3.0/sun?lat={$lat}&lon={$lon}&date={$date}";
-                $sunMoonResponse = Http::withHeaders([
-                    'User-Agent' => 'ArranWeather/1.0 (contact@arranweather.com)',
-                ])->timeout(30)->get($sunMoonUrl);
+                $sunMoonUrl = "https://api.sunrisesunset.io/json?lat={$lat}&lng={$lon}&date={$date}";
+                $sunMoonResponse = Http::timeout(30)->get($sunMoonUrl);
 
-                if ($sunMoonResponse->successful()) {
-                    $sunMoon = $sunMoonResponse->json()['location']['time'][0] ?? [];
-                    Log::info('Sun/moon API response', [
+                if ($sunMoonResponse->successful() && $sunMoonResponse->json()['status'] === 'OK') {
+                    $results = $sunMoonResponse->json()['results'];
+                    Log::info('SunriseSunset.io API response', [
                         'date' => $date,
                         'url' => $sunMoonUrl,
-                        'response' => $sunMoon,
+                        'response' => $results,
                     ]);
 
-                    if (!empty($sunMoon)) {
-                        $sunMoonData[$date] = [
-                            'sunrise' => isset($sunMoon['sunrise']['time']) ? Carbon::parse($sunMoon['sunrise']['time'])->tz($timezone)->format('H:i') : 'N/A',
-                            'sunset' => isset($sunMoon['sunset']['time']) ? Carbon::parse($sunMoon['sunset']['time'])->tz($timezone)->format('H:i') : 'N/A',
-                            'moonrise' => isset($sunMoon['moonrise']['time']) ? Carbon::parse($sunMoon['moonrise']['time'])->tz($timezone)->format('H:i') : 'N/A',
-                            'moonset' => isset($sunMoon['moonset']['time']) ? Carbon::parse($sunMoon['moonset']['time'])->tz($timezone)->format('H:i') : 'N/A',
-                            'moonphase' => isset($sunMoon['moonphase']) ? floatval($sunMoon['moonphase']) / 360 : null,
-                        ];
-                    } else {
-                        Log::warning('Empty sun/moon API response', [
-                            'date' => $date,
-                            'url' => $sunMoonUrl,
-                        ]);
-                        $sunMoonData[$date] = [
-                            'sunrise' => 'N/A',
-                            'sunset' => 'N/A',
-                            'moonrise' => 'N/A',
-                            'moonset' => 'N/A',
-                            'moonphase' => null,
-                        ];
-                    }
+                    // Parse times, converting from "4:45 AM" format to H:i in local timezone
+                    $sunMoonData[$date] = [
+                        'sunrise' => isset($results['sunrise']) ? Carbon::createFromFormat('g:i A', $results['sunrise'], $timezone)->format('H:i') : 'N/A',
+                        'sunset' => isset($results['sunset']) ? Carbon::createFromFormat('g:i A', $results['sunset'], $timezone)->format('H:i') : 'N/A',
+                        'moonrise' => isset($results['moonrise']) ? Carbon::createFromFormat('g:i A', $results['moonrise'], $timezone)->format('H:i') : 'N/A',
+                        'moonset' => isset($results['moonset']) ? Carbon::createFromFormat('g:i A', $results['moonset'], $timezone)->format('H:i') : 'N/A',
+                        'moonphase' => null, // SunriseSunset.io does not provide moonphase
+                    ];
                 } else {
-                    Log::error('yr.no sunrise API request failed', [
+                    Log::error('SunriseSunset.io API request failed', [
                         'status' => $sunMoonResponse->status(),
                         'body' => $sunMoonResponse->body(),
                         'date' => $date,
@@ -163,29 +148,8 @@ class WeatherController extends Controller
                 }
             }
 
-            // Try fallback from /complete API if available
+            // Extract all timeseries data from yr.no
             $timeseries = $data['properties']['timeseries'] ?? [];
-            foreach ($timeseries as $entry) {
-                $date = Carbon::parse($entry['time'], $timezone)->format('Y-m-d');
-                if (!isset($sunMoonData[$date]) || $sunMoonData[$date]['sunrise'] === 'N/A') {
-                    $next_12_hours = $entry['data']['next_12_hours']['summary'] ?? null;
-                    if ($next_12_hours) {
-                        $sunMoonData[$date] = [
-                            'sunrise' => isset($next_12_hours['sunrise']['time']) ? Carbon::parse($next_12_hours['sunrise']['time'])->tz($timezone)->format('H:i') : 'N/A',
-                            'sunset' => isset($next_12_hours['sunset']['time']) ? Carbon::parse($next_12_hours['sunset']['time'])->tz($timezone)->format('H:i') : 'N/A',
-                            'moonrise' => isset($next_12_hours['moonrise']['time']) ? Carbon::parse($next_12_hours['moonrise']['time'])->tz($timezone)->format('H:i') : 'N/A',
-                            'moonset' => isset($next_12_hours['moonset']['time']) ? Carbon::parse($next_12_hours['moonset']['time'])->tz($timezone)->format('H:i') : 'N/A',
-                            'moonphase' => isset($next_12_hours['moonphase']) ? floatval($next_12_hours['moonphase']) / 360 : null,
-                        ];
-                        Log::info('Using fallback sun/moon data from /complete API', [
-                            'date' => $date,
-                            'sunMoonData' => $sunMoonData[$date],
-                        ]);
-                    }
-                }
-            }
-
-            // Extract all timeseries data
             $forecasts = collect($timeseries)
                 ->map(function ($entry) {
                     $details = $entry['data']['instant']['details'] ?? [];
