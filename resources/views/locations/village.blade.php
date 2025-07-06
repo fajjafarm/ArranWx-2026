@@ -118,15 +118,6 @@
         .forecast-table td {
             vertical-align: middle;
         }
-        .temp-scale {
-            list-style-type: none;
-            padding: 0;
-            margin-top: 20px;
-        }
-        .temp-scale li {
-            padding: 5px 10px;
-            border-bottom: 1px solid #eee;
-        }
         .api-source-footer {
             margin-top: 20px;
             font-size: 0.9em;
@@ -294,54 +285,6 @@
                                         @endforeach
                                     </tbody>
                                 </table>
-                                <ul class="temp-scale">
-                                    <li>-40°C: #1e3c72</li>
-                                    <li>-38°C: #2a4a8a</li>
-                                    <li>-36°C: #355892</li>
-                                    <li>-34°C: #40669a</li>
-                                    <li>-32°C: #4b74a2</li>
-                                    <li>-30°C: #5682aa</li>
-                                    <li>-28°C: #6190b2</li>
-                                    <li>-26°C: #6c9eba</li>
-                                    <li>-24°C: #77acc2</li>
-                                    <li>-22°C: #82bac9</li>
-                                    <li>-20°C: #8dc8d1</li>
-                                    <li>-18°C: #98d6d9</li>
-                                    <li>-16°C: #a3e4e1</li>
-                                    <li>-14°C: #aef2e9</li>
-                                    <li>-12°C: #b9fff1</li>
-                                    <li>-10°C: #c4e8e1</li>
-                                    <li>-8°C: #cfd1d1</li>
-                                    <li>-6°C: #dabac1</li>
-                                    <li>-4°C: #e5a3b1</li>
-                                    <li>-2°C: #f08ca1</li>
-                                    <li>0°C: #fb7591</li>
-                                    <li>2°C: #f65e81</li>
-                                    <li>4°C: #f14771</li>
-                                    <li>6°C: #ed3061</li>
-                                    <li>8°C: #e91951</li>
-                                    <li>10°C: #e50241</li>
-                                    <li>12°C: #e00b4b</li>
-                                    <li>14°C: #db1455</li>
-                                    <li>16°C: #d61d5f</li>
-                                    <li>18°C: #d12669</li>
-                                    <li>20°C: #cc2f73</li>
-                                    <li>22°C: #c7387d</li>
-                                    <li>24°C: #c24187</li>
-                                    <li>26°C: #bd4a91</li>
-                                    <li>28°C: #b8539b</li>
-                                    <li>30°C: #b35ca5</li>
-                                    <li>32°C: #ae65af</li>
-                                    <li>34°C: #a96eb9</li>
-                                    <li>36°C: #a477c3</li>
-                                    <li>38°C: #9f80cd</li>
-                                    <li>40°C: #9a89d7</li>
-                                    <li>42°C: #9592e1</li>
-                                    <li>44°C: #909beb</li>
-                                    <li>46°C: #8ba4f5</li>
-                                    <li>48°C: #86adff</li>
-                                    <li>50°C: #81b6ff</li>
-                                </ul>
                             @endforeach
                         @else
                             <p class="text-danger">Unable to load forecast data. Please try again later.</p>
