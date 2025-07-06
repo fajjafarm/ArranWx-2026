@@ -64,6 +64,8 @@
         .fog-cell { background: linear-gradient(90deg, #d3cce3, #e9e4f0); color: black; }
         .humidity-cell { background: linear-gradient(90deg, #a1c4fd, #c2e9fb); color: black; }
         .pressure-cell { background: linear-gradient(90deg, #d4fc79, #96e6a1); color: black; }
+        .dew-point-cell { background: linear-gradient(90deg, #b3e5fc, #81d4fa); color: black; }
+        .uv-cell { background: linear-gradient(90deg, #f3e5f5, #e1bee7); color: black; }
         .direction-cell { background: linear-gradient(90deg, #ffecd2, #fcb69f); color: black; }
         .condition-cell i {
             font-size: 24px;
@@ -107,10 +109,10 @@
                                 <div class="day-heading">
                                     {{ \Carbon\Carbon::parse($day['date'])->format('D, M d') }}
                                     <span class="sun-moon-info">
-                                        <i class="wi wi-sunrise"></i> {{ $day['sunrise'] ?? 'N/A' }} |
-                                        <i class="wi wi-sunset"></i> {{ $day['sunset'] ?? 'N/A' }} |
-                                        <i class="wi wi-moonrise"></i> {{ $day['moonrise'] ?? 'N/A' }} |
-                                        <i class="wi wi-moonset"></i> {{ $day['moonset'] ?? 'N/A' }} |
+                                        <i class="wi wi-sunrise"></i> {{ $day['sunrise'] }} |
+                                        <i class="wi wi-sunset"></i> {{ $day['sunset'] }} |
+                                        <i class="wi wi-moonrise"></i> {{ $day['moonrise'] }} |
+                                        <i class="wi wi-moonset"></i> {{ $day['moonset'] }} |
                                         <i class="wi {{ $day['moonphase'] ? ($day['moonphase'] <= 0.125 ? 'wi-moon-new' : ($day['moonphase'] <= 0.375 ? 'wi-moon-first-quarter' : ($day['moonphase'] <= 0.625 ? 'wi-moon-full' : ($day['moonphase'] <= 0.875 ? 'wi-moon-last-quarter' : 'wi-moon-new')))) : 'wi-moon-new' }}"></i> {{ $day['moonphase'] ? round($day['moonphase'] * 100) . '%' : 'N/A' }}
                                     </span>
                                 </div>
@@ -120,12 +122,15 @@
                                             <th>Time</th>
                                             <th>Condition</th>
                                             <th>Temperature (°C)</th>
+                                            <th>Dew Point (°C)</th>
                                             <th>Rainfall (mm)</th>
-                                            <th>Wind (m/s)</th>
+                                            <th>Wind Speed (m/s)</th>
                                             <th>Wind Gust (m/s)</th>
+                                            <th>Cloud Cover (%)</th>
                                             <th>Fog (%)</th>
                                             <th>Humidity (%)</th>
                                             <th>Pressure (hPa)</th>
+                                            <th>UV Index</th>
                                             <th>Wind Direction</th>
                                             <th>Wind Dir (Ordinal)</th>
                                         </tr>
@@ -150,13 +155,13 @@
                                                     'snow' => 'wi-snow',
                                                     'sleet' => 'wi-sleet',
                                                     'fog' => 'wi-fog',
-                                                    // Add more mappings as needed
                                                     'default' => 'wi-na',
                                                 ];
                                                 $iconClass = $iconMap[$forecast['condition']] ?? $iconMap['default'];
 
                                                 // Beaufort scale for wind (m/s)
                                                 $beaufort = match (true) {
+                                                    !is_numeric($forecast['wind_speed']) => 0,
                                                     $forecast['wind_speed'] < 0.5 => 0,
                                                     $forecast['wind_speed'] < 1.6 => 1,
                                                     $forecast['wind_speed'] < 3.4 => 2,
@@ -209,12 +214,15 @@
                                                     <i class="wi {{ $iconClass }}"></i>
                                                 </td>
                                                 <td class="{{ $tempClass }}">{{ is_numeric($forecast['temperature']) ? round($forecast['temperature'], 1) : $forecast['temperature'] }}</td>
+                                                <td class="dew-point-cell">{{ is_numeric($forecast['dew_point']) ? round($forecast['dew_point'], 1) : $forecast['dew_point'] }}</td>
                                                 <td class="rain-cell">{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}</td>
                                                 <td class="{{ $windClass }}">{{ is_numeric($forecast['wind_speed']) ? round($forecast['wind_speed'], 1) : $forecast['wind_speed'] }}</td>
                                                 <td class="{{ $gustClass }}">{{ is_numeric($forecast['wind_gust']) ? round($forecast['wind_gust'], 1) : $forecast['wind_gust'] }}</td>
                                                 <td class="fog-cell">{{ is_numeric($forecast['cloud_area_fraction']) ? round($forecast['cloud_area_fraction'], 1) : $forecast['cloud_area_fraction'] }}</td>
+                                                <td class="fog-cell">{{ is_numeric($forecast['fog_area_fraction']) ? round($forecast['fog_area_fraction'], 1) : $forecast['fog_area_fraction'] }}</td>
                                                 <td class="humidity-cell">{{ is_numeric($forecast['relative_humidity']) ? round($forecast['relative_humidity'], 1) : $forecast['relative_humidity'] }}</td>
                                                 <td class="pressure-cell">{{ is_numeric($forecast['air_pressure']) ? round($forecast['air_pressure'], 1) : $forecast['air_pressure'] }}</td>
+                                                <td class="uv-cell">{{ is_numeric($forecast['ultraviolet_index']) ? round($forecast['ultraviolet_index'], 1) : $forecast['ultraviolet_index'] }}</td>
                                                 <td class="direction-cell">
                                                     @if (is_numeric($direction))
                                                         <i class="wi wi-direction-up" style="transform: rotate({{ $arrowRotation }}deg);"></i>
