@@ -230,9 +230,9 @@
                                                 $windClass = "wind-cell-$beaufort";
                                                 $gustClass = "wind-cell-$beaufort";
 
-                                                // Met Office temperature colour scale (2°C increments)
+                                                // Met Office temperature colour scale (2°C increments, fixed logic)
                                                 $tempValue = is_numeric($forecast['temperature']) ? floatval($forecast['temperature']) : null;
-                                                $tempClass = '';
+                                                $tempClass = 'temp-cell-0'; // Default to 0°C if invalid
                                                 if ($tempValue !== null) {
                                                     // Round to nearest 2°C increment, clamping between -40 and +50
                                                     $tempKey = min(50, max(-40, round($tempValue / 2) * 2));
