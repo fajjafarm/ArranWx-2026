@@ -39,53 +39,53 @@
             font-size: 20px;
             margin-right: 5px;
         }
-        /* Temperature scale (2°C increments from -40°C to +50°C, using your manual colours) */
-        .temp-cell-minus-40 { background: #1a2a6c; color: white; }
-        .temp-cell-minus-38 { background: #263a7f; color: white; }
-        .temp-cell-minus-36 { background: #314a92; color: white; }
-        .temp-cell-minus-34 { background: #3d5aa5; color: white; }
-        .temp-cell-minus-32 { background: #486ab8; color: white; }
-        .temp-cell-minus-30 { background: #547acb; color: white; }
-        .temp-cell-minus-28 { background: #5f8ade; color: white; }
-        .temp-cell-minus-26 { background: #6b9af1; color: white; }
-        .temp-cell-minus-24 { background: #76aaf4; color: white; }
-        .temp-cell-minus-22 { background: #82baf7; color: white; }
-        .temp-cell-minus-20 { background: #8dcbf9; color: white; }
-        .temp-cell-minus-18 { background: #99dcfc; color: black; }
-        .temp-cell-minus-16 { background: #a4ecff; color: black; }
-        .temp-cell-minus-14 { background: #affdff; color: black; }
-        .temp-cell-minus-12 { background: #bbedff; color: black; }
-        .temp-cell-minus-10 { background: #c6ddff; color: black; }
-        .temp-cell-minus-8 { background: #d1cdff; color: black; }
-        .temp-cell-minus-6 { background: #dcbcff; color: black; }
-        .temp-cell-minus-4 { background: #e7abff; color: black; }
-        .temp-cell-minus-2 { background: #f29aff; color: black; }
-        .temp-cell-0 { background: #fd89ff; color: black; }
-        .temp-cell-2 { background: #ff78e6; color: black; }
-        .temp-cell-4 { background: #ff67cd; color: black; }
-        .temp-cell-6 { background: #ff56b4; color: white; }
-        .temp-cell-8 { background: #ff459b; color: white; }
-        .temp-cell-10 { background: #ff3482; color: white; }
-        .temp-cell-12 { background: #ff2369; color: white; }
-        .temp-cell-14 { background: #ff1250; color: white; }
-        .temp-cell-16 { background: #ff0137; color: white; }
-        .temp-cell-18 { background: #ef1a48; color: white; }
-        .temp-cell-20 { background: #df3359; color: white; }
-        .temp-cell-22 { background: #cf4c6a; color: white; }
-        .temp-cell-24 { background: #bf657b; color: white; }
-        .temp-cell-26 { background: #af7e8c; color: white; }
-        .temp-cell-28 { background: #9f979d; color: white; }
-        .temp-cell-30 { background: #8fb0ae; color: white; }
-        .temp-cell-32 { background: #7fc9bf; color: white; }
-        .temp-cell-34 { background: #6fe2d0; color: white; }
-        .temp-cell-36 { background: #5ffbe1; color: white; }
-        .temp-cell-38 { background: #4ff4f2; color: white; }
-        .temp-cell-40 { background: #3fedff; color: white; }
-        .temp-cell-42 { background: #2fe6ff; color: white; }
-        .temp-cell-44 { background: #1fefff; color: white; }
-        .temp-cell-46 { background: #0ff8ff; color: white; }
-        .temp-cell-48 { background: #00f1ff; color: white; }
-        .temp-cell-50 { background: #00eaff; color: white; }
+        /* Temperature scale (2°C increments from -40°C to +50°C, using original solid colours) */
+        .temp-cell-minus-40 { background: #1e3c72; color: white; }
+        .temp-cell-minus-38 { background: #2a4a8a; color: white; }
+        .temp-cell-minus-36 { background: #355892; color: white; }
+        .temp-cell-minus-34 { background: #40669a; color: white; }
+        .temp-cell-minus-32 { background: #4b74a2; color: white; }
+        .temp-cell-minus-30 { background: #5682aa; color: white; }
+        .temp-cell-minus-28 { background: #6190b2; color: white; }
+        .temp-cell-minus-26 { background: #6c9eba; color: white; }
+        .temp-cell-minus-24 { background: #77acc2; color: white; }
+        .temp-cell-minus-22 { background: #82bac9; color: white; }
+        .temp-cell-minus-20 { background: #8dc8d1; color: white; }
+        .temp-cell-minus-18 { background: #98d6d9; color: white; }
+        .temp-cell-minus-16 { background: #a3e4e1; color: black; }
+        .temp-cell-minus-14 { background: #aef2e9; color: black; }
+        .temp-cell-minus-12 { background: #b9fff1; color: black; }
+        .temp-cell-minus-10 { background: #c4e8e1; color: black; }
+        .temp-cell-minus-8 { background: #cfd1d1; color: black; }
+        .temp-cell-minus-6 { background: #dabac1; color: black; }
+        .temp-cell-minus-4 { background: #e5a3b1; color: black; }
+        .temp-cell-minus-2 { background: #f08ca1; color: black; }
+        .temp-cell-0 { background: #fb7591; color: black; }
+        .temp-cell-2 { background: #f65e81; color: black; }
+        .temp-cell-4 { background: #f14771; color: black; }
+        .temp-cell-6 { background: #ed3061; color: white; }
+        .temp-cell-8 { background: #e91951; color: white; }
+        .temp-cell-10 { background: #e50241; color: white; }
+        .temp-cell-12 { background: #e00b4b; color: white; }
+        .temp-cell-14 { background: #db1455; color: white; }
+        .temp-cell-16 { background: #d61d5f; color: white; }
+        .temp-cell-18 { background: #d12669; color: white; }
+        .temp-cell-20 { background: #cc2f73; color: white; }
+        .temp-cell-22 { background: #c7387d; color: white; }
+        .temp-cell-24 { background: #c24187; color: white; }
+        .temp-cell-26 { background: #bd4a91; color: white; }
+        .temp-cell-28 { background: #b8539b; color: white; }
+        .temp-cell-30 { background: #b35ca5; color: white; }
+        .temp-cell-32 { background: #ae65af; color: white; }
+        .temp-cell-34 { background: #a96eb9; color: white; }
+        .temp-cell-36 { background: #a477c3; color: white; }
+        .temp-cell-38 { background: #9f80cd; color: white; }
+        .temp-cell-40 { background: #9a89d7; color: white; }
+        .temp-cell-42 { background: #9592e1; color: white; }
+        .temp-cell-44 { background: #909beb; color: white; }
+        .temp-cell-46 { background: #8ba4f5; color: white; }
+        .temp-cell-48 { background: #86adff; color: white; }
+        .temp-cell-50 { background: #81b6ff; color: white; }
         /* Beaufort scale gradients for wind */
         .wind-cell-0 { background: linear-gradient(90deg, #e6f3e6, #b3d9b3); color: black; } /* Calm */
         .wind-cell-1 { background: linear-gradient(90deg, #d4edda, #a3d8a9); color: black; } /* Light air */
@@ -188,9 +188,6 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php
-                                            $prevTempClass = null;
-                                        @endphp
                                         @foreach ($day['forecasts'] as $index => $forecast)
                                             @php
                                                 // Map yr.no symbol_code to Weather Icons
@@ -234,26 +231,13 @@
                                                 $windClass = "wind-cell-$beaufort";
                                                 $gustClass = "wind-cell-$beaufort";
 
-                                                // Met Office temperature colour scale (2°C increments)
+                                                // Met Office temperature colour scale (2°C increments, original solid colours)
                                                 $tempValue = is_numeric($forecast['temperature']) ? floatval($forecast['temperature']) : null;
                                                 $tempClass = 'temp-cell-0'; // Default to 0°C if invalid
                                                 if ($tempValue !== null) {
                                                     $tempKey = min(50, max(-40, round($tempValue / 2) * 2));
                                                     $tempClass = 'temp-cell-' . ($tempKey < 0 ? 'minus-' . abs($tempKey) : $tempKey);
                                                 }
-
-                                                // Vertical gradient from previous to current temperature
-                                                $gradientStyle = '';
-                                                if ($index > 0 && $prevTempClass && $tempValue !== null) {
-                                                    $prevColor = preg_replace('/^temp-cell-(minus-)?/', '', $prevTempClass);
-                                                    $prevColor = str_replace('minus-', '-', $prevColor);
-                                                    $currentColor = preg_replace('/^temp-cell-(minus-)?/', '', $tempClass);
-                                                    $currentColor = str_replace('minus-', '-', $currentColor);
-                                                    $gradientStyle = "background: linear-gradient(0deg, var(--temp-$prevColor), var(--temp-$currentColor));";
-                                                } else {
-                                                    $gradientStyle = "background: var(--temp-" . preg_replace('/^temp-cell-(minus-)?/', '', $tempClass) . ");";
-                                                }
-                                                $prevTempClass = $tempClass;
 
                                                 // Row gradient based on temperature progression
                                                 $rowGradient = '';
@@ -279,7 +263,7 @@
                                                 <td class="condition-cell">
                                                     <i class="wi {{ $iconClass }}"></i>
                                                 </td>
-                                                <td style="{{ $gradientStyle }}">{{ is_numeric($forecast['temperature']) ? round($forecast['temperature'], 1) : $forecast['temperature'] }}</td>
+                                                <td class="{{ $tempClass }}">{{ is_numeric($forecast['temperature']) ? round($forecast['temperature'], 1) : $forecast['temperature'] }}</td>
                                                 <td class="dew-point-cell">{{ is_numeric($forecast['dew_point']) ? round($forecast['dew_point'], 1) : $forecast['dew_point'] }}</td>
                                                 <td class="rain-cell">{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}</td>
                                                 <td class="{{ $windClass }}">{{ is_numeric($forecast['wind_speed']) ? round($forecast['wind_speed'], 1) : $forecast['wind_speed'] }}</td>
