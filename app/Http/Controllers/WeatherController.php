@@ -107,18 +107,37 @@ class WeatherController extends Controller
 
             $data = $response->json();
 
-            // Fetch sun/moon data from Xweather sunmoon/daily endpoint
+            // Fetch sun/moon data from SunriseSunset.io API
             $sunMoonData = [];
-            $clientId = config('services.xweather.client_id');
-            $clientSecret = config('services.xweather.client_secret');
-            if (!$clientId || !$clientSecret) {
-                Log::error('Xweather API credentials missing', [
-                    'lat' => $lat,
-                    'lon' => $lon,
-                ]);
-                $today = Carbon::today($timezone);
-                for ($i = 0; $i < 10; $i++) {
-                    $date = $today->copy()->addDays($i)->format('Y-m-d');
+            $today = Carbon::today($timezone);
+            for ($i = 0; $i < 10; $i++) { // Fetch for 10 days
+                $date = $today->copy()->addDays($i)->format('Y-m-d');
+                $sunMoonUrl = "https://api.sunrisesunset.io/json?lat={$lat}&lng={$lon}&date={$date}";
+                $sunMoonResponse = Http::timeout(30)->get($sunMoonUrl);
+
+                if ($sunMoonResponse->successful() && $sunMoonResponse->json()['status'] === 'OK') {
+                    $results = $sunMoonResponse->json()['results'];
+                    Log::info('SunriseSunset.io API response', [
+                        'date' => $date,
+                        'url' => $sunMoonUrl,
+                        'response' => $results,
+                    ]);
+
+                    // Parse times, converting from "4:45 AM" format to H:i in local timezone
+                    $sunMoonData[$date] = [
+                        'sunrise' => isset($results['sunrise']) && $results['sunrise'] !== '-' ? Carbon::createFromFormat('g:i A', $results['sunrise'], $timezone)->format('H:i') : 'N/A',
+                        'sunset' => isset($results['sunset']) && $results['sunset'] !== '-' ? Carbon::createFromFormat('g:i A', $results['sunset'], $timezone)->format('H:i') : 'N/A',
+                        'moonrise' => isset($results['moonrise']) && $results['moonrise'] !== '-' ? Carbon::createFromFormat('g:i A', $results['moonrise'], $timezone)->format('H:i') : 'N/A',
+                        'moonset' => isset($results['moonset']) && $results['moonset'] !== '-' ? Carbon::createFromFormat('g:i A', $results['moonset'], $timezone)->format('H:i') : 'N/A',
+                        'moonphase' => null, // SunriseSunset.io does not provide moonphase
+                    ];
+                } else {
+                    Log::error('SunriseSunset.io API request failed', [
+                        'status' => $sunMoonResponse->status(),
+                        'body' => $sunMoonResponse->body(),
+                        'date' => $date,
+                        'url' => $sunMoonUrl,
+                    ]);
                     $sunMoonData[$date] = [
                         'sunrise' => 'N/A',
                         'sunset' => 'N/A',
@@ -126,44 +145,6 @@ class WeatherController extends Controller
                         'moonset' => 'N/A',
                         'moonphase' => null,
                     ];
-                }
-            } else {
-                $today = Carbon::today($timezone);
-                for ($i = 0; $i < 10; $i++) { // Fetch for 10 days
-                    $date = $today->copy()->addDays($i)->format('Y-m-d');
-                    $sunMoonUrl = "https://data.api.xweather.com/sunmoon/daily?lat={$lat}&lon={$lon}&date={$date}&client_id={$clientId}&client_secret={$clientSecret}";
-                    $sunMoonResponse = Http::timeout(30)->get($sunMoonUrl);
-
-                    if ($sunMoonResponse->successful() && isset($sunMoonResponse->json()[0])) {
-                        $results = $sunMoonResponse->json()[0];
-                        Log::info('Xweather sunmoon API response', [
-                            'date' => $date,
-                            'url' => $sunMoonUrl,
-                            'response' => $results,
-                        ]);
-
-                        $sunMoonData[$date] = [
-                            'sunrise' => isset($results['sun']['riseISO']) ? Carbon::parse($results['sun']['riseISO'])->tz($timezone)->format('H:i') : 'N/A',
-                            'sunset' => isset($results['sun']['setISO']) ? Carbon::parse($results['sun']['setISO'])->tz($timezone)->format('H:i') : 'N/A',
-                            'moonrise' => isset($results['moon']['riseISO']) ? Carbon::parse($results['moon']['riseISO'])->tz($timezone)->format('H:i') : 'N/A',
-                            'moonset' => isset($results['moon']['setISO']) ? Carbon::parse($results['moon']['setISO'])->tz($timezone)->format('H:i') : 'N/A',
-                            'moonphase' => isset($results['moon']['phase']['phase']) ? floatval($results['moon']['phase']['phase']) : null,
-                        ];
-                    } else {
-                        Log::error('Xweather sunmoon API request failed', [
-                            'status' => $sunMoonResponse->status(),
-                            'body' => $sunMoonResponse->body(),
-                            'date' => $date,
-                            'url' => $sunMoonUrl,
-                        ]);
-                        $sunMoonData[$date] = [
-                            'sunrise' => 'N/A',
-                            'sunset' => 'N/A',
-                            'moonrise' => 'N/A',
-                            'moonset' => 'N/A',
-                            'moonphase' => null,
-                        ];
-                    }
                 }
             }
 
