@@ -39,53 +39,53 @@
             font-size: 20px;
             margin-right: 5px;
         }
-        /* Met Office temperature colour scale (2°C increments from -40°C to +50°C) */
-        .temp-cell-minus-40 { background: linear-gradient(90deg, #1e3c72, #2a5298); color: white; }
-        .temp-cell-minus-38 { background: linear-gradient(90deg, #213f77, #2f5aa0); color: white; }
-        .temp-cell-minus-36 { background: linear-gradient(90deg, #24427c, #345fa8); color: white; }
-        .temp-cell-minus-34 { background: linear-gradient(90deg, #274581, #3a65b0); color: white; }
-        .temp-cell-minus-32 { background: linear-gradient(90deg, #2a4886, #3f6ab8); color: white; }
-        .temp-cell-minus-30 { background: linear-gradient(90deg, #2d4b8b, #4470c0); color: white; }
-        .temp-cell-minus-28 { background: linear-gradient(90deg, #304e90, #4a75c8); color: white; }
-        .temp-cell-minus-26 { background: linear-gradient(90deg, #335195, #4f7bd0); color: white; }
-        .temp-cell-minus-24 { background: linear-gradient(90deg, #36549a, #5480d8); color: white; }
-        .temp-cell-minus-22 { background: linear-gradient(90deg, #39579f, #5a86e0); color: white; }
-        .temp-cell-minus-20 { background: linear-gradient(90deg, #3c5aa4, #5f8be8); color: white; }
-        .temp-cell-minus-18 { background: linear-gradient(90deg, #3f5da9, #6490f0); color: white; }
-        .temp-cell-minus-16 { background: linear-gradient(90deg, #4260ae, #6a96f8); color: white; }
-        .temp-cell-minus-14 { background: linear-gradient(90deg, #4563b3, #6f9bff); color: white; }
-        .temp-cell-minus-12 { background: linear-gradient(90deg, #4866b8, #74a0ff); color: white; }
-        .temp-cell-minus-10 { background: linear-gradient(90deg, #4b69bd, #7aa6ff); color: white; }
-        .temp-cell-minus-8 { background: linear-gradient(90deg, #4e6cc2, #7fabff); color: white; }
-        .temp-cell-minus-6 { background: linear-gradient(90deg, #516fc7, #84b0ff); color: white; }
-        .temp-cell-minus-4 { background: linear-gradient(90deg, #5472cc, #8ab6ff); color: white; }
-        .temp-cell-minus-2 { background: linear-gradient(90deg, #5775d1, #8fbbff); color: white; }
-        .temp-cell-0 { background: linear-gradient(90deg, #5a78d6, #94c0ff); color: white; }
-        .temp-cell-2 { background: linear-gradient(90deg, #6c85d9, #9cc7fc); color: black; }
-        .temp-cell-4 { background: linear-gradient(90deg, #7e92dc, #a3cdfa); color: black; }
-        .temp-cell-6 { background: linear-gradient(90deg, #909edf, #abd4f8); color: black; }
-        .temp-cell-8 { background: linear-gradient(90deg, #a2abe2, #b2daf6); color: black; }
-        .temp-cell-10 { background: linear-gradient(90deg, #b3b8e5, #bae1f4); color: black; }
-        .temp-cell-12 { background: linear-gradient(90deg, #c5c5e8, #c1e7f2); color: black; }
-        .temp-cell-14 { background: linear-gradient(90deg, #d7d2eb, #c9eef0); color: black; }
-        .temp-cell-16 { background: linear-gradient(90deg, #a4c37b, #9ccc65); color: black; }
-        .temp-cell-18 { background: linear-gradient(90deg, #8fb96a, #83c155); color: black; }
-        .temp-cell-20 { background: linear-gradient(90deg, #7aaf58, #6ab645); color: black; }
-        .temp-cell-22 { background: linear-gradient(90deg, #65a547, #52ac35); color: black; }
-        .temp-cell-24 { background: linear-gradient(90deg, #509b36, #39a225); color: black; }
-        .temp-cell-26 { background: linear-gradient(90deg, #fbc02d, #f9a825); color: black; }
-        .temp-cell-28 { background: linear-gradient(90deg, #f9a825, #f57c00); color: black; }
-        .temp-cell-30 { background: linear-gradient(90deg, #f57c00, #ef6c00); color: black; }
-        .temp-cell-32 { background: linear-gradient(90deg, #ef6c00, #e84e1b); color: white; }
-        .temp-cell-34 { background: linear-gradient(90deg, #e84e1b, #e33b1e); color: white; }
-        .temp-cell-36 { background: linear-gradient(90deg, #e33b1e, #de2821); color: white; }
-        .temp-cell-38 { background: linear-gradient(90deg, #de2821, #d91624); color: white; }
-        .temp-cell-40 { background: linear-gradient(90deg, #d91624, #d40327); color: white; }
-        .temp-cell-42 { background: linear-gradient(90deg, #d40327, #ce002a); color: white; }
-        .temp-cell-44 { background: linear-gradient(90deg, #ce002a, #c9002c); color: white; }
-        .temp-cell-46 { background: linear-gradient(90deg, #c9002c, #c4002f); color: white; }
-        .temp-cell-48 { background: linear-gradient(90deg, #c4002f, #bf0032); color: white; }
-        .temp-cell-50 { background: linear-gradient(90deg, #bf0032, #b71c1c); color: white; }
+        /* Temperature scale (2°C increments from -40°C to +50°C, matching image) */
+        .temp-cell-minus-40 { background: linear-gradient(90deg, #1e3c72, #1e3c72); color: white; }
+        .temp-cell-minus-38 { background: linear-gradient(90deg, #2a4a8a, #2a4a8a); color: white; }
+        .temp-cell-minus-36 { background: linear-gradient(90deg, #355892, #355892); color: white; }
+        .temp-cell-minus-34 { background: linear-gradient(90deg, #40669a, #40669a); color: white; }
+        .temp-cell-minus-32 { background: linear-gradient(90deg, #4b74a2, #4b74a2); color: white; }
+        .temp-cell-minus-30 { background: linear-gradient(90deg, #5682aa, #5682aa); color: white; }
+        .temp-cell-minus-28 { background: linear-gradient(90deg, #6190b2, #6190b2); color: white; }
+        .temp-cell-minus-26 { background: linear-gradient(90deg, #6c9eba, #6c9eba); color: white; }
+        .temp-cell-minus-24 { background: linear-gradient(90deg, #77acc2, #77acc2); color: white; }
+        .temp-cell-minus-22 { background: linear-gradient(90deg, #82bac9, #82bac9); color: white; }
+        .temp-cell-minus-20 { background: linear-gradient(90deg, #8dc8d1, #8dc8d1); color: white; }
+        .temp-cell-minus-18 { background: linear-gradient(90deg, #98d6d9, #98d6d9); color: white; }
+        .temp-cell-minus-16 { background: linear-gradient(90deg, #a3e4e1, #a3e4e1); color: black; }
+        .temp-cell-minus-14 { background: linear-gradient(90deg, #aef2e9, #aef2e9); color: black; }
+        .temp-cell-minus-12 { background: linear-gradient(90deg, #b9fff1, #b9fff1); color: black; }
+        .temp-cell-minus-10 { background: linear-gradient(90deg, #c4e8e1, #c4e8e1); color: black; }
+        .temp-cell-minus-8 { background: linear-gradient(90deg, #cfd1d1, #cfd1d1); color: black; }
+        .temp-cell-minus-6 { background: linear-gradient(90deg, #dabac1, #dabac1); color: black; }
+        .temp-cell-minus-4 { background: linear-gradient(90deg, #e5a3b1, #e5a3b1); color: black; }
+        .temp-cell-minus-2 { background: linear-gradient(90deg, #f08ca1, #f08ca1); color: black; }
+        .temp-cell-0 { background: linear-gradient(90deg, #fb7591, #fb7591); color: black; }
+        .temp-cell-2 { background: linear-gradient(90deg, #f65e81, #f65e81); color: black; }
+        .temp-cell-4 { background: linear-gradient(90deg, #f14771, #f14771); color: black; }
+        .temp-cell-6 { background: linear-gradient(90deg, #ed3061, #ed3061); color: white; }
+        .temp-cell-8 { background: linear-gradient(90deg, #e91951, #e91951); color: white; }
+        .temp-cell-10 { background: linear-gradient(90deg, #e50241, #e50241); color: white; }
+        .temp-cell-12 { background: linear-gradient(90deg, #e00b4b, #e00b4b); color: white; }
+        .temp-cell-14 { background: linear-gradient(90deg, #db1455, #db1455); color: white; }
+        .temp-cell-16 { background: linear-gradient(90deg, #d61d5f, #d61d5f); color: white; }
+        .temp-cell-18 { background: linear-gradient(90deg, #d12669, #d12669); color: white; }
+        .temp-cell-20 { background: linear-gradient(90deg, #cc2f73, #cc2f73); color: white; }
+        .temp-cell-22 { background: linear-gradient(90deg, #c7387d, #c7387d); color: white; }
+        .temp-cell-24 { background: linear-gradient(90deg, #c24187, #c24187); color: white; }
+        .temp-cell-26 { background: linear-gradient(90deg, #bd4a91, #bd4a91); color: white; }
+        .temp-cell-28 { background: linear-gradient(90deg, #b8539b, #b8539b); color: white; }
+        .temp-cell-30 { background: linear-gradient(90deg, #b35ca5, #b35ca5); color: white; }
+        .temp-cell-32 { background: linear-gradient(90deg, #ae65af, #ae65af); color: white; }
+        .temp-cell-34 { background: linear-gradient(90deg, #a96eb9, #a96eb9); color: white; }
+        .temp-cell-36 { background: linear-gradient(90deg, #a477c3, #a477c3); color: white; }
+        .temp-cell-38 { background: linear-gradient(90deg, #9f80cd, #9f80cd); color: white; }
+        .temp-cell-40 { background: linear-gradient(90deg, #9a89d7, #9a89d7); color: white; }
+        .temp-cell-42 { background: linear-gradient(90deg, #9592e1, #9592e1); color: white; }
+        .temp-cell-44 { background: linear-gradient(90deg, #909beb, #909beb); color: white; }
+        .temp-cell-46 { background: linear-gradient(90deg, #8ba4f5, #8ba4f5); color: white; }
+        .temp-cell-48 { background: linear-gradient(90deg, #86adff, #86adff); color: white; }
+        .temp-cell-50 { background: linear-gradient(90deg, #81b6ff, #81b6ff); color: white; }
         /* Beaufort scale gradients for wind */
         .wind-cell-0 { background: linear-gradient(90deg, #e6f3e6, #b3d9b3); color: black; } /* Calm */
         .wind-cell-1 { background: linear-gradient(90deg, #d4edda, #a3d8a9); color: black; } /* Light air */
@@ -117,6 +117,15 @@
         }
         .forecast-table td {
             vertical-align: middle;
+        }
+        .temp-scale {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+        .temp-scale li {
+            padding: 5px 10px;
+            border-bottom: 1px solid #eee;
         }
         .api-source-footer {
             margin-top: 20px;
@@ -285,6 +294,54 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                                <ul class="temp-scale">
+                                    <li>-40°C: #1e3c72</li>
+                                    <li>-38°C: #2a4a8a</li>
+                                    <li>-36°C: #355892</li>
+                                    <li>-34°C: #40669a</li>
+                                    <li>-32°C: #4b74a2</li>
+                                    <li>-30°C: #5682aa</li>
+                                    <li>-28°C: #6190b2</li>
+                                    <li>-26°C: #6c9eba</li>
+                                    <li>-24°C: #77acc2</li>
+                                    <li>-22°C: #82bac9</li>
+                                    <li>-20°C: #8dc8d1</li>
+                                    <li>-18°C: #98d6d9</li>
+                                    <li>-16°C: #a3e4e1</li>
+                                    <li>-14°C: #aef2e9</li>
+                                    <li>-12°C: #b9fff1</li>
+                                    <li>-10°C: #c4e8e1</li>
+                                    <li>-8°C: #cfd1d1</li>
+                                    <li>-6°C: #dabac1</li>
+                                    <li>-4°C: #e5a3b1</li>
+                                    <li>-2°C: #f08ca1</li>
+                                    <li>0°C: #fb7591</li>
+                                    <li>2°C: #f65e81</li>
+                                    <li>4°C: #f14771</li>
+                                    <li>6°C: #ed3061</li>
+                                    <li>8°C: #e91951</li>
+                                    <li>10°C: #e50241</li>
+                                    <li>12°C: #e00b4b</li>
+                                    <li>14°C: #db1455</li>
+                                    <li>16°C: #d61d5f</li>
+                                    <li>18°C: #d12669</li>
+                                    <li>20°C: #cc2f73</li>
+                                    <li>22°C: #c7387d</li>
+                                    <li>24°C: #c24187</li>
+                                    <li>26°C: #bd4a91</li>
+                                    <li>28°C: #b8539b</li>
+                                    <li>30°C: #b35ca5</li>
+                                    <li>32°C: #ae65af</li>
+                                    <li>34°C: #a96eb9</li>
+                                    <li>36°C: #a477c3</li>
+                                    <li>38°C: #9f80cd</li>
+                                    <li>40°C: #9a89d7</li>
+                                    <li>42°C: #9592e1</li>
+                                    <li>44°C: #909beb</li>
+                                    <li>46°C: #8ba4f5</li>
+                                    <li>48°C: #86adff</li>
+                                    <li>50°C: #81b6ff</li>
+                                </ul>
                             @endforeach
                         @else
                             <p class="text-danger">Unable to load forecast data. Please try again later.</p>
