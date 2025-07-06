@@ -254,7 +254,7 @@
             </div>
         </div>
         <div class="api-source-footer">
-            Data sourced from <a href="https://api.met.no/" target="_blank">yr.no</a> for weather forecasts and <a href="https://www.xweather.com/docs/weather-api/endpoints/sunmoon" target="_blank">Xweather</a> for sun and moon data.
+            Data sourced from <a href="https://api.met.no/" target="_blank">yr.no</a> for weather forecasts and <a href="https://sunrisesunset.io/api/" target="_blank">SunriseSunset.io</a> for sun and moon data.
         </div>
     </div>
 @endsection
