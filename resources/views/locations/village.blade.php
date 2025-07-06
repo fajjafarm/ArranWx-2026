@@ -77,6 +77,12 @@
         .forecast-table td {
             vertical-align: middle;
         }
+        .api-source-footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #555;
+            text-align: center;
+        }
     </style>
 @endsection
 
@@ -113,7 +119,11 @@
                                         <i class="wi wi-sunset"></i> {{ $day['sunset'] }} |
                                         <i class="wi wi-moonrise"></i> {{ $day['moonrise'] }} |
                                         <i class="wi wi-moonset"></i> {{ $day['moonset'] }} |
-                                        <i class="wi {{ $day['moonphase'] ? ($day['moonphase'] <= 0.125 ? 'wi-moon-new' : ($day['moonphase'] <= 0.375 ? 'wi-moon-first-quarter' : ($day['moonphase'] <= 0.625 ? 'wi-moon-full' : ($day['moonphase'] <= 0.875 ? 'wi-moon-last-quarter' : 'wi-moon-new')))) : 'wi-moon-new' }}"></i> {{ $day['moonphase'] ? round($day['moonphase'] * 100) . '%' : 'N/A' }}
+                                        @if ($day['moonphase'] !== null)
+                                            <i class="wi {{ $day['moonphase'] <= 0.125 ? 'wi-moon-new' : ($day['moonphase'] <= 0.375 ? 'wi-moon-first-quarter' : ($day['moonphase'] <= 0.625 ? 'wi-moon-full' : ($day['moonphase'] <= 0.875 ? 'wi-moon-last-quarter' : 'wi-moon-new'))) }}"></i> {{ round($day['moonphase'] * 100) }}%
+                                        @else
+                                            Moon Phase: N/A
+                                        @endif
                                     </span>
                                 </div>
                                 <table class="table table-striped table-bordered forecast-table">
@@ -242,6 +252,9 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="api-source-footer">
+            Data sourced from <a href="https://api.met.no/" target="_blank">yr.no</a> for weather forecasts and <a href="https://www.xweather.com/docs/weather-api/endpoints/sunmoon" target="_blank">Xweather</a> for sun and moon data.
         </div>
     </div>
 @endsection
