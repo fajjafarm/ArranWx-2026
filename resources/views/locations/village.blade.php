@@ -43,26 +43,26 @@
         .forecast-table td.temp-cell-minus-40 { background: #01081e; color: white; }
         .forecast-table td.temp-cell-minus-30 { background: #020f39; color: white; }
         .forecast-table td.temp-cell-minus-20 { background: #02154f; color: white; }
-        .forecast-table td.temp-cell-minus-15 { background: #082376; color: black; }
-        .forecast-table td.temp-cell-minus-10 { background: #435897; color: black; }
-        .forecast-table td.temp-cell-minus-8 { background: #3075ac; color: black; }
+        .forecast-table td.temp-cell-minus-15 { background: #082376; color: white; }
+        .forecast-table td.temp-cell-minus-10 { background: #435897; color: white; }
+        .forecast-table td.temp-cell-minus-8 { background: #3075ac; color: white; }
         .forecast-table td.temp-cell-minus-6 { background: #38aec4; color: black; }
         .forecast-table td.temp-cell-minus-4 { background: #38aec4; color: black; }
         .forecast-table td.temp-cell-minus-2 { background: #60c3c1; color: black; }
         .forecast-table td.temp-cell-0 { background: #7fcebc; color: black; }
         .forecast-table td.temp-cell-2 { background: #91d5ba; color: black; }
         .forecast-table td.temp-cell-4 { background: #b6e3b7; color: black; }
-        .forecast-table td.temp-cell-6 { background: #cfebb2; color: white; }
-        .forecast-table td.temp-cell-8 { background: #e3ecab; color: white; }
-        .forecast-table td.temp-cell-10 { background: #ffeea1; color: white; }
-        .forecast-table td.temp-cell-12 { background: #ffe796; color: white; }
-        .forecast-table td.temp-cell-14 { background: #ffd881; color: white; }
-        .forecast-table td.temp-cell-16 { background: #ffc96c; color: white; }
-        .forecast-table td.temp-cell-18 { background: #ffc261; color: white; }
-        .forecast-table td.temp-cell-20 { background: #ffb34c; color: white; }
-        .forecast-table td.temp-cell-22 { background: #fc9f46; color: white; }
-        .forecast-table td.temp-cell-24 { background: #f67639; color: white; }
-        .forecast-table td.temp-cell-27 { background: #e13d32; color: white; }
+        .forecast-table td.temp-cell-6 { background: #cfebb2; color: black; }
+        .forecast-table td.temp-cell-8 { background: #e3ecab; color: black; }
+        .forecast-table td.temp-cell-10 { background: #ffeea1; color: black; }
+        .forecast-table td.temp-cell-12 { background: #ffe796; color: black; }
+        .forecast-table td.temp-cell-14 { background: #ffd881; color: black; }
+        .forecast-table td.temp-cell-16 { background: #ffc96c; color: black; }
+        .forecast-table td.temp-cell-18 { background: #ffc261; color: black; }
+        .forecast-table td.temp-cell-20 { background: #ffb34c; color: black; }
+        .forecast-table td.temp-cell-22 { background: #fc9f46; color: black; }
+        .forecast-table td.temp-cell-24 { background: #f67639; color: black; }
+        .forecast-table td.temp-cell-27 { background: #e13d32; color: black; }
         .forecast-table td.temp-cell-30 { background: #c30031; color: white; }
         .forecast-table td.temp-cell-35 { background: #70001c; color: white; }
         .forecast-table td.temp-cell-40 { background: #3a000e; color: white; }
