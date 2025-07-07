@@ -87,19 +87,19 @@
         .temp-cell-48 { background: #86adff; color: white; }
         .temp-cell-50 { background: #81b6ff; color: white; }
         /* Beaufort scale gradients for wind */
-        .wind-cell-0 { background: linear-gradient(90deg, #e6f3e6, #b3d9b3); color: black; } /* Calm */
-        .wind-cell-1 { background: linear-gradient(90deg, #d4edda, #a3d8a9); color: black; } /* Light air */
-        .wind-cell-2 { background: linear-gradient(90deg, #c3e6cb, #92d3a0); color: black; } /* Light breeze */
-        .wind-cell-3 { background: linear-gradient(90deg, #b1dfbb, #81ce95); color: black; } /* Gentle breeze */
-        .wind-cell-4 { background: linear-gradient(90deg, #a3e4d7, #73c9b7); color: black; } /* Moderate breeze */
-        .wind-cell-5 { background: linear-gradient(90deg, #81ecec, #52d0d0); color: black; } /* Fresh breeze */
-        .wind-cell-6 { background: linear-gradient(90deg, #80deea, #4fc3f7); color: white; } /* Strong breeze */
-        .wind-cell-7 { background: linear-gradient(90deg, #4fc3f7, #0288d1); color: white; } /* Near gale */
-        .wind-cell-8 { background: linear-gradient(90deg, #42a5f5, #0277bd); color: white; } /* Gale */
-        .wind-cell-9 { background: linear-gradient(90deg, #0288d1, #01579b); color: white; } /* Strong gale */
-        .wind-cell-10 { background: linear-gradient(90deg, #ffca28, #ff8f00); color: white; } /* Storm */
-        .wind-cell-11 { background: linear-gradient(90deg, #ef6c00, #d84315); color: white; } /* Violent storm */
-        .wind-cell-12 { background: linear-gradient(90deg, #d32f2f, #b71c1c); color: white; } /* Hurricane */
+        .wind-cell-0 { background: linear-gradient(90deg, #e6f3e6, #b3d9b3); color: black; }
+        .wind-cell-1 { background: linear-gradient(90deg, #d4edda, #a3d8a9); color: black; }
+        .wind-cell-2 { background: linear-gradient(90deg, #c3e6cb, #92d3a0); color: black; }
+        .wind-cell-3 { background: linear-gradient(90deg, #b1dfbb, #81ce95); color: black; }
+        .wind-cell-4 { background: linear-gradient(90deg, #a3e4d7, #73c9b7); color: black; }
+        .wind-cell-5 { background: linear-gradient(90deg, #81ecec, #52d0d0); color: black; }
+        .wind-cell-6 { background: linear-gradient(90deg, #80deea, #4fc3f7); color: white; }
+        .wind-cell-7 { background: linear-gradient(90deg, #4fc3f7, #0288d1); color: white; }
+        .wind-cell-8 { background: linear-gradient(90deg, #42a5f5, #0277bd); color: white; }
+        .wind-cell-9 { background: linear-gradient(90deg, #0288d1, #01579b); color: white; }
+        .wind-cell-10 { background: linear-gradient(90deg, #ffca28, #ff8f00); color: white; }
+        .wind-cell-11 { background: linear-gradient(90deg, #ef6c00, #d84315); color: white; }
+        .wind-cell-12 { background: linear-gradient(90deg, #d32f2f, #b71c1c); color: white; }
         /* Other gradients */
         .rain-cell { background: linear-gradient(90deg, #74ebd5, #acb6e5); color: black; }
         .fog-cell { background: linear-gradient(90deg, #d3cce3, #e9e4f0); color: black; }
@@ -125,6 +125,8 @@
             color: #555;
             text-align: center;
         }
+        /* Fallback style for debugging */
+        .temp-cell-fallback { background: #ff0000; color: white; }
     </style>
 @endsection
 
@@ -206,9 +208,17 @@
                                                     'snow' => 'wi-snow',
                                                     'sleet' => 'wi-sleet',
                                                     'fog' => 'wi-fog',
-                                                    'default' => 'wi-na',
+                                                    'lightssleetshowers_day' => 'wi-day-sleet',
+                                                    'lightssleetshowers_night' => 'wi-night-sleet',
+                                                    'heavysleetshowers_day' => 'wi-day-sleet-storm',
+                                                    'heavysleetshowers_night' => 'wi-night-sleet-storm',
+                                                    'lightsnowshowers_day' => 'wi-day-snow',
+                                                    'lightsnowshowers_night' => 'wi-night-snow',
+                                                    'heavysnowshowers_day' => 'wi-day-snow-wind',
+                                                    'heavysnowshowers_night' => 'wi-night-snow-wind',
+                                                    'unknown' => 'wi-na',
                                                 ];
-                                                $iconClass = $iconMap[$forecast['condition']] ?? $iconMap['default'];
+                                                $iconClass = $iconMap[$forecast['condition']] ?? $iconMap['unknown'];
 
                                                 $beaufort = match (true) {
                                                     !is_numeric($forecast['wind_speed']) => 0,
@@ -246,11 +256,11 @@
                                                 $gustClass = "wind-cell-$gustBeaufort";
 
                                                 $tempValue = is_numeric($forecast['temperature']) ? floatval($forecast['temperature']) : null;
-                                                $tempClass = 'temp-cell-0';
+                                                $tempClass = 'temp-cell-fallback'; // Default fallback
                                                 if ($tempValue !== null) {
                                                     $tempKey = min(50, max(-40, round($tempValue / 2) * 2));
                                                     $tempClass = 'temp-cell-' . ($tempKey < 0 ? 'minus-' . abs($tempKey) : $tempKey);
-                                                    Log::debug("Temperature: {$tempValue}, TempClass: {$tempClass}"); // Debug log
+                                                    Log::debug("Temperature: {$tempValue}, TempClass: {$tempClass}");
                                                 }
 
                                                 $rowGradient = '';

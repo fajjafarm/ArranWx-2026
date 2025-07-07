@@ -13,17 +13,29 @@ use Illuminate\Support\Carbon;
 class WeatherController extends Controller
 {
     protected $conditionsMap = [
-        'clearsky' => 'clearsky',
-        'fair' => 'fair',
-        'partlycloudy' => 'partlycloudy',
+        'clearsky_day' => 'clearsky_day',
+        'clearsky_night' => 'clearsky_night',
+        'fair_day' => 'fair_day',
+        'fair_night' => 'fair_night',
+        'partlycloudy_day' => 'partlycloudy_day',
+        'partlycloudy_night' => 'partlycloudy_night',
         'cloudy' => 'cloudy',
         'rain' => 'rain',
         'lightrain' => 'lightrain',
         'heavyrain' => 'heavyrain',
-        'rainshowers' => 'rainshowers',
+        'rainshowers_day' => 'rainshowers_day',
+        'rainshowers_night' => 'rainshowers_night',
         'snow' => 'snow',
         'sleet' => 'sleet',
         'fog' => 'fog',
+        'lightssleetshowers_day' => 'lightssleetshowers_day',
+        'lightssleetshowers_night' => 'lightssleetshowers_night',
+        'heavysleetshowers_day' => 'heavysleetshowers_day',
+        'heavysleetshowers_night' => 'heavysleetshowers_night',
+        'lightsnowshowers_day' => 'lightsnowshowers_day',
+        'lightsnowshowers_night' => 'lightsnowshowers_night',
+        'heavysnowshowers_day' => 'heavysnowshowers_day',
+        'heavysnowshowers_night' => 'heavysnowshowers_night',
     ];
 
     /**
@@ -91,11 +103,13 @@ class WeatherController extends Controller
      */
     protected function getTenDayForecast($lat, $lon, $altitude = null, $timezone = 'Europe/London', $location = null)
     {
-        // Generate a unique cache key
         $cacheKey = "forecast_{$lat}_{$lon}_{$altitude}_{$timezone}";
         $cacheTtl = 21600; // 6 hours in seconds
 
-        // Attempt to retrieve from cache
+        // Force cache refresh for testing (remove after verification)
+        Cache::forget($cacheKey);
+        Cache::forget($cacheKey . '_timestamp');
+
         $forecasts = Cache::get($cacheKey);
         if ($forecasts !== null) {
             $cacheAge = Carbon::now()->diffInSeconds(Carbon::createFromTimestamp(Cache::get($cacheKey . '_timestamp') ?? 0));
@@ -125,7 +139,7 @@ class WeatherController extends Controller
 
             $data = $response->json();
             $sunMoonData = [];
-            $startDate = Carbon::today($timezone);
+            $startDate = Carbon::today($timezone); // July 7, 2025
             for ($i = 0; $i < 10; $i++) {
                 $date = $startDate->copy()->addDays($i)->format('Y-m-d');
                 $sunMoonUrl = "https://api.sunrisesunset.io/json?lat={$lat}&lng={$lon}&date={$date}";
@@ -162,7 +176,8 @@ class WeatherController extends Controller
                     continue;
                 }
                 $time = Carbon::parse($entry['time'])->setTimezone($timezone);
-                if ($time->minute === 0 && $time->hour % 2 === 0 && $time->diffInDays($startDate) < 10) {
+                // Ensure 10 days from startDate, including all available data
+                if ($time->minute === 0 && $time->diffInDays($startDate) < 10) {
                     $date = $time->toDateString();
                     $details = $entry['data']['instant']['details'];
                     $next1Hour = $entry['data']['next_1_hours'] ?? ['summary' => ['symbol_code' => 'N/A'], 'details' => ['precipitation_amount' => 0]];
@@ -189,10 +204,10 @@ class WeatherController extends Controller
                     $windGust = $details['wind_speed_of_gust'] ?? ($windSpeed * $gustFactor * $altitudeMultiplier);
 
                     $symbolCode = $next1Hour['summary']['symbol_code'] ?? 'N/A';
-                    if ($symbolCode === 'N/A') {
-                        Log::warning("Missing or invalid symbol_code", ['time' => $time, 'entry' => $entry]);
+                    if ($symbolCode === 'N/A' || !isset($this->conditionsMap[$symbolCode])) {
+                        Log::warning("Unmapped or missing symbol_code", ['time' => $time, 'symbol_code' => $symbolCode, 'entry' => $entry]);
                     }
-                    $condition = $this->conditionsMap[str_replace(['_day', '_night'], '', $symbolCode)] ?? 'unknown';
+                    $condition = $this->conditionsMap[$symbolCode] ?? 'unknown';
                     if ($time->hour >= 20 || $time->hour <= 1) {
                         $condition = str_replace('_day', '_night', $condition);
                     }
@@ -236,7 +251,6 @@ class WeatherController extends Controller
                 'lat' => $lat, 'lon' => $lon, 'altitude' => $altitude, 'timezone' => $timezone, 'days' => count($formattedForecasts),
             ]);
 
-            // Cache the result with timestamp
             Cache::put($cacheKey, $formattedForecasts, $cacheTtl);
             Cache::put($cacheKey . '_timestamp', time(), $cacheTtl);
 
