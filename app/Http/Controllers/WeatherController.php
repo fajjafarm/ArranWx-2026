@@ -39,7 +39,7 @@ class WeatherController extends Controller
         $title = 'Arran Weather';
 
         // Fetch all available forecast data
-        $forecasts = $this->getTenDayForecast($lat, $lon, null);
+        $forecasts = $this->getTenDayForecast($lat, $lon, null, null);
 
         return view('index', compact('lat', 'lon', 'title', 'forecasts'));
     }
@@ -62,7 +62,7 @@ class WeatherController extends Controller
         $title = "{$location->name} Weather";
 
         // Fetch all available forecast data
-        $forecasts = $this->getTenDayForecast($lat, $lon, $altitude, $timezone);
+        $forecasts = $this->getTenDayForecast($lat, $lon, $altitude, $timezone, $location);
 
         // Select template based on location type
         $template = match ($location->type) {
@@ -85,7 +85,7 @@ class WeatherController extends Controller
      */
     public static function indexWithParams($lat, $lon, $title)
     {
-        $forecasts = (new self)->getTenDayForecast($lat, $lon, null);
+        $forecasts = (new self)->getTenDayForecast($lat, $lon, null, null);
         return view('index', compact('lat', 'lon', 'title', 'forecasts'));
     }
 
@@ -96,9 +96,10 @@ class WeatherController extends Controller
      * @param float $lon
      * @param int|null $altitude
      * @param string|null $timezone
+     * @param Location|null $location
      * @return array
      */
-    protected function getTenDayForecast($lat, $lon, $altitude = null, $timezone = 'Europe/London')
+    protected function getTenDayForecast($lat, $lon, $altitude = null, $timezone = 'Europe/London', $location = null)
     {
         try {
             // Fetch data from yr.no complete endpoint
@@ -137,12 +138,12 @@ class WeatherController extends Controller
                         'response' => $results,
                     ]);
 
-                    // Parse times, converting from "4:45 AM" format to H:i in local timezone
+                    // Parse times, converting from "4:48:59 AM" format to H:i in local timezone
                     $sunMoonData[$date] = [
-                        'sunrise' => isset($results['sunrise']) && $results['sunrise'] !== '-' ? Carbon::createFromFormat('g:i A', $results['sunrise'], $timezone)->format('H:i') : 'N/A',
-                        'sunset' => isset($results['sunset']) && $results['sunset'] !== '-' ? Carbon::createFromFormat('g:i A', $results['sunset'], $timezone)->format('H:i') : 'N/A',
-                        'moonrise' => isset($results['moonrise']) && $results['moonrise'] !== '-' ? Carbon::createFromFormat('g:i A', $results['moonrise'], $timezone)->format('H:i') : 'N/A',
-                        'moonset' => isset($results['moonset']) && $results['moonset'] !== '-' ? Carbon::createFromFormat('g:i A', $results['moonset'], $timezone)->format('H:i') : 'N/A',
+                        'sunrise' => isset($results['sunrise']) && $results['sunrise'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['sunrise'], $timezone)->format('H:i') : 'N/A',
+                        'sunset' => isset($results['sunset']) && $results['sunset'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['sunset'], $timezone)->format('H:i') : 'N/A',
+                        'moonrise' => isset($results['moonrise']) && $results['moonrise'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['moonrise'], $timezone)->format('H:i') : 'N/A',
+                        'moonset' => isset($results['moonset']) && $results['moonset'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['moonset'], $timezone)->format('H:i') : 'N/A',
                         'moonphase' => null, // SunriseSunset.io does not provide moonphase
                     ];
                 } else {
@@ -185,13 +186,9 @@ class WeatherController extends Controller
                     $cloudCover = $details['cloud_area_fraction'] ?? 0;
                     $pressure = $details['air_pressure_at_sea_level'] ?? null;
 
-                    // Determine location type and altitude (default to null if not from slug-based call)
-                    $locationType = null;
-                    $locationAltitude = $altitude ?? 0;
-                    if ($this->location instanceof Location) {
-                        $locationType = $this->location->type ?? 'Village';
-                        $locationAltitude = $this->location->altitude ?? 0;
-                    }
+                    // Determine location type and altitude
+                    $locationType = $location ? $location->type ?? 'Village' : 'Village';
+                    $locationAltitude = $location ? $location->altitude ?? 0 : ($altitude ?? 0);
 
                     $gustFactor = $locationType === 'Hill' ? 1.6 : 1.5;
                     if ($cloudCover > 75) {
@@ -294,7 +291,7 @@ class WeatherController extends Controller
         $lat = $request->query('lat');
         $lon = $request->query('lon');
 
-        $forecasts = $this->getTenDayForecast($lat, $lon, null);
+        $forecasts = $this->getTenDayForecast($lat, $lon, null, null);
 
         return response()->json([
             'status' => $forecasts ? 'success' : 'error',
