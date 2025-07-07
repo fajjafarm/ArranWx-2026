@@ -190,7 +190,6 @@
                                     <tbody>
                                         @foreach ($day['forecasts'] as $index => $forecast)
                                             @php
-                                                // Map yr.no symbol_code to Weather Icons
                                                 $iconMap = [
                                                     'clearsky_day' => 'wi-day-sunny',
                                                     'clearsky_night' => 'wi-night-clear',
@@ -211,7 +210,6 @@
                                                 ];
                                                 $iconClass = $iconMap[$forecast['condition']] ?? $iconMap['default'];
 
-                                                // Beaufort scale for wind (m/s)
                                                 $beaufort = match (true) {
                                                     !is_numeric($forecast['wind_speed']) => 0,
                                                     $forecast['wind_speed'] < 0.5 => 0,
@@ -247,22 +245,20 @@
                                                 $windClass = "wind-cell-$beaufort";
                                                 $gustClass = "wind-cell-$gustBeaufort";
 
-                                                // Met Office temperature colour scale (2°C increments, original solid colours)
                                                 $tempValue = is_numeric($forecast['temperature']) ? floatval($forecast['temperature']) : null;
-                                                $tempClass = 'temp-cell-0'; // Default to 0°C if invalid
+                                                $tempClass = 'temp-cell-0';
                                                 if ($tempValue !== null) {
                                                     $tempKey = min(50, max(-40, round($tempValue / 2) * 2));
                                                     $tempClass = 'temp-cell-' . ($tempKey < 0 ? 'minus-' . abs($tempKey) : $tempKey);
+                                                    Log::debug("Temperature: {$tempValue}, TempClass: {$tempClass}"); // Debug log
                                                 }
 
-                                                // Row gradient based on temperature progression
                                                 $rowGradient = '';
                                                 if ($tempValue !== null) {
-                                                    $hue = min(max(($tempValue + 5) / 40 * 360, 180), 360); // Map -5°C to 35°C to hues 180 (blue) to 360 (red)
+                                                    $hue = min(max(($tempValue + 5) / 40 * 360, 180), 360);
                                                     $rowGradient = "background: linear-gradient(90deg, hsl($hue, 20%, 95%), hsl($hue, 20%, 85%));";
                                                 }
 
-                                                // Compass ordinal for wind direction
                                                 $direction = is_numeric($forecast['wind_from_direction_degrees']) ? floatval($forecast['wind_from_direction_degrees']) : null;
                                                 $ordinal = $forecast['wind_direction'] ?? '';
                                                 $arrowRotation = is_numeric($direction) ? ($direction + 180) % 360 : 0;
