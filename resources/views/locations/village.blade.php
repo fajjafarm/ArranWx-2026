@@ -39,22 +39,11 @@
             font-size: 20px;
             margin-right: 5px;
         }
-        /* Temperature scale (2°C increments from -40°C to +50°C, using your custom solid colours) */
+        /* Temperature scale with solid colours based on your custom ranges and colours */
         .forecast-table td.temp-cell-minus-40 { background: #1e3c72; color: white; }
-        .forecast-table td.temp-cell-minus-38 { background: #2a4a8a; color: white; }
-        .forecast-table td.temp-cell-minus-36 { background: #355892; color: white; }
-        .forecast-table td.temp-cell-minus-34 { background: #40669a; color: white; }
-        .forecast-table td.temp-cell-minus-32 { background: #4b74a2; color: white; }
         .forecast-table td.temp-cell-minus-30 { background: #5682aa; color: white; }
-        .forecast-table td.temp-cell-minus-28 { background: #6190b2; color: white; }
-        .forecast-table td.temp-cell-minus-26 { background: #6c9eba; color: white; }
-        .forecast-table td.temp-cell-minus-24 { background: #77acc2; color: white; }
-        .forecast-table td.temp-cell-minus-22 { background: #82bac9; color: white; }
         .forecast-table td.temp-cell-minus-20 { background: #8dc8d1; color: white; }
-        .forecast-table td.temp-cell-minus-18 { background: #98d6d9; color: white; }
-        .forecast-table td.temp-cell-minus-16 { background: #a3e4e1; color: black; }
-        .forecast-table td.temp-cell-minus-14 { background: #aef2e9; color: black; }
-        .forecast-table td.temp-cell-minus-12 { background: #b9fff1; color: black; }
+        .forecast-table td.temp-cell-minus-15 { background: #a3e4e1; color: black; }
         .forecast-table td.temp-cell-minus-10 { background: #c4e8e1; color: black; }
         .forecast-table td.temp-cell-minus-8 { background: #cfd1d1; color: black; }
         .forecast-table td.temp-cell-minus-6 { background: #dabac1; color: black; }
@@ -73,18 +62,11 @@
         .forecast-table td.temp-cell-20 { background: #cc2f73; color: white; }
         .forecast-table td.temp-cell-22 { background: #c7387d; color: white; }
         .forecast-table td.temp-cell-24 { background: #c24187; color: white; }
-        .forecast-table td.temp-cell-26 { background: #bd4a91; color: white; }
-        .forecast-table td.temp-cell-28 { background: #b8539b; color: white; }
+        .forecast-table td.temp-cell-27 { background: #b8539b; color: white; }
         .forecast-table td.temp-cell-30 { background: #b35ca5; color: white; }
-        .forecast-table td.temp-cell-32 { background: #ae65af; color: white; }
-        .forecast-table td.temp-cell-34 { background: #a96eb9; color: white; }
-        .forecast-table td.temp-cell-36 { background: #a477c3; color: white; }
-        .forecast-table td.temp-cell-38 { background: #9f80cd; color: white; }
+        .forecast-table td.temp-cell-35 { background: #a477c3; color: white; }
         .forecast-table td.temp-cell-40 { background: #9a89d7; color: white; }
-        .forecast-table td.temp-cell-42 { background: #9592e1; color: white; }
-        .forecast-table td.temp-cell-44 { background: #909beb; color: white; }
-        .forecast-table td.temp-cell-46 { background: #8ba4f5; color: white; }
-        .forecast-table td.temp-cell-48 { background: #86adff; color: white; }
+        .forecast-table td.temp-cell-45 { background: #8ba4f5; color: white; }
         .forecast-table td.temp-cell-50 { background: #81b6ff; color: white; }
         .forecast-table td.temp-cell-fallback { background: #ff0000; color: white; }
         /* Solid colours for other cells */
@@ -95,8 +77,8 @@
         .forecast-table td.dew-point-cell { background: #b3e5fc; color: black; }
         .forecast-table td.uv-cell { background: #f3e5f5; color: black; }
         .forecast-table td.direction-cell { background: #ffecd2; color: black; }
-        .forecast-table td.condition-cell { background: #ffffff; color: black; } /* Default white for conditions */
-        .forecast-table td { background: #ffffff; color: black; } /* Default for time and other cells */
+        .forecast-table td.condition-cell { background: #ffffff; color: black; }
+        .forecast-table td { background: #ffffff; color: black; }
         /* Beaufort scale solid colours for wind */
         .wind-cell-0 { background: #e6f3e6; color: black; }
         .wind-cell-1 { background: #d4edda; color: black; }
@@ -259,7 +241,15 @@
                                                 $tempValue = is_numeric($forecast['temperature']) ? floatval($forecast['temperature']) : null;
                                                 $tempClass = 'temp-cell-fallback'; // Default fallback
                                                 if ($tempValue !== null) {
-                                                    $tempKey = min(50, max(-40, round($tempValue / 2) * 2));
+                                                    $tempKey = null;
+                                                    $tempRanges = [-40, -30, -20, -15, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 27, 30, 35, 40, 45, 50];
+                                                    foreach ($tempRanges as $range) {
+                                                        if ($tempValue <= $range) {
+                                                            $tempKey = $range;
+                                                            break;
+                                                        }
+                                                    }
+                                                    $tempKey = $tempKey ?? 50; // Default to 50 if above max
                                                     $tempClass = 'temp-cell-' . ($tempKey < 0 ? 'minus-' . abs($tempKey) : $tempKey);
                                                     Log::debug("Temperature: {$tempValue}, TempClass: {$tempClass}");
                                                 }
