@@ -33,14 +33,10 @@ class WeatherController extends Controller
      */
     public function index(Request $request)
     {
-        // Get lat and lon from query parameters, default to Arran center
         $lat = $request->query('lat', 55.5820);
         $lon = $request->query('lon', -5.2093);
         $title = 'Arran Weather';
-
-        // Fetch all available forecast data
         $forecasts = $this->getTenDayForecast($lat, $lon, null, null);
-
         return view('index', compact('lat', 'lon', 'title', 'forecasts'));
     }
 
@@ -52,26 +48,19 @@ class WeatherController extends Controller
      */
     public function indexBySlug($slug)
     {
-        // Find location by slug (case-insensitive, replacing hyphens with spaces)
         $location = Location::whereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [Str::lower($slug)])->firstOrFail();
-
         $lat = $location->latitude;
         $lon = $location->longitude;
         $altitude = $location->altitude;
         $timezone = $location->timezone ?? 'Europe/London';
         $title = "{$location->name} Weather";
-
-        // Fetch all available forecast data
         $forecasts = $this->getTenDayForecast($lat, $lon, $altitude, $timezone, $location);
-
-        // Select template based on location type
         $template = match ($location->type) {
             'Village' => 'locations.village',
             'Hill' => 'locations.hill',
             'Marine' => 'locations.marine',
-            default => 'index', // Fallback
+            default => 'index',
         };
-
         return view($template, compact('lat', 'lon', 'title', 'forecasts'));
     }
 
@@ -102,7 +91,6 @@ class WeatherController extends Controller
     protected function getTenDayForecast($lat, $lon, $altitude = null, $timezone = 'Europe/London', $location = null)
     {
         try {
-            // Fetch data from yr.no complete endpoint
             $url = "https://api.met.no/weatherapi/locationforecast/2.0/complete?lat={$lat}&lon={$lon}";
             if ($altitude !== null) {
                 $url .= "&altitude={$altitude}";
@@ -121,31 +109,23 @@ class WeatherController extends Controller
             }
 
             $data = $response->json();
-
-            // Fetch sun/moon data from SunriseSunset.io API
             $sunMoonData = [];
-            $today = Carbon::today($timezone);
-            for ($i = 0; $i < 10; $i++) { // Fetch for 10 days
-                $date = $today->copy()->addDays($i)->format('Y-m-d');
+            $startDate = Carbon::today($timezone); // Start from today
+            for ($i = 0; $i < 10; $i++) {
+                $date = $startDate->copy()->addDays($i)->format('Y-m-d');
                 $sunMoonUrl = "https://api.sunrisesunset.io/json?lat={$lat}&lng={$lon}&date={$date}";
                 $sunMoonResponse = Http::timeout(30)->get($sunMoonUrl);
 
                 if ($sunMoonResponse->successful() && $sunMoonResponse->json()['status'] === 'OK') {
                     $results = $sunMoonResponse->json()['results'];
-                    Log::info('SunriseSunset.io API response', [
-                        'date' => $date,
-                        'url' => $sunMoonUrl,
-                        'response' => $results,
-                    ]);
-
-                    // Parse times, converting from "4:48:59 AM" format to H:i in local timezone
                     $sunMoonData[$date] = [
                         'sunrise' => isset($results['sunrise']) && $results['sunrise'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['sunrise'], $timezone)->format('H:i') : 'N/A',
                         'sunset' => isset($results['sunset']) && $results['sunset'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['sunset'], $timezone)->format('H:i') : 'N/A',
                         'moonrise' => isset($results['moonrise']) && $results['moonrise'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['moonrise'], $timezone)->format('H:i') : 'N/A',
                         'moonset' => isset($results['moonset']) && $results['moonset'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['moonset'], $timezone)->format('H:i') : 'N/A',
-                        'moonphase' => null, // SunriseSunset.io does not provide moonphase
+                        'moonphase' => null,
                     ];
+                    Log::info('SunriseSunset.io API response', ['date' => $date, 'url' => $sunMoonUrl, 'response' => $results]);
                 } else {
                     Log::error('SunriseSunset.io API request failed', [
                         'status' => $sunMoonResponse->status(),
@@ -153,17 +133,10 @@ class WeatherController extends Controller
                         'date' => $date,
                         'url' => $sunMoonUrl,
                     ]);
-                    $sunMoonData[$date] = [
-                        'sunrise' => 'N/A',
-                        'sunset' => 'N/A',
-                        'moonrise' => 'N/A',
-                        'moonset' => 'N/A',
-                        'moonphase' => null,
-                    ];
+                    $sunMoonData[$date] = ['sunrise' => 'N/A', 'sunset' => 'N/A', 'moonrise' => 'N/A', 'moonset' => 'N/A', 'moonphase' => null];
                 }
             }
 
-            // Extract and process timeseries data with wind gust calculation
             $timeseries = $data['properties']['timeseries'] ?? [];
             $forecasts = [];
             $previousPressure = null;
@@ -174,7 +147,8 @@ class WeatherController extends Controller
                     continue;
                 }
                 $time = Carbon::parse($entry['time'])->setTimezone($timezone);
-                if ($time->minute === 0 && $time->hour % 2 === 0 && $time->diffInDays(Carbon::now($timezone)) <= 10) {
+                // Ensure 10 days from startDate
+                if ($time->minute === 0 && $time->hour % 2 === 0 && $time->diffInDays($startDate) < 10) {
                     $date = $time->toDateString();
                     $details = $entry['data']['instant']['details'];
                     $next1Hour = $entry['data']['next_1_hours'] ?? ['summary' => ['symbol_code' => 'N/A'], 'details' => ['precipitation_amount' => 0]];
@@ -185,30 +159,25 @@ class WeatherController extends Controller
                     $windSpeed = $details['wind_speed'] ?? 0;
                     $cloudCover = $details['cloud_area_fraction'] ?? 0;
                     $pressure = $details['air_pressure_at_sea_level'] ?? null;
-
-                    // Determine location type and altitude
                     $locationType = $location ? $location->type ?? 'Village' : 'Village';
                     $locationAltitude = $location ? $location->altitude ?? 0 : ($altitude ?? 0);
 
                     $gustFactor = $locationType === 'Hill' ? 1.6 : 1.5;
-                    if ($cloudCover > 75) {
-                        $gustFactor += 0.2;
-                    } elseif ($cloudCover < 25) {
-                        $gustFactor -= 0.1;
-                    }
+                    if ($cloudCover > 75) $gustFactor += 0.2;
+                    elseif ($cloudCover < 25) $gustFactor -= 0.1;
                     if ($previousPressure !== null && $pressure !== null) {
                         $pressureChange = $previousPressure - $pressure;
-                        if ($pressureChange > 1) {
-                            $gustFactor += 0.2;
-                        } elseif ($pressureChange < -1) {
-                            $gustFactor -= 0.1;
-                        }
+                        if ($pressureChange > 1) $gustFactor += 0.2;
+                        elseif ($pressureChange < -1) $gustFactor -= 0.1;
                     }
                     $previousPressure = $pressure;
                     $altitudeMultiplier = $locationType === 'Hill' ? (1 + ($locationAltitude / 100) * 0.015) : 1;
                     $windGust = $details['wind_speed_of_gust'] ?? ($windSpeed * $gustFactor * $altitudeMultiplier);
 
                     $symbolCode = $next1Hour['summary']['symbol_code'] ?? 'N/A';
+                    if ($symbolCode === 'N/A') {
+                        Log::warning("Missing or invalid symbol_code", ['time' => $time, 'entry' => $entry]);
+                    }
                     $condition = $this->conditionsMap[str_replace(['_day', '_night'], '', $symbolCode)] ?? 'unknown';
                     if ($time->hour >= 20 || $time->hour <= 1) {
                         $condition = str_replace('_day', '_night', $condition);
@@ -233,15 +202,10 @@ class WeatherController extends Controller
                 }
             }
 
-            // Wrap forecasts in the expected structure
             $formattedForecasts = [];
             foreach ($forecasts as $date => $dayData) {
                 $daySunMoon = $sunMoonData[$date] ?? [
-                    'sunrise' => 'N/A',
-                    'sunset' => 'N/A',
-                    'moonrise' => 'N/A',
-                    'moonset' => 'N/A',
-                    'moonphase' => null,
+                    'sunrise' => 'N/A', 'sunset' => 'N/A', 'moonrise' => 'N/A', 'moonset' => 'N/A', 'moonphase' => null,
                 ];
                 $formattedForecasts[] = [
                     'date' => $date,
@@ -255,20 +219,12 @@ class WeatherController extends Controller
             }
 
             Log::info('Processed 10-day forecast', [
-                'lat' => $lat,
-                'lon' => $lon,
-                'altitude' => $altitude,
-                'timezone' => $timezone,
-                'days' => count($formattedForecasts),
+                'lat' => $lat, 'lon' => $lon, 'altitude' => $altitude, 'timezone' => $timezone, 'days' => count($formattedForecasts),
             ]);
-
             return $formattedForecasts;
         } catch (\Exception $e) {
             Log::error('Error fetching forecast data', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'lat' => $lat,
-                'lon' => $lon,
+                'error' => $e->getMessage(), 'trace' => $e->getTraceAsString(), 'lat' => $lat, 'lon' => $lon,
             ]);
             return [];
         }
@@ -282,17 +238,10 @@ class WeatherController extends Controller
      */
     public function getWeather(Request $request)
     {
-        // Validate input parameters
-        $request->validate([
-            'lat' => 'required|numeric|between:-90,90',
-            'lon' => 'required|numeric|between:-180,180',
-        ]);
-
+        $request->validate(['lat' => 'required|numeric|between:-90,90', 'lon' => 'required|numeric|between:-180,180']);
         $lat = $request->query('lat');
         $lon = $request->query('lon');
-
         $forecasts = $this->getTenDayForecast($lat, $lon, null, null);
-
         return response()->json([
             'status' => $forecasts ? 'success' : 'error',
             'data' => $forecasts,
