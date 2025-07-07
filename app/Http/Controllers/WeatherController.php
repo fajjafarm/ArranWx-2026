@@ -233,9 +233,9 @@ class WeatherController extends Controller
                 }
             }
 
-            // Limit to 10 days and merge with sun/moon data
-            $forecasts = array_slice($forecasts, 0, 10, true);
-            foreach ($forecasts as $date => &$dayData) {
+            // Wrap forecasts in the expected structure
+            $formattedForecasts = [];
+            foreach ($forecasts as $date => $dayData) {
                 $daySunMoon = $sunMoonData[$date] ?? [
                     'sunrise' => 'N/A',
                     'sunset' => 'N/A',
@@ -243,26 +243,26 @@ class WeatherController extends Controller
                     'moonset' => 'N/A',
                     'moonphase' => null,
                 ];
-                $dayData = array_merge($dayData, [
+                $formattedForecasts[] = [
                     'date' => $date,
                     'sunrise' => $daySunMoon['sunrise'],
                     'sunset' => $daySunMoon['sunset'],
                     'moonrise' => $daySunMoon['moonrise'],
                     'moonset' => $daySunMoon['moonset'],
                     'moonphase' => $daySunMoon['moonphase'],
-                ]);
+                    'forecasts' => $dayData,
+                ];
             }
-            unset($dayData); // Clean up reference
 
             Log::info('Processed 10-day forecast', [
                 'lat' => $lat,
                 'lon' => $lon,
                 'altitude' => $altitude,
                 'timezone' => $timezone,
-                'days' => count($forecasts),
+                'days' => count($formattedForecasts),
             ]);
 
-            return $forecasts;
+            return $formattedForecasts;
         } catch (\Exception $e) {
             Log::error('Error fetching forecast data', [
                 'error' => $e->getMessage(),
