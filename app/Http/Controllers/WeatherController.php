@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Location;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
@@ -90,6 +91,20 @@ class WeatherController extends Controller
      */
     protected function getTenDayForecast($lat, $lon, $altitude = null, $timezone = 'Europe/London', $location = null)
     {
+        // Generate a unique cache key
+        $cacheKey = "forecast_{$lat}_{$lon}_{$altitude}_{$timezone}";
+        $cacheTtl = 21600; // 6 hours in seconds
+
+        // Attempt to retrieve from cache
+        $forecasts = Cache::get($cacheKey);
+        if ($forecasts !== null) {
+            $cacheAge = Carbon::now()->diffInSeconds(Carbon::createFromTimestamp(Cache::get($cacheKey . '_timestamp') ?? 0));
+            if ($cacheAge < $cacheTtl) {
+                Log::info('Returning cached forecast', ['key' => $cacheKey, 'age' => $cacheAge]);
+                return $forecasts;
+            }
+        }
+
         try {
             $url = "https://api.met.no/weatherapi/locationforecast/2.0/complete?lat={$lat}&lon={$lon}";
             if ($altitude !== null) {
@@ -110,7 +125,7 @@ class WeatherController extends Controller
 
             $data = $response->json();
             $sunMoonData = [];
-            $startDate = Carbon::today($timezone); // Start from today
+            $startDate = Carbon::today($timezone);
             for ($i = 0; $i < 10; $i++) {
                 $date = $startDate->copy()->addDays($i)->format('Y-m-d');
                 $sunMoonUrl = "https://api.sunrisesunset.io/json?lat={$lat}&lng={$lon}&date={$date}";
@@ -147,7 +162,6 @@ class WeatherController extends Controller
                     continue;
                 }
                 $time = Carbon::parse($entry['time'])->setTimezone($timezone);
-                // Ensure 10 days from startDate
                 if ($time->minute === 0 && $time->hour % 2 === 0 && $time->diffInDays($startDate) < 10) {
                     $date = $time->toDateString();
                     $details = $entry['data']['instant']['details'];
@@ -221,6 +235,11 @@ class WeatherController extends Controller
             Log::info('Processed 10-day forecast', [
                 'lat' => $lat, 'lon' => $lon, 'altitude' => $altitude, 'timezone' => $timezone, 'days' => count($formattedForecasts),
             ]);
+
+            // Cache the result with timestamp
+            Cache::put($cacheKey, $formattedForecasts, $cacheTtl);
+            Cache::put($cacheKey . '_timestamp', time(), $cacheTtl);
+
             return $formattedForecasts;
         } catch (\Exception $e) {
             Log::error('Error fetching forecast data', [
