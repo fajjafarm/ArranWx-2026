@@ -6,231 +6,131 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Location;
-use Illuminate\Support\Str;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 
 class WeatherController extends Controller
 {
-    /**
-     * Display the main weather dashboard.
-     *
-     * @param Request $request
-     * @return \Illuminate\View\View
-     */
-    public function index(Request $request)
+    public function getForecast($slug)
     {
-        // Get lat and lon from query parameters, default to Arran center
-        $lat = $request->query('lat', 55.5820);
-        $lon = $request->query('lon', -5.2093);
-        $title = 'Arran Weather';
-
-        // Fetch all available forecast data
-        $forecasts = $this->getTenDayForecast($lat, $lon, null);
-
-        return view('index', compact('lat', 'lon', 'title', 'forecasts'));
-    }
-
-    /**
-     * Display the weather dashboard for a specific location using a slug.
-     *
-     * @param string $slug
-     * @return \Illuminate\View\View
-     */
-    public function indexBySlug($slug)
-    {
-        // Find location by slug (case-insensitive, replacing hyphens with spaces)
-        $location = Location::whereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [Str::lower($slug)])->firstOrFail();
-
+        $location = Location::where('slug', $slug)->firstOrFail();
         $lat = $location->latitude;
         $lon = $location->longitude;
-        $altitude = $location->altitude;
-        $timezone = $location->timezone ?? 'Europe/London';
-        $title = "{$location->name} Weather";
+        $altitude = $location->altitude ?? 0;
 
-        // Fetch all available forecast data
-        $forecasts = $this->getTenDayForecast($lat, $lon, $altitude, $timezone);
+        // Fetch weather data from yr.no
+        $response = Http::withHeaders([
+            'User-Agent' => 'Arranweather/1.0 (https://2026.arranweather.com; info@arranweather.com)',
+        ])->get("https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=$lat&lon=$lon");
 
-        // Select template based on location type
-        $template = match ($location->type) {
-            'Village' => 'locations.village',
-            'Hill' => 'locations.hill',
-            'Marine' => 'locations.marine',
-            default => 'index', // Fallback
-        };
-
-        return view($template, compact('lat', 'lon', 'title', 'forecasts'));
-    }
-
-    /**
-     * Display the weather dashboard for a specific location with manual parameters.
-     *
-     * @param float $lat
-     * @param float $lon
-     * @param string $title
-     * @return \Illuminate\View\View
-     */
-    public static function indexWithParams($lat, $lon, $title)
-    {
-        $forecasts = (new self)->getTenDayForecast($lat, $lon, null);
-        return view('index', compact('lat', 'lon', 'title', 'forecasts'));
-    }
-
-    /**
-     * Fetch all available weather forecast data for a given latitude, longitude, altitude, and timezone.
-     *
-     * @param float $lat
-     * @param float $lon
-     * @param int|null $altitude
-     * @param string|null $timezone
-     * @return array
-     */
-    protected function getTenDayForecast($lat, $lon, $altitude = null, $timezone = 'Europe/London')
-    {
-        try {
-            // Fetch data from yr.no complete endpoint
-            $url = "https://api.met.no/weatherapi/locationforecast/2.0/complete?lat={$lat}&lon={$lon}";
-            if ($altitude !== null) {
-                $url .= "&altitude={$altitude}";
-            }
-            $response = Http::withHeaders([
-                'User-Agent' => 'ArranWeather/1.0 (contact@arranweather.com)',
-            ])->timeout(30)->get($url);
-
-            if ($response->failed()) {
-                Log::error('yr.no complete API request failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                    'url' => $url,
-                ]);
-                return [];
-            }
-
-            $data = $response->json();
-
-            // Fetch sun/moon data from SunriseSunset.io API
-            $sunMoonData = [];
-            $today = Carbon::today($timezone);
-            for ($i = 0; $i < 10; $i++) { // Fetch for 10 days
-                $date = $today->copy()->addDays($i)->format('Y-m-d');
-                $sunMoonUrl = "https://api.sunrisesunset.io/json?lat={$lat}&lng={$lon}&date={$date}";
-                $sunMoonResponse = Http::timeout(30)->get($sunMoonUrl);
-
-                if ($sunMoonResponse->successful() && $sunMoonResponse->json()['status'] === 'OK') {
-                    $results = $sunMoonResponse->json()['results'];
-                    Log::info('SunriseSunset.io API response', [
-                        'date' => $date,
-                        'url' => $sunMoonUrl,
-                        'response' => $results,
-                    ]);
-
-                    // Parse times, converting from "4:45 AM" format to H:i in local timezone
-                    $sunMoonData[$date] = [
-                        'sunrise' => isset($results['sunrise']) && $results['sunrise'] !== '-' ? Carbon::createFromFormat('g:i A', $results['sunrise'], $timezone)->format('H:i') : 'N/A',
-                        'sunset' => isset($results['sunset']) && $results['sunset'] !== '-' ? Carbon::createFromFormat('g:i A', $results['sunset'], $timezone)->format('H:i') : 'N/A',
-                        'moonrise' => isset($results['moonrise']) && $results['moonrise'] !== '-' ? Carbon::createFromFormat('g:i A', $results['moonrise'], $timezone)->format('H:i') : 'N/A',
-                        'moonset' => isset($results['moonset']) && $results['moonset'] !== '-' ? Carbon::createFromFormat('g:i A', $results['moonset'], $timezone)->format('H:i') : 'N/A',
-                        'moonphase' => null, // SunriseSunset.io does not provide moonphase
-                    ];
-                } else {
-                    Log::error('SunriseSunset.io API request failed', [
-                        'status' => $sunMoonResponse->status(),
-                        'body' => $sunMoonResponse->body(),
-                        'date' => $date,
-                        'url' => $sunMoonUrl,
-                    ]);
-                    $sunMoonData[$date] = [
-                        'sunrise' => 'N/A',
-                        'sunset' => 'N/A',
-                        'moonrise' => 'N/A',
-                        'moonset' => 'N/A',
-                        'moonphase' => null,
-                    ];
-                }
-            }
-
-            // Extract all timeseries data from yr.no
-            $timeseries = $data['properties']['timeseries'] ?? [];
-            $forecasts = collect($timeseries)
-                ->map(function ($entry) {
-                    $details = $entry['data']['instant']['details'] ?? [];
-                    $next_1_hours = $entry['data']['next_1_hours'] ?? null;
-                    $next_6_hours = $entry['data']['next_6_hours'] ?? null;
-
-                    return [
-                        'time' => $entry['time'],
-                        'condition' => $next_1_hours ? ($next_1_hours['summary']['symbol_code'] ?? 'N/A') : ($next_6_hours['summary']['symbol_code'] ?? 'N/A'),
-                        'temperature' => $details['air_temperature'] ?? 'N/A',
-                        'dew_point' => $details['dew_point_temperature'] ?? 'N/A',
-                        'precipitation' => $next_1_hours ? ($next_1_hours['details']['precipitation_amount'] ?? 0) : ($next_6_hours['details']['precipitation_amount'] ?? 0),
-                        'wind_speed' => $details['wind_speed'] ?? 'N/A',
-                        'wind_gust' => $details['wind_speed_of_gust'] ?? 'N/A',
-                        'wind_direction' => $details['wind_from_direction'] ?? 'N/A',
-                        'cloud_area_fraction' => $details['cloud_area_fraction'] ?? 'N/A',
-                        'fog_area_fraction' => $details['fog_area_fraction'] ?? 'N/A',
-                        'relative_humidity' => $details['relative_humidity'] ?? 'N/A',
-                        'air_pressure' => $details['air_pressure_at_sea_level'] ?? 'N/A',
-                        'ultraviolet_index' => $details['ultraviolet_index_clear_sky'] ?? 'N/A',
-                    ];
-                })
-                ->groupBy(function ($entry) use ($timezone) {
-                    return Carbon::parse($entry['time'], $timezone)->format('Y-m-d');
-                })
-                ->map(function ($dayData, $date) use ($sunMoonData, $timezone) {
-                    $daySunMoon = $sunMoonData[$date] ?? [
-                        'sunrise' => 'N/A',
-                        'sunset' => 'N/A',
-                        'moonrise' => 'N/A',
-                        'moonset' => 'N/A',
-                        'moonphase' => null,
-                    ];
-                    return [
-                        'date' => $date,
-                        'sunrise' => $daySunMoon['sunrise'],
-                        'sunset' => $daySunMoon['sunset'],
-                        'moonrise' => $daySunMoon['moonrise'],
-                        'moonset' => $daySunMoon['moonset'],
-                        'moonphase' => $daySunMoon['moonphase'],
-                        'forecasts' => $dayData->toArray(),
-                    ];
-                })
-                ->values()
-                ->toArray();
-
-            return $forecasts;
-        } catch (\Exception $e) {
-            Log::error('Error fetching forecast data', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'lat' => $lat,
-                'lon' => $lon,
-            ]);
-            return [];
+        if ($response->failed()) {
+            Log::error("Failed to fetch weather data for {$location->name}", ['status' => $response->status(), 'body' => $response->body()]);
+            return response()->view('errors.503', [], 503);
         }
+
+        $data = $response->json();
+        $timeseries = $data['properties']['timeseries'] ?? [];
+        $forecasts = [];
+        $previousPressure = null;
+        $hourlyData = [];
+
+        foreach ($timeseries as $entry) {
+            if (!isset($entry['time'], $entry['data']['instant']['details'])) {
+                Log::warning("Skipping invalid timeseries entry for {$location->name}", ['entry' => $entry]);
+                continue;
+            }
+            $time = Carbon::parse($entry['time'])->setTimezone('Europe/London');
+            if ($time->minute === 0 && $time->hour % 2 === 0 && $time->diffInDays(Carbon::now('Europe/London')) <= 10) {
+                $date = $time->toDateString();
+                $details = $entry['data']['instant']['details'];
+                $next1Hour = $entry['data']['next_1_hours'] ?? ['summary' => ['symbol_code' => 'N/A'], 'details' => ['precipitation_amount' => 0]];
+                if ($next1Hour['summary']['symbol_code'] === 'N/A') {
+                    $next1Hour = $entry['data']['next_6_hours'] ?? ['summary' => ['symbol_code' => 'N/A'], 'details' => ['precipitation_amount' => 0]];
+                }
+
+                $windSpeed = $details['wind_speed'] ?? 0;
+                $cloudCover = $details['cloud_area_fraction'] ?? 0;
+                $pressure = $details['air_pressure_at_sea_level'] ?? null;
+                $altitude = $location->altitude ?? 0;
+
+                $gustFactor = $location->type === 'Hill' ? 1.6 : 1.5;
+                if ($cloudCover > 75) {
+                    $gustFactor += 0.2;
+                } elseif ($cloudCover < 25) {
+                    $gustFactor -= 0.1;
+                }
+                if ($previousPressure !== null && $pressure !== null) {
+                    $pressureChange = $previousPressure - $pressure;
+                    if ($pressureChange > 1) {
+                        $gustFactor += 0.2;
+                    } elseif ($pressureChange < -1) {
+                        $gustFactor -= 0.1;
+                    }
+                }
+                $previousPressure = $pressure;
+                $altitudeMultiplier = $location->type === 'Hill' ? (1 + ($altitude / 100) * 0.015) : 1;
+                $windGust = $details['wind_speed_of_gust'] ?? ($windSpeed * $gustFactor * $altitudeMultiplier);
+
+                $symbolCode = $next1Hour['summary']['symbol_code'] ?? 'N/A';
+                $condition = $conditionsMap[str_replace(['_day', '_night'], '', $symbolCode)] ?? 'unknown';
+                if ($time->hour >= 20 || $time->hour <= 1) {
+                    $condition = str_replace('_day', '_night', $condition);
+                }
+
+                $hourlyData[$date][] = [
+                    'time' => $time->format('H:i'),
+                    'temperature' => $details['air_temperature'] ?? null,
+                    'precipitation' => $next1Hour['details']['precipitation_amount'] ?? 0,
+                    'condition' => $condition,
+                    'wind_speed' => $windSpeed,
+                    'wind_gust' => round($windGust, 1),
+                    'wind_direction' => $this->degreesToCardinal($details['wind_from_direction'] ?? null),
+                    'wind_from_direction_degrees' => $details['wind_from_direction'] ?? null,
+                    'pressure' => $pressure,
+                ];
+            }
+        }
+        $hourlyData = array_slice($hourlyData, 0, 10, true); // 10 days
+        Log::info("Processed 2-hourly data for {$location->name}", ['days' => count($hourlyData), 'dates' => array_keys($hourlyData)]);
+
+        // Group by day and fetch sun/moon data
+        foreach ($hourlyData as $date => $data) {
+            $sunMoonData = $this->getSunMoonData($lat, $lon, $date);
+            $forecasts[$date] = [
+                'date' => $date,
+                'sunrise' => $sunMoonData['sunrise'] ?? 'N/A',
+                'sunset' => $sunMoonData['sunset'] ?? 'N/A',
+                'moonrise' => $sunMoonData['moonrise'] ?? 'N/A',
+                'moonset' => $sunMoonData['moonset'] ?? 'N/A',
+                'moonphase' => null, // Not available from SunriseSunset.io
+                'forecasts' => $data,
+            ];
+        }
+
+        $title = "{$location->name} Weather | Arranweather.com";
+        return view('locations.village', compact('forecasts', 'title'));
     }
 
-    /**
-     * Fetch weather forecast for a given latitude and longitude (API endpoint).
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getWeather(Request $request)
+    private function getSunMoonData($lat, $lon, $date)
     {
-        // Validate input parameters
-        $request->validate([
-            'lat' => 'required|numeric|between:-90,90',
-            'lon' => 'required|numeric|between:-180,180',
-        ]);
+        $response = Http::get("https://api.sunrisesunset.io/json?lat=$lat&lng=$lon&date=$date");
+        if ($response->successful()) {
+            $data = $response->json();
+            return [
+                'sunrise' => Carbon::parse($data['results']['sunrise'])->setTimezone('Europe/London')->format('H:i'),
+                'sunset' => Carbon::parse($data['results']['sunset'])->setTimezone('Europe/London')->format('H:i'),
+                'moonrise' => Carbon::parse($data['results']['moonrise'])->setTimezone('Europe/London')->format('H:i'),
+                'moonset' => Carbon::parse($data['results']['moonset'])->setTimezone('Europe/London')->format('H:i'),
+            ];
+        }
+        Log::error("Failed to fetch sun/moon data for $date", ['lat' => $lat, 'lon' => $lon, 'status' => $response->status()]);
+        return ['sunrise' => 'N/A', 'sunset' => 'N/A', 'moonrise' => 'N/A', 'moonset' => 'N/A'];
+    }
 
-        $lat = $request->query('lat');
-        $lon = $request->query('lon');
-
-        $forecasts = $this->getTenDayForecast($lat, $lon, null);
-
-        return response()->json([
-            'status' => $forecasts ? 'success' : 'error',
-            'data' => $forecasts,
-            'message' => $forecasts ? null : 'Unable to fetch weather data',
-        ], $forecasts ? 200 : 500);
+    private function degreesToCardinal($degrees)
+    {
+        if ($degrees === null) return null;
+        $directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+        $index = round($degrees / 22.5) % 16;
+        return $directions[$index];
     }
 }
