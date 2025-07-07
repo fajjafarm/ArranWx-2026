@@ -39,76 +39,78 @@
             font-size: 20px;
             margin-right: 5px;
         }
-        /* Temperature scale (2°C increments from -40°C to +50°C, using original solid colours) */
-        .forecast-table td.temp-cell-minus-40 { background: #1e3c72 !important; color: white; }
-        .forecast-table td.temp-cell-minus-38 { background: #2a4a8a !important; color: white; }
-        .forecast-table td.temp-cell-minus-36 { background: #355892 !important; color: white; }
-        .forecast-table td.temp-cell-minus-34 { background: #40669a !important; color: white; }
-        .forecast-table td.temp-cell-minus-32 { background: #4b74a2 !important; color: white; }
-        .forecast-table td.temp-cell-minus-30 { background: #5682aa !important; color: white; }
-        .forecast-table td.temp-cell-minus-28 { background: #6190b2 !important; color: white; }
-        .forecast-table td.temp-cell-minus-26 { background: #6c9eba !important; color: white; }
-        .forecast-table td.temp-cell-minus-24 { background: #77acc2 !important; color: white; }
-        .forecast-table td.temp-cell-minus-22 { background: #82bac9 !important; color: white; }
-        .forecast-table td.temp-cell-minus-20 { background: #8dc8d1 !important; color: white; }
-        .forecast-table td.temp-cell-minus-18 { background: #98d6d9 !important; color: white; }
-        .forecast-table td.temp-cell-minus-16 { background: #a3e4e1 !important; color: black; }
-        .forecast-table td.temp-cell-minus-14 { background: #aef2e9 !important; color: black; }
-        .forecast-table td.temp-cell-minus-12 { background: #b9fff1 !important; color: black; }
-        .forecast-table td.temp-cell-minus-10 { background: #c4e8e1 !important; color: black; }
-        .forecast-table td.temp-cell-minus-8 { background: #cfd1d1 !important; color: black; }
-        .forecast-table td.temp-cell-minus-6 { background: #dabac1 !important; color: black; }
-        .forecast-table td.temp-cell-minus-4 { background: #e5a3b1 !important; color: black; }
-        .forecast-table td.temp-cell-minus-2 { background: #f08ca1 !important; color: black; }
-        .forecast-table td.temp-cell-0 { background: #fb7591 !important; color: black; }
-        .forecast-table td.temp-cell-2 { background: #f65e81 !important; color: black; }
-        .forecast-table td.temp-cell-4 { background: #f14771 !important; color: black; }
-        .forecast-table td.temp-cell-6 { background: #ed3061 !important; color: white; }
-        .forecast-table td.temp-cell-8 { background: #e91951 !important; color: white; }
-        .forecast-table td.temp-cell-10 { background: #e50241 !important; color: white; }
-        .forecast-table td.temp-cell-12 { background: #e00b4b !important; color: white; }
-        .forecast-table td.temp-cell-14 { background: #db1455 !important; color: white; }
-        .forecast-table td.temp-cell-16 { background: #d61d5f !important; color: white; }
-        .forecast-table td.temp-cell-18 { background: #d12669 !important; color: white; }
-        .forecast-table td.temp-cell-20 { background: #cc2f73 !important; color: white; }
-        .forecast-table td.temp-cell-22 { background: #c7387d !important; color: white; }
-        .forecast-table td.temp-cell-24 { background: #c24187 !important; color: white; }
-        .forecast-table td.temp-cell-26 { background: #bd4a91 !important; color: white; }
-        .forecast-table td.temp-cell-28 { background: #b8539b !important; color: white; }
-        .forecast-table td.temp-cell-30 { background: #b35ca5 !important; color: white; }
-        .forecast-table td.temp-cell-32 { background: #ae65af !important; color: white; }
-        .forecast-table td.temp-cell-34 { background: #a96eb9 !important; color: white; }
-        .forecast-table td.temp-cell-36 { background: #a477c3 !important; color: white; }
-        .forecast-table td.temp-cell-38 { background: #9f80cd !important; color: white; }
-        .forecast-table td.temp-cell-40 { background: #9a89d7 !important; color: white; }
-        .forecast-table td.temp-cell-42 { background: #9592e1 !important; color: white; }
-        .forecast-table td.temp-cell-44 { background: #909beb !important; color: white; }
-        .forecast-table td.temp-cell-46 { background: #8ba4f5 !important; color: white; }
-        .forecast-table td.temp-cell-48 { background: #86adff !important; color: white; }
-        .forecast-table td.temp-cell-50 { background: #81b6ff !important; color: white; }
-        .forecast-table td.temp-cell-fallback { background: #ff0000 !important; color: white; }
-        /* Beaufort scale gradients for wind */
-        .wind-cell-0 { background: linear-gradient(90deg, #e6f3e6, #b3d9b3); color: black; }
-        .wind-cell-1 { background: linear-gradient(90deg, #d4edda, #a3d8a9); color: black; }
-        .wind-cell-2 { background: linear-gradient(90deg, #c3e6cb, #92d3a0); color: black; }
-        .wind-cell-3 { background: linear-gradient(90deg, #b1dfbb, #81ce95); color: black; }
-        .wind-cell-4 { background: linear-gradient(90deg, #a3e4d7, #73c9b7); color: black; }
-        .wind-cell-5 { background: linear-gradient(90deg, #81ecec, #52d0d0); color: black; }
-        .wind-cell-6 { background: linear-gradient(90deg, #80deea, #4fc3f7); color: white; }
-        .wind-cell-7 { background: linear-gradient(90deg, #4fc3f7, #0288d1); color: white; }
-        .wind-cell-8 { background: linear-gradient(90deg, #42a5f5, #0277bd); color: white; }
-        .wind-cell-9 { background: linear-gradient(90deg, #0288d1, #01579b); color: white; }
-        .wind-cell-10 { background: linear-gradient(90deg, #ffca28, #ff8f00); color: white; }
-        .wind-cell-11 { background: linear-gradient(90deg, #ef6c00, #d84315); color: white; }
-        .wind-cell-12 { background: linear-gradient(90deg, #d32f2f, #b71c1c); color: white; }
-        /* Other gradients */
-        .rain-cell { background: linear-gradient(90deg, #74ebd5, #acb6e5); color: black; }
-        .fog-cell { background: linear-gradient(90deg, #d3cce3, #e9e4f0); color: black; }
-        .humidity-cell { background: linear-gradient(90deg, #a1c4fd, #c2e9fb); color: black; }
-        .pressure-cell { background: linear-gradient(90deg, #d4fc79, #96e6a1); color: black; }
-        .dew-point-cell { background: linear-gradient(90deg, #b3e5fc, #81d4fa); color: black; }
-        .uv-cell { background: linear-gradient(90deg, #f3e5f5, #e1bee7); color: black; }
-        .direction-cell { background: linear-gradient(90deg, #ffecd2, #fcb69f); color: black; }
+        /* Temperature scale (2°C increments from -40°C to +50°C, using your custom solid colours) */
+        .forecast-table td.temp-cell-minus-40 { background: #1e3c72; color: white; }
+        .forecast-table td.temp-cell-minus-38 { background: #2a4a8a; color: white; }
+        .forecast-table td.temp-cell-minus-36 { background: #355892; color: white; }
+        .forecast-table td.temp-cell-minus-34 { background: #40669a; color: white; }
+        .forecast-table td.temp-cell-minus-32 { background: #4b74a2; color: white; }
+        .forecast-table td.temp-cell-minus-30 { background: #5682aa; color: white; }
+        .forecast-table td.temp-cell-minus-28 { background: #6190b2; color: white; }
+        .forecast-table td.temp-cell-minus-26 { background: #6c9eba; color: white; }
+        .forecast-table td.temp-cell-minus-24 { background: #77acc2; color: white; }
+        .forecast-table td.temp-cell-minus-22 { background: #82bac9; color: white; }
+        .forecast-table td.temp-cell-minus-20 { background: #8dc8d1; color: white; }
+        .forecast-table td.temp-cell-minus-18 { background: #98d6d9; color: white; }
+        .forecast-table td.temp-cell-minus-16 { background: #a3e4e1; color: black; }
+        .forecast-table td.temp-cell-minus-14 { background: #aef2e9; color: black; }
+        .forecast-table td.temp-cell-minus-12 { background: #b9fff1; color: black; }
+        .forecast-table td.temp-cell-minus-10 { background: #c4e8e1; color: black; }
+        .forecast-table td.temp-cell-minus-8 { background: #cfd1d1; color: black; }
+        .forecast-table td.temp-cell-minus-6 { background: #dabac1; color: black; }
+        .forecast-table td.temp-cell-minus-4 { background: #e5a3b1; color: black; }
+        .forecast-table td.temp-cell-minus-2 { background: #f08ca1; color: black; }
+        .forecast-table td.temp-cell-0 { background: #fb7591; color: black; }
+        .forecast-table td.temp-cell-2 { background: #f65e81; color: black; }
+        .forecast-table td.temp-cell-4 { background: #f14771; color: black; }
+        .forecast-table td.temp-cell-6 { background: #ed3061; color: white; }
+        .forecast-table td.temp-cell-8 { background: #e91951; color: white; }
+        .forecast-table td.temp-cell-10 { background: #e50241; color: white; }
+        .forecast-table td.temp-cell-12 { background: #e00b4b; color: white; }
+        .forecast-table td.temp-cell-14 { background: #db1455; color: white; }
+        .forecast-table td.temp-cell-16 { background: #d61d5f; color: white; }
+        .forecast-table td.temp-cell-18 { background: #d12669; color: white; }
+        .forecast-table td.temp-cell-20 { background: #cc2f73; color: white; }
+        .forecast-table td.temp-cell-22 { background: #c7387d; color: white; }
+        .forecast-table td.temp-cell-24 { background: #c24187; color: white; }
+        .forecast-table td.temp-cell-26 { background: #bd4a91; color: white; }
+        .forecast-table td.temp-cell-28 { background: #b8539b; color: white; }
+        .forecast-table td.temp-cell-30 { background: #b35ca5; color: white; }
+        .forecast-table td.temp-cell-32 { background: #ae65af; color: white; }
+        .forecast-table td.temp-cell-34 { background: #a96eb9; color: white; }
+        .forecast-table td.temp-cell-36 { background: #a477c3; color: white; }
+        .forecast-table td.temp-cell-38 { background: #9f80cd; color: white; }
+        .forecast-table td.temp-cell-40 { background: #9a89d7; color: white; }
+        .forecast-table td.temp-cell-42 { background: #9592e1; color: white; }
+        .forecast-table td.temp-cell-44 { background: #909beb; color: white; }
+        .forecast-table td.temp-cell-46 { background: #8ba4f5; color: white; }
+        .forecast-table td.temp-cell-48 { background: #86adff; color: white; }
+        .forecast-table td.temp-cell-50 { background: #81b6ff; color: white; }
+        .forecast-table td.temp-cell-fallback { background: #ff0000; color: white; }
+        /* Solid colours for other cells */
+        .forecast-table td.rain-cell { background: #74ebd5; color: black; }
+        .forecast-table td.fog-cell { background: #d3cce3; color: black; }
+        .forecast-table td.humidity-cell { background: #a1c4fd; color: black; }
+        .forecast-table td.pressure-cell { background: #d4fc79; color: black; }
+        .forecast-table td.dew-point-cell { background: #b3e5fc; color: black; }
+        .forecast-table td.uv-cell { background: #f3e5f5; color: black; }
+        .forecast-table td.direction-cell { background: #ffecd2; color: black; }
+        .forecast-table td.condition-cell { background: #ffffff; color: black; } /* Default white for conditions */
+        .forecast-table td { background: #ffffff; color: black; } /* Default for time and other cells */
+        /* Beaufort scale solid colours for wind */
+        .wind-cell-0 { background: #e6f3e6; color: black; }
+        .wind-cell-1 { background: #d4edda; color: black; }
+        .wind-cell-2 { background: #c3e6cb; color: black; }
+        .wind-cell-3 { background: #b1dfbb; color: black; }
+        .wind-cell-4 { background: #a3e4d7; color: black; }
+        .wind-cell-5 { background: #81ecec; color: black; }
+        .wind-cell-6 { background: #80deea; color: white; }
+        .wind-cell-7 { background: #4fc3f7; color: white; }
+        .wind-cell-8 { background: #42a5f5; color: white; }
+        .wind-cell-9 { background: #0288d1; color: white; }
+        .wind-cell-10 { background: #ffca28; color: white; }
+        .wind-cell-11 { background: #ef6c00; color: white; }
+        .wind-cell-12 { background: #d32f2f; color: white; }
         .condition-cell i {
             font-size: 24px;
         }
@@ -119,7 +121,12 @@
         .forecast-table td {
             vertical-align: middle;
             text-align: center;
-            background: none !important; /* Reset default background */
+        }
+        .api-source-footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #555;
+            text-align: center;
         }
     </style>
 @endsection
@@ -257,19 +264,11 @@
                                                     Log::debug("Temperature: {$tempValue}, TempClass: {$tempClass}");
                                                 }
 
-                                                $rowGradient = '';
-                                                if ($tempValue !== null) {
-                                                    $hue = min(max(($tempValue + 5) / 40 * 360, 180), 360);
-                                                    $rowGradient = "background: linear-gradient(90deg, hsl($hue, 20%, 95%), hsl($hue, 20%, 85%));";
-                                                } else {
-                                                    $rowGradient = ''; // No gradient if temperature is null
-                                                }
-
                                                 $direction = is_numeric($forecast['wind_from_direction_degrees']) ? floatval($forecast['wind_from_direction_degrees']) : null;
                                                 $ordinal = $forecast['wind_direction'] ?? '';
                                                 $arrowRotation = is_numeric($direction) ? ($direction + 180) % 360 : 0;
                                             @endphp
-                                            <tr style="{{ $rowGradient }}">
+                                            <tr>
                                                 <td>{{ $forecast['time'] }}</td>
                                                 <td class="condition-cell">
                                                     <i class="wi {{ $iconClass }}"></i>
