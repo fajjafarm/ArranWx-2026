@@ -39,35 +39,35 @@
             font-size: 20px;
             margin-right: 5px;
         }
-        /* Temperature scale with solid colours based on your custom ranges and colours */
-        .forecast-table td.temp-cell-minus-40 { background: #01081e; color: white; }
-        .forecast-table td.temp-cell-minus-30 { background: #020f39; color: white; }
-        .forecast-table td.temp-cell-minus-20 { background: #02154f; color: white; }
-        .forecast-table td.temp-cell-minus-15 { background: #082376; color: white; }
-        .forecast-table td.temp-cell-minus-10 { background: #435897; color: white; }
-        .forecast-table td.temp-cell-minus-8 { background: #3075ac; color: white; }
-        .forecast-table td.temp-cell-minus-6 { background: #38aec4; color: black; }
-        .forecast-table td.temp-cell-minus-4 { background: #38aec4; color: black; }
-        .forecast-table td.temp-cell-minus-2 { background: #60c3c1; color: black; }
-        .forecast-table td.temp-cell-0 { background: #7fcebc; color: black; }
-        .forecast-table td.temp-cell-2 { background: #91d5ba; color: black; }
-        .forecast-table td.temp-cell-4 { background: #b6e3b7; color: black; }
-        .forecast-table td.temp-cell-6 { background: #cfebb2; color: black; }
-        .forecast-table td.temp-cell-8 { background: #e3ecab; color: black; }
-        .forecast-table td.temp-cell-10 { background: #ffeea1; color: black; }
-        .forecast-table td.temp-cell-12 { background: #ffe796; color: black; }
-        .forecast-table td.temp-cell-14 { background: #ffd881; color: black; }
-        .forecast-table td.temp-cell-16 { background: #ffc96c; color: black; }
-        .forecast-table td.temp-cell-18 { background: #ffc261; color: black; }
-        .forecast-table td.temp-cell-20 { background: #ffb34c; color: black; }
-        .forecast-table td.temp-cell-22 { background: #fc9f46; color: black; }
-        .forecast-table td.temp-cell-24 { background: #f67639; color: black; }
-        .forecast-table td.temp-cell-27 { background: #e13d32; color: black; }
-        .forecast-table td.temp-cell-30 { background: #c30031; color: white; }
-        .forecast-table td.temp-cell-35 { background: #70001c; color: white; }
-        .forecast-table td.temp-cell-40 { background: #3a000e; color: white; }
-        .forecast-table td.temp-cell-45 { background: #1f0007; color: white; }
-        .forecast-table td.temp-cell-50 { background: #100002; color: white; }
+        /* Temperature and Dew Point scale with solid colours */
+        .forecast-table td.temp-cell-minus-40 { background: #1e3c72; color: white; }
+        .forecast-table td.temp-cell-minus-30 { background: #5682aa; color: white; }
+        .forecast-table td.temp-cell-minus-20 { background: #8dc8d1; color: white; }
+        .forecast-table td.temp-cell-minus-15 { background: #a3e4e1; color: black; }
+        .forecast-table td.temp-cell-minus-10 { background: #c4e8e1; color: black; }
+        .forecast-table td.temp-cell-minus-8 { background: #cfd1d1; color: black; }
+        .forecast-table td.temp-cell-minus-6 { background: #dabac1; color: black; }
+        .forecast-table td.temp-cell-minus-4 { background: #e5a3b1; color: black; }
+        .forecast-table td.temp-cell-minus-2 { background: #f08ca1; color: black; }
+        .forecast-table td.temp-cell-0 { background: #fb7591; color: black; }
+        .forecast-table td.temp-cell-2 { background: #f65e81; color: black; }
+        .forecast-table td.temp-cell-4 { background: #f14771; color: black; }
+        .forecast-table td.temp-cell-6 { background: #ed3061; color: white; }
+        .forecast-table td.temp-cell-8 { background: #e91951; color: white; }
+        .forecast-table td.temp-cell-10 { background: #e50241; color: white; }
+        .forecast-table td.temp-cell-12 { background: #e00b4b; color: white; }
+        .forecast-table td.temp-cell-14 { background: #db1455; color: white; }
+        .forecast-table td.temp-cell-16 { background: #d61d5f; color: white; }
+        .forecast-table td.temp-cell-18 { background: #d12669; color: white; }
+        .forecast-table td.temp-cell-20 { background: #cc2f73; color: white; }
+        .forecast-table td.temp-cell-22 { background: #c7387d; color: white; }
+        .forecast-table td.temp-cell-24 { background: #c24187; color: white; }
+        .forecast-table td.temp-cell-27 { background: #b8539b; color: white; }
+        .forecast-table td.temp-cell-30 { background: #b35ca5; color: white; }
+        .forecast-table td.temp-cell-35 { background: #a477c3; color: white; }
+        .forecast-table td.temp-cell-40 { background: #9a89d7; color: white; }
+        .forecast-table td.temp-cell-45 { background: #8ba4f5; color: white; }
+        .forecast-table td.temp-cell-50 { background: #81b6ff; color: white; }
         .forecast-table td.temp-cell-fallback { background: #ff0000; color: white; }
         /* Solid colours for other cells */
         .forecast-table td.rain-cell { background: #74ebd5; color: black; }
@@ -80,7 +80,7 @@
         .forecast-table td.condition-cell { background: #ffffff; color: black; }
         .forecast-table td { background: #ffffff; color: black; }
         /* Beaufort scale solid colours for wind */
-        .wind-cell-0 { background: #e6f3e6; color: black; }e5024
+        .wind-cell-0 { background: #e6f3e6; color: black; }
         .wind-cell-1 { background: #d4edda; color: black; }
         .wind-cell-2 { background: #c3e6cb; color: black; }
         .wind-cell-3 { background: #b1dfbb; color: black; }
@@ -110,7 +110,66 @@
             color: #555;
             text-align: center;
         }
+        .scale-keys {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .scale-keys h4 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .scale-keys table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .scale-keys td {
+            padding: 5px 10px;
+            border: 1px solid #dee2e6;
+        }
+        .wind-unit-switch {
+            margin: 10px 0;
+        }
+        .wind-unit-switch label {
+            margin-right: 15px;
+        }
     </style>
+@endsection
+
+@section('js')
+    <script>
+        function convertWindSpeed(value, fromUnit, toUnit) {
+            const conversions = {
+                'm/s': { 'mph': 2.23694, 'km/h': 3.6, 'knots': 1.94384, 'm/s': 1 },
+                'mph': { 'm/s': 0.44704, 'km/h': 1.60934, 'knots': 0.868976, 'mph': 1 },
+                'km/h': { 'm/s': 0.277778, 'mph': 0.621371, 'knots': 0.539957, 'km/h': 1 },
+                'knots': { 'm/s': 0.514444, 'mph': 1.15078, 'km/h': 1.852, 'knots': 1 }
+            };
+            return (value * conversions[fromUnit][toUnit]).toFixed(1);
+        }
+
+        function updateWindSpeeds() {
+            const unit = document.querySelector('input[name="windUnit"]:checked').value;
+            document.querySelectorAll('.wind-speed, .wind-gust').forEach(cell => {
+                let value = parseFloat(cell.dataset.original) || 0;
+                if (!isNaN(value)) {
+                    cell.textContent = convertWindSpeed(value, 'm/s', unit);
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.wind-speed, .wind-gust').forEach(cell => {
+                let value = parseFloat(cell.textContent) || 0;
+                cell.dataset.original = value;
+                cell.textContent = convertWindSpeed(value, 'm/s', 'mph');
+            });
+            document.querySelectorAll('input[name="windUnit"]').forEach(radio => {
+                radio.addEventListener('change', updateWindSpeeds);
+            });
+        });
+    </script>
 @endsection
 
 @section('content')
@@ -135,6 +194,13 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">Detailed Weather Forecast</h4>
+                        <div class="wind-unit-switch">
+                            Wind Speed Unit:
+                            <label><input type="radio" name="windUnit" value="mph" checked> mph</label>
+                            <label><input type="radio" name="windUnit" value="km/h"> km/h</label>
+                            <label><input type="radio" name="windUnit" value="knots"> knots</label>
+                            <label><input type="radio" name="windUnit" value="m/s"> m/s</label>
+                        </div>
                     </div>
                     <div class="card-body">
                         @if (!empty($forecasts))
@@ -161,8 +227,8 @@
                                             <th>Temperature (°C)</th>
                                             <th>Dew Point (°C)</th>
                                             <th>Rainfall (mm)</th>
-                                            <th>Wind Speed (m/s)</th>
-                                            <th>Wind Gust (m/s)</th>
+                                            <th class="wind-speed">Wind Speed</th>
+                                            <th class="wind-gust">Wind Gust</th>
                                             <th>Cloud Cover (%)</th>
                                             <th>Fog (%)</th>
                                             <th>Humidity (%)</th>
@@ -239,7 +305,9 @@
                                                 $gustClass = "wind-cell-$gustBeaufort";
 
                                                 $tempValue = is_numeric($forecast['temperature']) ? floatval($forecast['temperature']) : null;
-                                                $tempClass = 'temp-cell-fallback'; // Default fallback
+                                                $dewPointValue = is_numeric($forecast['dew_point']) ? floatval($forecast['dew_point']) : null;
+                                                $tempClass = 'temp-cell-fallback';
+                                                $dewPointClass = 'temp-cell-fallback';
                                                 if ($tempValue !== null) {
                                                     $tempKey = null;
                                                     $tempRanges = [-40, -30, -20, -15, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 27, 30, 35, 40, 45, 50];
@@ -249,9 +317,21 @@
                                                             break;
                                                         }
                                                     }
-                                                    $tempKey = $tempKey ?? 50; // Default to 50 if above max
+                                                    $tempKey = $tempKey ?? 50;
                                                     $tempClass = 'temp-cell-' . ($tempKey < 0 ? 'minus-' . abs($tempKey) : $tempKey);
                                                     Log::debug("Temperature: {$tempValue}, TempClass: {$tempClass}");
+                                                }
+                                                if ($dewPointValue !== null) {
+                                                    $dewPointKey = null;
+                                                    $dewPointRanges = [-40, -30, -20, -15, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 27, 30, 35, 40, 45, 50];
+                                                    foreach ($dewPointRanges as $range) {
+                                                        if ($dewPointValue <= $range) {
+                                                            $dewPointKey = $range;
+                                                            break;
+                                                        }
+                                                    }
+                                                    $dewPointKey = $dewPointKey ?? 50;
+                                                    $dewPointClass = 'temp-cell-' . ($dewPointKey < 0 ? 'minus-' . abs($dewPointKey) : $dewPointKey);
                                                 }
 
                                                 $direction = is_numeric($forecast['wind_from_direction_degrees']) ? floatval($forecast['wind_from_direction_degrees']) : null;
@@ -264,10 +344,10 @@
                                                     <i class="wi {{ $iconClass }}"></i>
                                                 </td>
                                                 <td class="{{ $tempClass }}">{{ is_numeric($forecast['temperature']) ? round($forecast['temperature'], 1) : $forecast['temperature'] }}</td>
-                                                <td class="dew-point-cell">{{ is_numeric($forecast['dew_point']) ? round($forecast['dew_point'], 1) : $forecast['dew_point'] }}</td>
+                                                <td class="{{ $dewPointClass }}">{{ is_numeric($forecast['dew_point']) ? round($forecast['dew_point'], 1) : $forecast['dew_point'] }}</td>
                                                 <td class="rain-cell">{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}</td>
-                                                <td class="{{ $windClass }}">{{ is_numeric($forecast['wind_speed']) ? round($forecast['wind_speed'], 1) : $forecast['wind_speed'] }}</td>
-                                                <td class="{{ $gustClass }}">{{ is_numeric($forecast['wind_gust']) ? round($forecast['wind_gust'], 1) : $forecast['wind_gust'] }}</td>
+                                                <td class="wind-speed {{ $windClass }}">{{ is_numeric($forecast['wind_speed']) ? round($forecast['wind_speed'], 1) : $forecast['wind_speed'] }}</td>
+                                                <td class="wind-gust {{ $gustClass }}">{{ is_numeric($forecast['wind_gust']) ? round($forecast['wind_gust'], 1) : $forecast['wind_gust'] }}</td>
                                                 <td class="fog-cell">{{ is_numeric($forecast['cloud_area_fraction']) ? round($forecast['cloud_area_fraction'], 1) : $forecast['cloud_area_fraction'] }}</td>
                                                 <td class="fog-cell">{{ is_numeric($forecast['fog_area_fraction']) ? round($forecast['fog_area_fraction'], 1) : $forecast['fog_area_fraction'] }}</td>
                                                 <td class="humidity-cell">{{ is_numeric($forecast['relative_humidity']) ? round($forecast['relative_humidity'], 1) : $forecast['relative_humidity'] }}</td>
@@ -292,6 +372,25 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="scale-keys">
+            <h4>Temperature Scale Key (°C)</h4>
+            <table>
+                <tr><td class="temp-cell-minus-40">≤ -40</td><td class="temp-cell-minus-30">-30</td><td class="temp-cell-minus-20">-20</td><td class="temp-cell-minus-15">-15</td><td class="temp-cell-minus-10">-10</td></tr>
+                <tr><td class="temp-cell-minus-8">-8</td><td class="temp-cell-minus-6">-6</td><td class="temp-cell-minus-4">-4</td><td class="temp-cell-minus-2">-2</td><td class="temp-cell-0">0</td></tr>
+                <tr><td class="temp-cell-2">2</td><td class="temp-cell-4">4</td><td class="temp-cell-6">6</td><td class="temp-cell-8">8</td><td class="temp-cell-10">10</td></tr>
+                <tr><td class="temp-cell-12">12</td><td class="temp-cell-14">14</td><td class="temp-cell-16">16</td><td class="temp-cell-18">18</td><td class="temp-cell-20">20</td></tr>
+                <tr><td class="temp-cell-22">22</td><td class="temp-cell-24">24</td><td class="temp-cell-27">27</td><td class="temp-cell-30">30</td><td class="temp-cell-35">35</td></tr>
+                <tr><td class="temp-cell-40">40</td><td class="temp-cell-45">45</td><td class="temp-cell-50">≥ 50</td></tr>
+            </table>
+            <h4>Beaufort Scale Key</h4>
+            <table>
+                <tr><td class="wind-cell-0">0: <0.5 m/s - Calm</td><td class="wind-cell-1">1: 0.5-1.5 m/s - Light Air</td><td class="wind-cell-2">2: 1.6-3.3 m/s - Light Breeze</td></tr>
+                <tr><td class="wind-cell-3">3: 3.4-5.4 m/s - Gentle Breeze</td><td class="wind-cell-4">4: 5.5-7.9 m/s - Moderate Breeze</td><td class="wind-cell-5">5: 8.0-10.7 m/s - Fresh Breeze</td></tr>
+                <tr><td class="wind-cell-6">6: 10.8-13.8 m/s - Strong Breeze</td><td class="wind-cell-7">7: 13.9-17.1 m/s - Near Gale</td><td class="wind-cell-8">8: 17.2-20.7 m/s - Gale</td></tr>
+                <tr><td class="wind-cell-9">9: 20.8-24.4 m/s - Strong Gale</td><td class="wind-cell-10">10: 24.5-28.4 m/s - Storm</td><td class="wind-cell-11">11: 28.5-32.6 m/s - Violent Storm</td></tr>
+                <tr><td class="wind-cell-12">12: ≥32.7 m/s - Hurricane</td></tr>
+            </table>
         </div>
         <div class="api-source-footer">
             Data sourced from <a href="https://api.met.no/" target="_blank">yr.no</a> for weather forecasts and <a href="https://sunrisesunset.io/api/" target="_blank">SunriseSunset.io</a> for sun and moon data.
