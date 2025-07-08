@@ -71,7 +71,7 @@
         .forecast-table td.temp-cell-fallback { background: #ff0000; color: white; }
         /* Rain column with intensity scaled from 0 to 10 mm */
         .forecast-table td.rain-cell {
-            background: #ffffff;
+            background: #38aec4;
             color: black;
             transition: background 0.3s ease;
         }
@@ -133,10 +133,10 @@
             padding: 5px 10px;
             border: 1px solid #dee2e6;
         }
-        .wind-unit-switch {
+        .unit-switch {
             margin: 10px 0;
         }
-        .wind-unit-switch label {
+        .unit-switch label {
             margin-right: 15px;
         }
     </style>
@@ -154,6 +154,19 @@
             return (value * conversions[fromUnit][toUnit]).toFixed(1);
         }
 
+        function interpolateColor(startColor, endColor, factor) {
+            const r1 = parseInt(startColor.substr(1, 2), 16);
+            const g1 = parseInt(startColor.substr(3, 2), 16);
+            const b1 = parseInt(startColor.substr(5, 2), 16);
+            const r2 = parseInt(endColor.substr(1, 2), 16);
+            const g2 = parseInt(endColor.substr(3, 2), 16);
+            const b2 = parseInt(endColor.substr(5, 2), 16);
+            const r = Math.round(r1 + (r2 - r1) * factor).toString(16).padStart(2, '0');
+            const g = Math.round(g1 + (g2 - g1) * factor).toString(16).padStart(2, '0');
+            const b = Math.round(b1 + (b2 - b1) * factor).toString(16).padStart(2, '0');
+            return `#${r}${g}${b}`;
+        }
+
         function updateWindSpeeds() {
             const unit = document.querySelector('input[name="windUnit"]:checked').value;
             document.querySelectorAll('.wind-speed, .wind-gust').forEach(cell => {
@@ -164,12 +177,16 @@
             });
         }
 
-        function updateRainBackgrounds() {
+        function updateRainfall() {
+            const unit = document.querySelector('input[name="rainUnit"]:checked').value;
             document.querySelectorAll('.rain-cell').forEach(cell => {
                 let value = parseFloat(cell.dataset.precipitation) || 0;
-                value = Math.min(10, Math.max(0, value)); // Cap at 10 mm
-                const intensity = (value / 10) * 100; // 0% to 100% intensity
-                cell.style.background = `linear-gradient(to bottom, #ffffff ${100 - intensity}%, #c30031 ${intensity}%)`;
+                if (!isNaN(value)) {
+                    cell.textContent = unit === 'inches' ? (value * 0.0393701).toFixed(2) : value;
+                }
+                value = Math.min(10, Math.max(0, value)); // Cap at 10 mm or equivalent inches
+                const intensity = value / 10; // 0 to 1
+                cell.style.backgroundColor = interpolateColor('#38aec4', '#435897', intensity);
             });
         }
 
@@ -182,9 +199,12 @@
             document.querySelectorAll('.rain-cell').forEach(cell => {
                 cell.dataset.precipitation = cell.textContent;
             });
-            updateRainBackgrounds();
+            updateRainfall();
             document.querySelectorAll('input[name="windUnit"]').forEach(radio => {
                 radio.addEventListener('change', updateWindSpeeds);
+            });
+            document.querySelectorAll('input[name="rainUnit"]').forEach(radio => {
+                radio.addEventListener('change', updateRainfall);
             });
         });
     </script>
@@ -212,12 +232,17 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title">Detailed Weather Forecast</h4>
-                        <div class="wind-unit-switch">
+                        <div class="unit-switch">
                             Wind Speed Unit:
                             <label><input type="radio" name="windUnit" value="mph" checked> mph</label>
                             <label><input type="radio" name="windUnit" value="km/h"> km/h</label>
                             <label><input type="radio" name="windUnit" value="knots"> knots</label>
                             <label><input type="radio" name="windUnit" value="m/s"> m/s</label>
+                        </div>
+                        <div class="unit-switch">
+                            Rainfall Unit:
+                            <label><input type="radio" name="rainUnit" value="mm" checked> mm</label>
+                            <label><input type="radio" name="rainUnit" value="inches"> inches</label>
                         </div>
                     </div>
                     <div class="card-body">
@@ -244,7 +269,7 @@
                                             <th>Condition</th>
                                             <th>Temperature (°C)</th>
                                             <th>Dew Point (°C)</th>
-                                            <th>Rainfall (mm)</th>
+                                            <th>Rainfall</th>
                                             <th class="wind-speed">Wind Speed</th>
                                             <th class="wind-gust">Wind Gust</th>
                                             <th>Cloud Cover (%)</th>
