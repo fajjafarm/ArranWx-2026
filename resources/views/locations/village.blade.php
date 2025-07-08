@@ -198,18 +198,6 @@
             });
         }
 
-        function updateUVIcons() {
-            document.querySelectorAll('.uv-cell').forEach(cell => {
-                let value = Math.round(parseFloat(cell.dataset.uv) || 0);
-                let iconClass = 'wi-day-sunny'; // Default for low UV
-                if (value >= 3) iconClass = 'wi-day-cloudy'; // Moderate
-                if (value >= 6) iconClass = 'wi-day-haze'; // High
-                if (value >= 8) iconClass = 'wi-hot'; // Very High
-                if (value >= 11) iconClass = 'wi-thunderstorm'; // Extreme
-                cell.innerHTML = `<i class="wi ${iconClass}" title="UV Index: ${value}"></i>`;
-            });
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.wind-speed, .wind-gust').forEach(cell => {
                 let value = parseFloat(cell.textContent) || 0;
@@ -219,11 +207,7 @@
             document.querySelectorAll('.rain-cell').forEach(cell => {
                 cell.dataset.precipitation = cell.textContent;
             });
-            document.querySelectorAll('.uv-cell').forEach(cell => {
-                cell.dataset.uv = cell.textContent;
-            });
             updateRainfall();
-            updateUVIcons();
             document.querySelectorAll('input[name="windUnit"]').forEach(radio => {
                 radio.addEventListener('change', updateWindSpeeds);
             });
@@ -419,7 +403,7 @@
                                                 <td class="fog-cell">{{ is_numeric($forecast['fog_area_fraction']) ? round($forecast['fog_area_fraction'], 1) : $forecast['fog_area_fraction'] }}</td>
                                                 <td class="humidity-cell">{{ is_numeric($forecast['relative_humidity']) ? round($forecast['relative_humidity'], 1) : $forecast['relative_humidity'] }}</td>
                                                 <td class="pressure-cell">{{ is_numeric($forecast['air_pressure']) ? round($forecast['air_pressure'], 1) : $forecast['air_pressure'] }}</td>
-                                                <td class="uv-cell" data-uv="{{ is_numeric($forecast['ultraviolet_index']) ? round($forecast['ultraviolet_index']) : $forecast['ultraviolet_index'] }}">{{ is_numeric($forecast['ultraviolet_index']) ? round($forecast['ultraviolet_index']) : $forecast['ultraviolet_index'] }}</td>
+                                                <td class="uv-cell">{{ is_numeric($forecast['ultraviolet_index']) ? round($forecast['ultraviolet_index']) : $forecast['ultraviolet_index'] }}</td>
                                                 <td class="direction-cell">
                                                     @if (is_numeric($direction))
                                                         <i class="wi wi-direction-up" style="transform: rotate({{ $arrowRotation }}deg);"></i>
