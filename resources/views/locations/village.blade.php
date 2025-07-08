@@ -69,14 +69,11 @@
         .forecast-table td.temp-cell-45 { background: #1f0007; color: white; }
         .forecast-table td.temp-cell-50 { background: #100002; color: white; }
         .forecast-table td.temp-cell-fallback { background: #ff0000; color: white; }
-        /* Rain column with intensity based on precipitation */
+        /* Rain column with intensity scaled from 0 to 10 mm */
         .forecast-table td.rain-cell {
             background: #ffffff;
             color: black;
-        }
-        .forecast-table td.rain-cell[data-rain="true"] {
-            background: linear-gradient(to bottom, #ffffff 0%, #c30031 100%);
-            color: black;
+            transition: background 0.3s ease;
         }
         /* Solid colours for other cells */
         .forecast-table td.fog-cell { background: #d3cce3; color: black; }
@@ -170,11 +167,9 @@
         function updateRainBackgrounds() {
             document.querySelectorAll('.rain-cell').forEach(cell => {
                 let value = parseFloat(cell.dataset.precipitation) || 0;
-                if (value > 0) {
-                    cell.setAttribute('data-rain', 'true');
-                } else {
-                    cell.removeAttribute('data-rain');
-                }
+                value = Math.min(10, Math.max(0, value)); // Cap at 10 mm
+                const intensity = (value / 10) * 100; // 0% to 100% intensity
+                cell.style.background = `linear-gradient(to bottom, #ffffff ${100 - intensity}%, #c30031 ${intensity}%)`;
             });
         }
 
