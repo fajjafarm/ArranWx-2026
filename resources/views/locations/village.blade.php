@@ -419,7 +419,7 @@
                                                 <td class="fog-cell">{{ is_numeric($forecast['fog_area_fraction']) ? round($forecast['fog_area_fraction'], 1) : $forecast['fog_area_fraction'] }}</td>
                                                 <td class="humidity-cell">{{ is_numeric($forecast['relative_humidity']) ? round($forecast['relative_humidity'], 1) : $forecast['relative_humidity'] }}</td>
                                                 <td class="pressure-cell">{{ is_numeric($forecast['air_pressure']) ? round($forecast['air_pressure'], 1) : $forecast['air_pressure'] }}</td>
-                                                <td class="uv-cell" data-uv="{{ is_numeric($forecast['ultraviolet_index']) ? Math.round($forecast['ultraviolet_index']) : $forecast['ultraviolet_index'] }}">{{ is_numeric($forecast['ultraviolet_index']) ? Math.round($forecast['ultraviolet_index']) : $forecast['ultraviolet_index'] }}</td>
+                                                <td class="uv-cell" data-uv="{{ is_numeric($forecast['ultraviolet_index']) ? round($forecast['ultraviolet_index']) : $forecast['ultraviolet_index'] }}">{{ is_numeric($forecast['ultraviolet_index']) ? round($forecast['ultraviolet_index']) : $forecast['ultraviolet_index'] }}</td>
                                                 <td class="direction-cell">
                                                     @if (is_numeric($direction))
                                                         <i class="wi wi-direction-up" style="transform: rotate({{ $arrowRotation }}deg);"></i>
