@@ -39,8 +39,8 @@
             font-size: 20px;
             margin-right: 5px;
         }
-        /* Temperature and Dew Point scale with solid colours */
-                .forecast-table td.temp-cell-minus-40 { background: #01081e; color: white; }
+        /* Temperature and Dew Point scale with your new solid colours */
+        .forecast-table td.temp-cell-minus-40 { background: #01081e; color: white; }
         .forecast-table td.temp-cell-minus-30 { background: #020f39; color: white; }
         .forecast-table td.temp-cell-minus-20 { background: #02154f; color: white; }
         .forecast-table td.temp-cell-minus-15 { background: #082376; color: white; }
@@ -69,8 +69,16 @@
         .forecast-table td.temp-cell-45 { background: #1f0007; color: white; }
         .forecast-table td.temp-cell-50 { background: #100002; color: white; }
         .forecast-table td.temp-cell-fallback { background: #ff0000; color: white; }
+        /* Rain column with intensity based on precipitation */
+        .forecast-table td.rain-cell {
+            background: #ffffff;
+            color: black;
+        }
+        .forecast-table td.rain-cell[data-rain="true"] {
+            background: linear-gradient(to bottom, #ffffff 0%, #c30031 100%);
+            color: black;
+        }
         /* Solid colours for other cells */
-        .forecast-table td.rain-cell { background: #74ebd5; color: black; }
         .forecast-table td.fog-cell { background: #d3cce3; color: black; }
         .forecast-table td.humidity-cell { background: #a1c4fd; color: black; }
         .forecast-table td.pressure-cell { background: #d4fc79; color: black; }
@@ -159,12 +167,27 @@
             });
         }
 
+        function updateRainBackgrounds() {
+            document.querySelectorAll('.rain-cell').forEach(cell => {
+                let value = parseFloat(cell.dataset.precipitation) || 0;
+                if (value > 0) {
+                    cell.setAttribute('data-rain', 'true');
+                } else {
+                    cell.removeAttribute('data-rain');
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.wind-speed, .wind-gust').forEach(cell => {
                 let value = parseFloat(cell.textContent) || 0;
                 cell.dataset.original = value;
                 cell.textContent = convertWindSpeed(value, 'm/s', 'mph');
             });
+            document.querySelectorAll('.rain-cell').forEach(cell => {
+                cell.dataset.precipitation = cell.textContent;
+            });
+            updateRainBackgrounds();
             document.querySelectorAll('input[name="windUnit"]').forEach(radio => {
                 radio.addEventListener('change', updateWindSpeeds);
             });
@@ -345,7 +368,7 @@
                                                 </td>
                                                 <td class="{{ $tempClass }}">{{ is_numeric($forecast['temperature']) ? round($forecast['temperature'], 1) : $forecast['temperature'] }}</td>
                                                 <td class="{{ $dewPointClass }}">{{ is_numeric($forecast['dew_point']) ? round($forecast['dew_point'], 1) : $forecast['dew_point'] }}</td>
-                                                <td class="rain-cell">{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}</td>
+                                                <td class="rain-cell" data-precipitation="{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}">{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}</td>
                                                 <td class="wind-speed {{ $windClass }}">{{ is_numeric($forecast['wind_speed']) ? round($forecast['wind_speed'], 1) : $forecast['wind_speed'] }}</td>
                                                 <td class="wind-gust {{ $gustClass }}">{{ is_numeric($forecast['wind_gust']) ? round($forecast['wind_gust'], 1) : $forecast['wind_gust'] }}</td>
                                                 <td class="fog-cell">{{ is_numeric($forecast['cloud_area_fraction']) ? round($forecast['cloud_area_fraction'], 1) : $forecast['cloud_area_fraction'] }}</td>
