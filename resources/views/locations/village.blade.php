@@ -71,7 +71,7 @@
         .forecast-table td.temp-cell-fallback { background: #ff0000; color: white; }
         /* Rain column with intensity scaled from 0 to 10 mm */
         .forecast-table td.rain-cell {
-            background: #38aec4;
+            background: #ffffff;
             color: black;
             transition: background 0.3s ease;
         }
@@ -80,7 +80,11 @@
         .forecast-table td.humidity-cell { background: #a1c4fd; color: black; }
         .forecast-table td.pressure-cell { background: #d4fc79; color: black; }
         .forecast-table td.dew-point-cell { background: #b3e5fc; color: black; }
-        .forecast-table td.uv-cell { background: #f3e5f5; color: black; }
+        .forecast-table td.uv-cell {
+            background: #f3e5f5;
+            color: black;
+            text-align: center;
+        }
         .forecast-table td.direction-cell { background: #ffecd2; color: black; }
         .forecast-table td.condition-cell { background: #ffffff; color: black; }
         .forecast-table td { background: #ffffff; color: black; }
@@ -184,9 +188,25 @@
                 if (!isNaN(value)) {
                     cell.textContent = unit === 'inches' ? (value * 0.0393701).toFixed(2) : value;
                 }
-                value = Math.min(10, Math.max(0, value)); // Cap at 10 mm or equivalent inches
-                const intensity = value / 10; // 0 to 1
-                cell.style.backgroundColor = interpolateColor('#38aec4', '#435897', intensity);
+                value = Math.min(10, Math.max(0, value / (unit === 'inches' ? 0.0393701 : 1))); // Convert inches to mm for intensity
+                if (value === 0) {
+                    cell.style.backgroundColor = '#ffffff';
+                } else {
+                    const intensity = (value > 0 ? (value - 0.01) / 9.99 : 0); // 0.01 to 10 mm range
+                    cell.style.backgroundColor = interpolateColor('#b3e5fc', '#435897', intensity);
+                }
+            });
+        }
+
+        function updateUVIcons() {
+            document.querySelectorAll('.uv-cell').forEach(cell => {
+                let value = Math.round(parseFloat(cell.dataset.uv) || 0);
+                let iconClass = 'wi-day-sunny'; // Default for low UV
+                if (value >= 3) iconClass = 'wi-day-cloudy'; // Moderate
+                if (value >= 6) iconClass = 'wi-day-haze'; // High
+                if (value >= 8) iconClass = 'wi-hot'; // Very High
+                if (value >= 11) iconClass = 'wi-thunderstorm'; // Extreme
+                cell.innerHTML = `<i class="wi ${iconClass}" title="UV Index: ${value}"></i>`;
             });
         }
 
@@ -199,7 +219,11 @@
             document.querySelectorAll('.rain-cell').forEach(cell => {
                 cell.dataset.precipitation = cell.textContent;
             });
+            document.querySelectorAll('.uv-cell').forEach(cell => {
+                cell.dataset.uv = cell.textContent;
+            });
             updateRainfall();
+            updateUVIcons();
             document.querySelectorAll('input[name="windUnit"]').forEach(radio => {
                 radio.addEventListener('change', updateWindSpeeds);
             });
@@ -276,7 +300,7 @@
                                             <th>Fog (%)</th>
                                             <th>Humidity (%)</th>
                                             <th>Pressure (hPa)</th>
-                                            <th>UV Index</th>
+                                            <th class="uv-cell">UV Index</th>
                                             <th>Wind Direction</th>
                                             <th>Wind Dir (Ordinal)</th>
                                         </tr>
@@ -395,7 +419,7 @@
                                                 <td class="fog-cell">{{ is_numeric($forecast['fog_area_fraction']) ? round($forecast['fog_area_fraction'], 1) : $forecast['fog_area_fraction'] }}</td>
                                                 <td class="humidity-cell">{{ is_numeric($forecast['relative_humidity']) ? round($forecast['relative_humidity'], 1) : $forecast['relative_humidity'] }}</td>
                                                 <td class="pressure-cell">{{ is_numeric($forecast['air_pressure']) ? round($forecast['air_pressure'], 1) : $forecast['air_pressure'] }}</td>
-                                                <td class="uv-cell">{{ is_numeric($forecast['ultraviolet_index']) ? round($forecast['ultraviolet_index'], 1) : $forecast['ultraviolet_index'] }}</td>
+                                                <td class="uv-cell" data-uv="{{ is_numeric($forecast['ultraviolet_index']) ? Math.round($forecast['ultraviolet_index']) : $forecast['ultraviolet_index'] }}">{{ is_numeric($forecast['ultraviolet_index']) ? Math.round($forecast['ultraviolet_index']) : $forecast['ultraviolet_index'] }}</td>
                                                 <td class="direction-cell">
                                                     @if (is_numeric($direction))
                                                         <i class="wi wi-direction-up" style="transform: rotate({{ $arrowRotation }}deg);"></i>
