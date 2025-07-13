@@ -40,7 +40,6 @@
 @endsection
 
 @section('content')
-    <!-- Placeholder for domId in case required by external library -->
     <div id="domId" style="display: none;"></div>
 
     @include('layouts.partials.page-title', ['subtitle' => 'Tide Forecast', 'title' => $location->name])
@@ -49,12 +48,10 @@
         <div class="col">
             <div class="card">
                 <div class="card-body">
-                    <!-- Header: Map, Title, Description -->
                     <div class="row mb-4">
                         <div class="col-md-3 text-center">
                             <img src="https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+ff0000({{ $location->longitude }},{{ $location->latitude }})/{{ $location->longitude }},{{ $location->latitude }},12,0/150x150?access_token={{ env('MAPBOX_ACCESS_TOKEN') }}"
-                                 alt="Map of {{ $location->name }}"
-                                 class="img-fluid rounded">
+                                 alt="Map of {{ $location->name }}" class="img-fluid rounded">
                         </div>
                         <div class="col-md-9 text-start">
                             <h2 class="card-title">{{ $location->name }} Tide Forecast</h2>
@@ -64,15 +61,12 @@
                         </div>
                     </div>
 
-                    <!-- Placeholder Content -->
-                    <div class="text-center">
-                        <h5 class="text-muted fs-13 text-uppercase">
-                            {{ $location->name }} Tide Forecast
-                        </h5>
-                        <p class="text-muted mt-4">Tide forecast data for {{ $location->name }} will be available soon.</p>
+                    <div class="text-center mb-4">
+                        <h5 class="text-muted fs-13 text-uppercase">{{ $location->name }} Tide Forecast</h5>
+                        <p class="text-muted">Tide forecast data for {{ $location->name }} will be available soon.</p>
                     </div>
 
-                    <a href="{{ route('dashboard') }}" class="btn btn-sm btn-light mt-3">Back to Dashboard</a>
+                    <a href="{{ route('dashboard') }}" class="btn btn-sm btn-light">Back to Dashboard</a>
                 </div>
             </div>
         </div>
