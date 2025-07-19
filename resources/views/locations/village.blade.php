@@ -39,7 +39,6 @@
             font-size: 20px;
             margin-right: 5px;
         }
-        /* Temperature and Dew Point scale with your new solid colours */
         .forecast-table td.temp-cell-minus-40 { background: #01081e; color: white; }
         .forecast-table td.temp-cell-minus-30 { background: #020f39; color: white; }
         .forecast-table td.temp-cell-minus-20 { background: #02154f; color: white; }
@@ -69,17 +68,14 @@
         .forecast-table td.temp-cell-45 { background: #1f0007; color: white; }
         .forecast-table td.temp-cell-50 { background: #100002; color: white; }
         .forecast-table td.temp-cell-fallback { background: #ff0000; color: white; }
-        /* Rain column with intensity scaled from 0 to 10 mm */
         .forecast-table td.rain-cell {
             background: #ffffff;
             color: black;
             transition: background 0.3s ease;
         }
-        /* Solid colours for other cells */
         .forecast-table td.fog-cell { background: #d3cce3; color: black; }
         .forecast-table td.humidity-cell { background: #a1c4fd; color: black; }
         .forecast-table td.pressure-cell { background: #d4fc79; color: black; }
-        .forecast-table td.dew-point-cell { background: #b3e5fc; color: black; }
         .forecast-table td.uv-cell {
             background: #f3e5f5;
             color: black;
@@ -88,7 +84,6 @@
         .forecast-table td.direction-cell { background: #ffecd2; color: black; }
         .forecast-table td.condition-cell { background: #ffffff; color: black; }
         .forecast-table td { background: #ffffff; color: black; }
-        /* Beaufort scale solid colours for wind */
         .wind-cell-0 { background: #e6f3e6; color: black; }
         .wind-cell-1 { background: #d4edda; color: black; }
         .wind-cell-2 { background: #c3e6cb; color: black; }
@@ -143,6 +138,14 @@
         .unit-switch label {
             margin-right: 15px;
         }
+        .table-weather { width: 100%; border-collapse: collapse; }
+        .table-weather th, .table-weather td { padding: 8px; text-align: center; border-bottom: 1px solid #dee2e6; }
+        .table-weather th { background-color: #f8f9fa; font-weight: 600; }
+        .table-weather tbody tr:nth-child(even) { background-color: #f8f9fa; }
+        @media (max-width: 768px) {
+            .table-weather { display: block; overflow-x: auto; }
+            .table-weather th, .table-weather td { padding: 6px; font-size: 12px; }
+        }
     </style>
 @endsection
 
@@ -188,11 +191,11 @@
                 if (!isNaN(value)) {
                     cell.textContent = unit === 'inches' ? (value * 0.0393701).toFixed(2) : value;
                 }
-                value = Math.min(10, Math.max(0, value / (unit === 'inches' ? 0.0393701 : 1))); // Convert inches to mm for intensity
+                value = Math.min(10, Math.max(0, value / (unit === 'inches' ? 0.0393701 : 1)));
                 if (value === 0) {
                     cell.style.backgroundColor = '#ffffff';
                 } else {
-                    const intensity = (value > 0 ? (value - 0.01) / 9.99 : 0); // 0.01 to 10 mm range
+                    const intensity = (value > 0 ? (value - 0.01) / 9.99 : 0);
                     cell.style.backgroundColor = interpolateColor('#b3e5fc', '#435897', intensity);
                 }
             });
@@ -270,23 +273,21 @@
                                         @endif
                                     </span>
                                 </div>
-                                <table class="table table-striped table-bordered forecast-table">
+                                <table class="table table-striped table-weather">
                                     <thead>
                                         <tr>
-                                            <th>Time</th>
-                                            <th>Condition</th>
+                                            <th>Time (BST)</th>
+                                            <th>Weather Conditions</th>
                                             <th>Temperature (°C)</th>
-                                            <th>Dew Point (°C)</th>
-                                            <th>Rainfall</th>
-                                            <th class="wind-speed">Wind Speed</th>
-                                            <th class="wind-gust">Wind Gust</th>
-                                            <th>Cloud Cover (%)</th>
+                                            <th>Rain</th>
+                                            <th>Wind Speed</th>
+                                            <th>Gust</th>
+                                            <th>Direction</th>
+                                            <th>Cardinal</th>
+                                            <th>UV</th>
+                                            <th>Pressure (hPa)</th>
                                             <th>Fog (%)</th>
                                             <th>Humidity (%)</th>
-                                            <th>Pressure (hPa)</th>
-                                            <th class="uv-cell">UV Index</th>
-                                            <th>Wind Direction</th>
-                                            <th>Wind Dir (Ordinal)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -356,9 +357,7 @@
                                                 $gustClass = "wind-cell-$gustBeaufort";
 
                                                 $tempValue = is_numeric($forecast['temperature']) ? floatval($forecast['temperature']) : null;
-                                                $dewPointValue = is_numeric($forecast['dew_point']) ? floatval($forecast['dew_point']) : null;
                                                 $tempClass = 'temp-cell-fallback';
-                                                $dewPointClass = 'temp-cell-fallback';
                                                 if ($tempValue !== null) {
                                                     $tempKey = null;
                                                     $tempRanges = [-40, -30, -20, -15, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 27, 30, 35, 40, 45, 50];
@@ -372,18 +371,6 @@
                                                     $tempClass = 'temp-cell-' . ($tempKey < 0 ? 'minus-' . abs($tempKey) : $tempKey);
                                                     Log::debug("Temperature: {$tempValue}, TempClass: {$tempClass}");
                                                 }
-                                                if ($dewPointValue !== null) {
-                                                    $dewPointKey = null;
-                                                    $dewPointRanges = [-40, -30, -20, -15, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 27, 30, 35, 40, 45, 50];
-                                                    foreach ($dewPointRanges as $range) {
-                                                        if ($dewPointValue <= $range) {
-                                                            $dewPointKey = $range;
-                                                            break;
-                                                        }
-                                                    }
-                                                    $dewPointKey = $dewPointKey ?? 50;
-                                                    $dewPointClass = 'temp-cell-' . ($dewPointKey < 0 ? 'minus-' . abs($dewPointKey) : $dewPointKey);
-                                                }
 
                                                 $direction = is_numeric($forecast['wind_from_direction_degrees']) ? floatval($forecast['wind_from_direction_degrees']) : null;
                                                 $ordinal = $forecast['wind_direction'] ?? '';
@@ -395,15 +382,9 @@
                                                     <i class="wi {{ $iconClass }}"></i>
                                                 </td>
                                                 <td class="{{ $tempClass }}">{{ is_numeric($forecast['temperature']) ? round($forecast['temperature'], 1) : $forecast['temperature'] }}</td>
-                                                <td class="{{ $dewPointClass }}">{{ is_numeric($forecast['dew_point']) ? round($forecast['dew_point'], 1) : $forecast['dew_point'] }}</td>
                                                 <td class="rain-cell" data-precipitation="{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}">{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}</td>
                                                 <td class="wind-speed {{ $windClass }}">{{ is_numeric($forecast['wind_speed']) ? round($forecast['wind_speed'], 1) : $forecast['wind_speed'] }}</td>
                                                 <td class="wind-gust {{ $gustClass }}">{{ is_numeric($forecast['wind_gust']) ? round($forecast['wind_gust'], 1) : $forecast['wind_gust'] }}</td>
-                                                <td class="fog-cell">{{ is_numeric($forecast['cloud_area_fraction']) ? round($forecast['cloud_area_fraction'], 1) : $forecast['cloud_area_fraction'] }}</td>
-                                                <td class="fog-cell">{{ is_numeric($forecast['fog_area_fraction']) ? round($forecast['fog_area_fraction'], 1) : $forecast['fog_area_fraction'] }}</td>
-                                                <td class="humidity-cell">{{ is_numeric($forecast['relative_humidity']) ? round($forecast['relative_humidity'], 1) : $forecast['relative_humidity'] }}</td>
-                                                <td class="pressure-cell">{{ is_numeric($forecast['air_pressure']) ? round($forecast['air_pressure'], 1) : $forecast['air_pressure'] }}</td>
-                                                <td class="uv-cell">{{ is_numeric($forecast['ultraviolet_index']) ? round($forecast['ultraviolet_index']) : $forecast['ultraviolet_index'] }}</td>
                                                 <td class="direction-cell">
                                                     @if (is_numeric($direction))
                                                         <i class="wi wi-direction-up" style="transform: rotate({{ $arrowRotation }}deg);"></i>
@@ -412,6 +393,10 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $ordinal ?: 'N/A' }}</td>
+                                                <td class="uv-cell">{{ is_numeric($forecast['ultraviolet_index']) ? round($forecast['ultraviolet_index']) : $forecast['ultraviolet_index'] }}</td>
+                                                <td class="pressure-cell">{{ is_numeric($forecast['air_pressure']) ? round($forecast['air_pressure'], 1) : $forecast['air_pressure'] }}</td>
+                                                <td class="fog-cell">{{ is_numeric($forecast['fog_area_fraction']) ? round($forecast['fog_area_fraction'], 1) : $forecast['fog_area_fraction'] }}</td>
+                                                <td class="humidity-cell">{{ is_numeric($forecast['relative_humidity']) ? round($forecast['relative_humidity'], 1) : $forecast['relative_humidity'] }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
