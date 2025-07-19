@@ -49,7 +49,7 @@ class WeatherController extends Controller
         $lat = $request->query('lat', 55.5820);
         $lon = $request->query('lon', -5.2093);
         $title = 'Arran Weather';
-        $forecasts = $this->getTenDayForecast($lat, $lon, null, null);
+        $forecasts = $this->getTenDayForecast($lat, $lon, null, 'Europe/London'); // Explicit timezone
         return view('index', compact('lat', 'lon', 'title', 'forecasts'));
     }
 
@@ -65,7 +65,7 @@ class WeatherController extends Controller
         $lat = $location->latitude;
         $lon = $location->longitude;
         $altitude = $location->altitude;
-        $timezone = $location->timezone ?? 'Europe/London';
+        $timezone = $location->timezone ?? 'Europe/London'; // Ensure fallback
         $title = "{$location->name} Weather";
         $forecasts = $this->getTenDayForecast($lat, $lon, $altitude, $timezone, $location);
         $template = match ($location->type) {
@@ -87,7 +87,7 @@ class WeatherController extends Controller
      */
     public static function indexWithParams($lat, $lon, $title)
     {
-        $forecasts = (new self)->getTenDayForecast($lat, $lon, null, null);
+        $forecasts = (new self)->getTenDayForecast($lat, $lon, null, 'Europe/London'); // Explicit timezone
         return view('index', compact('lat', 'lon', 'title', 'forecasts'));
     }
 
@@ -103,7 +103,7 @@ class WeatherController extends Controller
      */
     protected function getTenDayForecast($lat, $lon, $altitude = null, $timezone = 'Europe/London', $location = null)
     {
-        $cacheKey = "forecast_{$lat}_{$lon}_{$altitude}_{$timezone}";
+        $cacheKey = "forecast_{$lat}_{$lon}_{$altitude}_" . md5($timezone ?? 'default');
         $cacheTtl = 21600; // 6 hours in seconds
 
         // Force cache refresh for testing (remove after verification)
@@ -139,7 +139,7 @@ class WeatherController extends Controller
 
             $data = $response->json();
             $sunMoonData = [];
-            $startDate = Carbon::today($timezone); // July 7, 2025
+            $startDate = Carbon::today($timezone ?: 'Europe/London'); // Fallback timezone
             for ($i = 0; $i < 10; $i++) {
                 $date = $startDate->copy()->addDays($i)->format('Y-m-d');
                 $sunMoonUrl = "https://api.sunrisesunset.io/json?lat={$lat}&lng={$lon}&date={$date}";
@@ -148,10 +148,10 @@ class WeatherController extends Controller
                 if ($sunMoonResponse->successful() && $sunMoonResponse->json()['status'] === 'OK') {
                     $results = $sunMoonResponse->json()['results'];
                     $sunMoonData[$date] = [
-                        'sunrise' => isset($results['sunrise']) && $results['sunrise'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['sunrise'], $timezone)->format('H:i') : 'N/A',
-                        'sunset' => isset($results['sunset']) && $results['sunset'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['sunset'], $timezone)->format('H:i') : 'N/A',
-                        'moonrise' => isset($results['moonrise']) && $results['moonrise'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['moonrise'], $timezone)->format('H:i') : 'N/A',
-                        'moonset' => isset($results['moonset']) && $results['moonset'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['moonset'], $timezone)->format('H:i') : 'N/A',
+                        'sunrise' => isset($results['sunrise']) && $results['sunrise'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['sunrise'], $timezone ?: 'Europe/London')->format('H:i') : 'N/A',
+                        'sunset' => isset($results['sunset']) && $results['sunset'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['sunset'], $timezone ?: 'Europe/London')->format('H:i') : 'N/A',
+                        'moonrise' => isset($results['moonrise']) && $results['moonrise'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['moonrise'], $timezone ?: 'Europe/London')->format('H:i') : 'N/A',
+                        'moonset' => isset($results['moonset']) && $results['moonset'] !== '-' ? Carbon::createFromFormat('h:i:s A', $results['moonset'], $timezone ?: 'Europe/London')->format('H:i') : 'N/A',
                         'moonphase' => null,
                     ];
                     Log::info('SunriseSunset.io API response', ['date' => $date, 'url' => $sunMoonUrl, 'response' => $results]);
@@ -175,8 +175,9 @@ class WeatherController extends Controller
                     Log::warning("Skipping invalid timeseries entry", ['entry' => $entry]);
                     continue;
                 }
-                $time = Carbon::parse($entry['time'])->setTimezone($timezone);
-                // Ensure 10 days from startDate, including all available data
+                $effectiveTimezone = $timezone ?: 'Europe/London'; // Ensure valid timezone
+                Log::debug('Processing timeseries entry', ['time' => $entry['time'], 'timezone' => $effectiveTimezone]);
+                $time = Carbon::parse($entry['time'])->setTimezone($effectiveTimezone); // Line 178
                 if ($time->minute === 0 && $time->diffInDays($startDate) < 10) {
                     $date = $time->toDateString();
                     $details = $entry['data']['instant']['details'];
@@ -248,7 +249,7 @@ class WeatherController extends Controller
             }
 
             Log::info('Processed 10-day forecast', [
-                'lat' => $lat, 'lon' => $lon, 'altitude' => $altitude, 'timezone' => $timezone, 'days' => count($formattedForecasts),
+                'lat' => $lat, 'lon' => $lon, 'altitude' => $altitude, 'timezone' => $effectiveTimezone, 'days' => count($formattedForecasts),
             ]);
 
             Cache::put($cacheKey, $formattedForecasts, $cacheTtl);
@@ -274,7 +275,7 @@ class WeatherController extends Controller
         $request->validate(['lat' => 'required|numeric|between:-90,90', 'lon' => 'required|numeric|between:-180,180']);
         $lat = $request->query('lat');
         $lon = $request->query('lon');
-        $forecasts = $this->getTenDayForecast($lat, $lon, null, null);
+        $forecasts = $this->getTenDayForecast($lat, $lon, null, 'Europe/London'); // Explicit timezone
         return response()->json([
             'status' => $forecasts ? 'success' : 'error',
             'data' => $forecasts,
