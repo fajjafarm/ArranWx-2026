@@ -179,7 +179,10 @@
             document.querySelectorAll('.wind-speed, .wind-gust').forEach(cell => {
                 let value = parseFloat(cell.dataset.original) || 0;
                 if (!isNaN(value)) {
+                    const originalBeaufort = parseInt(cell.className.match(/wind-cell-(\d+)/)?.[1]) || 0;
                     cell.textContent = convertWindSpeed(value, 'm/s', unit);
+                    // Reapply wind-cell class based on original Beaufort scale
+                    cell.className = `wind-speed ${originalBeaufort >= 0 && originalBeaufort <= 12 ? `wind-cell-${originalBeaufort}` : 'wind-cell-0'}`;
                 }
             });
         }
@@ -190,13 +193,13 @@
                 let value = parseFloat(cell.dataset.precipitation) || 0;
                 if (!isNaN(value)) {
                     cell.textContent = unit === 'inches' ? (value * 0.0393701).toFixed(2) : value;
-                }
-                value = Math.min(10, Math.max(0, value / (unit === 'inches' ? 0.0393701 : 1)));
-                if (value === 0) {
-                    cell.style.backgroundColor = '#ffffff';
-                } else {
-                    const intensity = (value > 0 ? (value - 0.01) / 9.99 : 0);
-                    cell.style.backgroundColor = interpolateColor('#b3e5fc', '#435897', intensity);
+                    value = Math.min(10, Math.max(0, value / (unit === 'inches' ? 0.0393701 : 1)));
+                    if (value === 0) {
+                        cell.style.backgroundColor = '#ffffff';
+                    } else {
+                        const intensity = (value > 0 ? (value - 0.01) / 9.99 : 0);
+                        cell.style.backgroundColor = interpolateColor('#b3e5fc', '#435897', intensity);
+                    }
                 }
             });
         }
@@ -205,6 +208,8 @@
             document.querySelectorAll('.wind-speed, .wind-gust').forEach(cell => {
                 let value = parseFloat(cell.textContent) || 0;
                 cell.dataset.original = value;
+                const beaufort = parseInt(cell.className.match(/wind-cell-(\d+)/)?.[1]) || 0;
+                cell.className = `wind-speed ${beaufort >= 0 && beaufort <= 12 ? `wind-cell-${beaufort}` : 'wind-cell-0'}`;
                 cell.textContent = convertWindSpeed(value, 'm/s', 'mph');
             });
             document.querySelectorAll('.rain-cell').forEach(cell => {
@@ -381,10 +386,10 @@
                                                 <td class="condition-cell">
                                                     <i class="wi {{ $iconClass }}"></i>
                                                 </td>
-                                                <td class="{{ $tempClass }}">{{ is_numeric($forecast['temperature']) ? round($forecast['temperature'], 1) : $forecast['temperature'] }}</td>
+                                                <td class="forecast-table td {{ $tempClass }}" data-temp="{{ $tempValue }}">{{ is_numeric($forecast['temperature']) ? round($forecast['temperature'], 1) : $forecast['temperature'] }}</td>
                                                 <td class="rain-cell" data-precipitation="{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}">{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}</td>
-                                                <td class="wind-speed {{ $windClass }}">{{ is_numeric($forecast['wind_speed']) ? round($forecast['wind_speed'], 1) : $forecast['wind_speed'] }}</td>
-                                                <td class="wind-gust {{ $gustClass }}">{{ is_numeric($forecast['wind_gust']) ? round($forecast['wind_gust'], 1) : $forecast['wind_gust'] }}</td>
+                                                <td class="wind-speed {{ $windClass }}" data-original="{{ $forecast['wind_speed'] }}">{{ is_numeric($forecast['wind_speed']) ? round($forecast['wind_speed'], 1) : $forecast['wind_speed'] }}</td>
+                                                <td class="wind-gust {{ $gustClass }}" data-original="{{ $forecast['wind_gust'] }}">{{ is_numeric($forecast['wind_gust']) ? round($forecast['wind_gust'], 1) : $forecast['wind_gust'] }}</td>
                                                 <td class="direction-cell">
                                                     @if (is_numeric($direction))
                                                         <i class="wi wi-direction-up" style="transform: rotate({{ $arrowRotation }}deg);"></i>
