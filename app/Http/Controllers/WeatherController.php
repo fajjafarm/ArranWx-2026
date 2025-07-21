@@ -204,10 +204,11 @@ class WeatherController extends Controller
                     $altitudeMultiplier = $locationType === 'Hill' ? (1 + ($locationAltitude / 100) * 0.015) : 1;
                     $windGust = $details['wind_speed_of_gust'] ?? ($windSpeed * $gustFactor * $altitudeMultiplier);
 
-                    $symbolCode = $next1Hour['summary']['symbol_code'] ?? 'N/A';
-                    if ($symbolCode === 'N/A' || !isset($this->conditionsMap[$symbolCode])) {
-                        Log::warning("Unmapped or missing symbol_code", ['time' => $time, 'symbol_code' => $symbolCode, 'entry' => $entry]);
-                    }
+                  $symbolCode = $next1Hour['summary']['symbol_code'] ?? 'unknown';
+$condition = $symbolCode; // Use the raw symbol_code instead of mapping
+if ($symbolCode === 'N/A' || !isset($this->conditionsMap[$symbolCode])) {
+    Log::warning("Unmapped or missing symbol_code", ['time' => $time, 'symbol_code' => $symbolCode, 'entry' => $entry]);
+}
                     $condition = $this->conditionsMap[$symbolCode] ?? 'unknown';
                     if ($time->hour >= 20 || $time->hour <= 1) {
                         $condition = str_replace('_day', '_night', $condition);
