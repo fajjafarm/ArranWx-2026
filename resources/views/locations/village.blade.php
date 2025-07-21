@@ -7,7 +7,6 @@
 @section('title', $title)
 
 @section('css')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons.min.css" />
     <style>
         .header-village {
             background: linear-gradient(90deg, #28a745, #34c759);
@@ -97,8 +96,10 @@
         .wind-cell-10 { background: #ffca28; color: white; }
         .wind-cell-11 { background: #ef6c00; color: white; }
         .wind-cell-12 { background: #d32f2f; color: white; }
-        .condition-cell i {
-            font-size: 24px;
+        .condition-cell img {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
         }
         .direction-cell i {
             font-size: 34px;
@@ -145,6 +146,7 @@
         @media (max-width: 768px) {
             .table-weather { display: block; overflow-x: auto; }
             .table-weather th, .table-weather td { padding: 6px; font-size: 12px; }
+            .condition-cell img { width: 18px; height: 18px; }
         }
     </style>
 @endsection
@@ -181,7 +183,6 @@
                 if (!isNaN(value)) {
                     const originalBeaufort = parseInt(cell.className.match(/wind-cell-(\d+)/)?.[1]) || 0;
                     cell.textContent = convertWindSpeed(value, 'm/s', unit);
-                    // Reapply wind-cell class based on original Beaufort scale
                     cell.className = `wind-speed ${originalBeaufort >= 0 && originalBeaufort <= 12 ? `wind-cell-${originalBeaufort}` : 'wind-cell-0'}`;
                 }
             });
@@ -228,6 +229,12 @@
 
 @section('content')
     <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="h3 mb-4">{{ $title }}</h1>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-12">
                 <div class="header-village">
@@ -293,32 +300,33 @@
                                         @foreach ($day['forecasts'] as $index => $forecast)
                                             @php
                                                 $iconMap = [
-                                                    'clearsky_day' => 'wi-day-sunny',
-                                                    'clearsky_night' => 'wi-night-clear',
-                                                    'fair_day' => 'wi-day-sunny-overcast',
-                                                    'fair_night' => 'wi-night-partly-cloudy',
-                                                    'partlycloudy_day' => 'wi-day-cloudy',
-                                                    'partlycloudy_night' => 'wi-night-cloudy',
-                                                    'cloudy' => 'wi-cloudy',
-                                                    'rain' => 'wi-rain',
-                                                    'lightrain' => 'wi-sprinkle',
-                                                    'heavyrain' => 'wi-rain-wind',
-                                                    'rainshowers_day' => 'wi-day-showers',
-                                                    'rainshowers_night' => 'wi-night-showers',
-                                                    'snow' => 'wi-snow',
-                                                    'sleet' => 'wi-sleet',
-                                                    'fog' => 'wi-fog',
-                                                    'lightssleetshowers_day' => 'wi-day-sleet',
-                                                    'lightssleetshowers_night' => 'wi-night-sleet',
-                                                    'heavysleetshowers_day' => 'wi-day-sleet-storm',
-                                                    'heavysleetshowers_night' => 'wi-night-sleet-storm',
-                                                    'lightsnowshowers_day' => 'wi-day-snow',
-                                                    'lightsnowshowers_night' => 'wi-night-snow',
-                                                    'heavysnowshowers_day' => 'wi-day-snow-wind',
-                                                    'heavysnowshowers_night' => 'wi-night-snow-wind',
-                                                    'unknown' => 'wi-na',
+                                                    'clearsky_day' => 'clearsky_day.svg',
+                                                    'clearsky_night' => 'clearsky_night.svg',
+                                                    'fair_day' => 'fair_day.svg',
+                                                    'fair_night' => 'fair_night.svg',
+                                                    'partlycloudy_day' => 'partlycloudy_day.svg',
+                                                    'partlycloudy_night' => 'partlycloudy_night.svg',
+                                                    'cloudy' => 'cloudy.svg',
+                                                    'rain' => 'rain.svg',
+                                                    'lightrain' => 'lightrain.svg',
+                                                    'heavyrain' => 'heavyrain.svg',
+                                                    'rainshowers_day' => 'rainshowers_day.svg',
+                                                    'rainshowers_night' => 'rainshowers_night.svg',
+                                                    'snow' => 'snow.svg',
+                                                    'sleet' => 'sleet.svg',
+                                                    'fog' => 'fog.svg',
+                                                    'lightssleetshowers_day' => 'lightssleetshowers_day.svg',
+                                                    'lightssleetshowers_night' => 'lightssleetshowers_night.svg',
+                                                    'heavysleetshowers_day' => 'heavysleetshowers_day.svg',
+                                                    'heavysleetshowers_night' => 'heavysleetshowers_night.svg',
+                                                    'lightsnowshowers_day' => 'lightsnowshowers_day.svg',
+                                                    'lightsnowshowers_night' => 'lightsnowshowers_night.svg',
+                                                    'heavysnowshowers_day' => 'heavysnowshowers_day.svg',
+                                                    'heavysnowshowers_night' => 'heavysnowshowers_night.svg',
+                                                    'unknown' => 'unknown.svg',
                                                 ];
-                                                $iconClass = $iconMap[$forecast['condition']] ?? $iconMap['unknown'];
+                                                $iconFile = $iconMap[$forecast['condition']] ?? $iconMap['unknown'];
+                                                $iconUrl = "https://raw.githubusercontent.com/nrkno/yr-weather-symbols/master/dist/svg/{$iconFile}";
 
                                                 $beaufort = match (true) {
                                                     !is_numeric($forecast['wind_speed']) => 0,
@@ -378,7 +386,7 @@
                                             <tr>
                                                 <td>{{ $forecast['time'] }}</td>
                                                 <td class="condition-cell">
-                                                    <i class="wi {{ $iconClass }}"></i>
+                                                    <img src="{{ $iconUrl }}" alt="{{ $forecast['condition'] }}">
                                                 </td>
                                                 <td class="forecast-table td {{ $tempClass }}" data-temp="{{ $tempValue }}">{{ is_numeric($forecast['temperature']) ? round($forecast['temperature'], 1) : $forecast['temperature'] }}</td>
                                                 <td class="rain-cell" data-precipitation="{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}">{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}</td>
