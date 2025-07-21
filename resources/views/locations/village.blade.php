@@ -300,33 +300,32 @@
                                         @foreach ($day['forecasts'] as $index => $forecast)
                                             @php
                                                 $iconMap = [
-                                                    'clearsky_day' => 'clearsky_day.svg',
-                                                    'clearsky_night' => 'clearsky_night.svg',
-                                                    'fair_day' => 'fair_day.svg',
-                                                    'fair_night' => 'fair_night.svg',
-                                                    'partlycloudy_day' => 'partlycloudy_day.svg',
-                                                    'partlycloudy_night' => 'partlycloudy_night.svg',
-                                                    'cloudy' => 'cloudy.svg',
-                                                    'rain' => 'rain.svg',
-                                                    'lightrain' => 'lightrain.svg',
-                                                    'heavyrain' => 'heavyrain.svg',
-                                                    'rainshowers_day' => 'rainshowers_day.svg',
-                                                    'rainshowers_night' => 'rainshowers_night.svg',
-                                                    'snow' => 'snow.svg',
-                                                    'sleet' => 'sleet.svg',
-                                                    'fog' => 'fog.svg',
-                                                    'lightssleetshowers_day' => 'lightssleetshowers_day.svg',
-                                                    'lightssleetshowers_night' => 'lightssleetshowers_night.svg',
-                                                    'heavysleetshowers_day' => 'heavysleetshowers_day.svg',
-                                                    'heavysleetshowers_night' => 'heavysleetshowers_night.svg',
-                                                    'lightsnowshowers_day' => 'lightsnowshowers_day.svg',
-                                                    'lightsnowshowers_night' => 'lightsnowshowers_night.svg',
-                                                    'heavysnowshowers_day' => 'heavysnowshowers_day.svg',
-                                                    'heavysnowshowers_night' => 'heavysnowshowers_night.svg',
+                                                    '01d' => '01d.svg', // Clear sky (day)
+                                                    '01n' => '01n.svg', // Clear sky (night)
+                                                    '02d' => '02d.svg', // Fair (day)
+                                                    '02n' => '02n.svg', // Fair (night)
+                                                    '03d' => '03d.svg', // Partly cloudy (day)
+                                                    '03n' => '03n.svg', // Partly cloudy (night)
+                                                    '04d' => '04d.svg', // Cloudy (day)
+                                                    '04n' => '04n.svg', // Cloudy (night)
+                                                    '09d' => '09d.svg', // Light rain (day)
+                                                    '09n' => '09n.svg', // Light rain (night)
+                                                    '10d' => '10d.svg', // Rain (day)
+                                                    '10n' => '10n.svg', // Rain (night)
+                                                    '13d' => '13d.svg', // Snow (day)
+                                                    '13n' => '13n.svg', // Snow (night)
+                                                    '15d' => '15d.svg', // Light sleet showers (day)
+                                                    '15n' => '15n.svg', // Light sleet showers (night)
+                                                    '20d' => '20d.svg', // Fog (day)
+                                                    '20n' => '20n.svg', // Fog (night)
+                                                    '11d' => '11d.svg', // Heavy rain (day)
+                                                    '11n' => '11n.svg', // Heavy rain (night)
+                                                    '50d' => '50d.svg', // Drizzle (day)
+                                                    '50n' => '50n.svg', // Drizzle (night)
                                                     'unknown' => 'unknown.svg',
                                                 ];
                                                 $iconFile = $iconMap[$forecast['condition']] ?? $iconMap['unknown'];
-                                                $iconUrl = "https://raw.githubusercontent.com/nrkno/yr-weather-symbols/master/dist/svg/{$iconFile}";
+                                                $iconUrl = asset("svg/{$iconFile}"); // Assuming SVGs are in public/svg/
 
                                                 $beaufort = match (true) {
                                                     !is_numeric($forecast['wind_speed']) => 0,
@@ -386,7 +385,12 @@
                                             <tr>
                                                 <td>{{ $forecast['time'] }}</td>
                                                 <td class="condition-cell">
-                                                    <img src="{{ $iconUrl }}" alt="{{ $forecast['condition'] }}">
+                                                    @if (file_exists(public_path("svg/{$iconFile}")))
+                                                        <img src="{{ $iconUrl }}" alt="{{ $forecast['condition'] }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                                                        <span style="display:none;">{{ $forecast['condition'] }}</span>
+                                                    @else
+                                                        <span>{{ $forecast['condition'] }}</span>
+                                                    @endif
                                                 </td>
                                                 <td class="forecast-table td {{ $tempClass }}" data-temp="{{ $tempValue }}">{{ is_numeric($forecast['temperature']) ? round($forecast['temperature'], 1) : $forecast['temperature'] }}</td>
                                                 <td class="rain-cell" data-precipitation="{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}">{{ is_numeric($forecast['precipitation']) ? round($forecast['precipitation'], 1) : $forecast['precipitation'] }}</td>
