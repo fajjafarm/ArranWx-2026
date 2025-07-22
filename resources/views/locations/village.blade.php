@@ -324,7 +324,34 @@
                                                     '50n' => '50n.svg', // Drizzle (night)
                                                     'unknown' => 'unknown.svg',
                                                 ];
-                                                $iconFile = $iconMap[$forecast['condition']] ?? $iconMap['unknown'];
+                                                // Check if the condition is a descriptive name and map it to the numeric code
+                                                $conditionMapping = [
+                                                    'clearsky_day' => '01d',
+                                                    'clearsky_night' => '01n',
+                                                    'fair_day' => '02d',
+                                                    'fair_night' => '02n',
+                                                    'partlycloudy_day' => '03d',
+                                                    'partlycloudy_night' => '03n',
+                                                    'cloudy' => '04d', // Assuming no night variant for simplicity
+                                                    'rain' => '10d', // Default to day, adjust if API provides night
+                                                    'lightrain' => '09d',
+                                                    'heavyrain' => '11d',
+                                                    'rainshowers_day' => '10d',
+                                                    'rainshowers_night' => '10n',
+                                                    'snow' => '13d',
+                                                    'sleet' => '15d',
+                                                    'fog' => '20d',
+                                                    'lightssleetshowers_day' => '15d',
+                                                    'lightssleetshowers_night' => '15n',
+                                                    'heavysleetshowers_day' => '15d',
+                                                    'heavysleetshowers_night' => '15n',
+                                                    'lightsnowshowers_day' => '13d',
+                                                    'lightsnowshowers_night' => '13n',
+                                                    'heavysnowshowers_day' => '13d',
+                                                    'heavysnowshowers_night' => '13n',
+                                                ];
+                                                $mappedCondition = $conditionMapping[$forecast['condition']] ?? $forecast['condition'];
+                                                $iconFile = $iconMap[$mappedCondition] ?? $iconMap['unknown'];
                                                 $iconUrl = asset("svg/{$iconFile}"); // Assuming SVGs are in public/svg/
 
                                                 $beaufort = match (true) {

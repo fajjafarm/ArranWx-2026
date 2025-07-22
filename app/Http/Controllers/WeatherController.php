@@ -209,7 +209,7 @@ $condition = $symbolCode; // Use the raw symbol_code instead of mapping
 if ($symbolCode === 'N/A' || !isset($this->conditionsMap[$symbolCode])) {
     Log::warning("Unmapped or missing symbol_code", ['time' => $time, 'symbol_code' => $symbolCode, 'entry' => $entry]);
 }
-                    $condition = $this->conditionsMap[$symbolCode] ?? 'unknown';
+                    $condition = $symbolCode;
                     if ($time->hour >= 20 || $time->hour <= 1) {
                         $condition = str_replace('_day', '_night', $condition);
                     }
