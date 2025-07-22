@@ -312,19 +312,18 @@
                                                     '09n' => '09n.svg', // Light rain (night)
                                                     '10d' => '10d.svg', // Rain (day)
                                                     '10n' => '10n.svg', // Rain (night)
+                                                    '11d' => '11d.svg', // Heavy rain (day)
+                                                    '11n' => '11n.svg', // Heavy rain (night)
                                                     '13d' => '13d.svg', // Snow (day)
                                                     '13n' => '13n.svg', // Snow (night)
                                                     '15d' => '15d.svg', // Light sleet showers (day)
                                                     '15n' => '15n.svg', // Light sleet showers (night)
                                                     '20d' => '20d.svg', // Fog (day)
                                                     '20n' => '20n.svg', // Fog (night)
-                                                    '11d' => '11d.svg', // Heavy rain (day)
-                                                    '11n' => '11n.svg', // Heavy rain (night)
                                                     '50d' => '50d.svg', // Drizzle (day)
                                                     '50n' => '50n.svg', // Drizzle (night)
                                                     'unknown' => 'unknown.svg',
                                                 ];
-                                                // Check if the condition is a descriptive name and map it to the numeric code
                                                 $conditionMapping = [
                                                     'clearsky_day' => '01d',
                                                     'clearsky_night' => '01n',
@@ -332,12 +331,14 @@
                                                     'fair_night' => '02n',
                                                     'partlycloudy_day' => '03d',
                                                     'partlycloudy_night' => '03n',
-                                                    'cloudy' => '04d', // Assuming no night variant for simplicity
-                                                    'rain' => '10d', // Default to day, adjust if API provides night
+                                                    'cloudy' => '04d',
                                                     'lightrain' => '09d',
-                                                    'heavyrain' => '11d',
+                                                    'lightrainshowers_day' => '09d',
+                                                    'lightrainshowers_night' => '09n',
                                                     'rainshowers_day' => '10d',
                                                     'rainshowers_night' => '10n',
+                                                    'rain' => '10d', // Default to day, adjust if night variant needed
+                                                    'heavyrain' => '11d',
                                                     'snow' => '13d',
                                                     'sleet' => '15d',
                                                     'fog' => '20d',
@@ -349,6 +350,7 @@
                                                     'lightsnowshowers_night' => '13n',
                                                     'heavysnowshowers_day' => '13d',
                                                     'heavysnowshowers_night' => '13n',
+                                                    'drizzle' => '50d',
                                                 ];
                                                 $mappedCondition = $conditionMapping[$forecast['condition']] ?? $forecast['condition'];
                                                 $iconFile = $iconMap[$mappedCondition] ?? $iconMap['unknown'];
