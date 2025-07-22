@@ -7,6 +7,7 @@
 @section('title', $title)
 
 @section('css')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons.min.css">
     <style>
         .header-village {
             background: linear-gradient(90deg, #28a745, #34c759);
@@ -190,7 +191,7 @@
 
         function updateRainfall() {
             const unit = document.querySelector('input[name="rainUnit"]:checked').value;
-            document.querySelectorAll('.rain-cell').forEach(cell => {
+            document.queryselectorAll('.rain-cell').forEach(cell => {
                 let value = parseFloat(cell.dataset.precipitation) || 0;
                 if (!isNaN(value)) {
                     cell.textContent = unit === 'inches' ? (value * 0.0393701).toFixed(2) : value;
@@ -300,60 +301,35 @@
                                         @foreach ($day['forecasts'] as $index => $forecast)
                                             @php
                                                 $iconMap = [
-                                                    '01d' => '01d.svg', // Clear sky (day)
-                                                    '01n' => '01n.svg', // Clear sky (night)
-                                                    '02d' => '02d.svg', // Fair (day)
-                                                    '02n' => '02n.svg', // Fair (night)
-                                                    '03d' => '03d.svg', // Partly cloudy (day)
-                                                    '03n' => '03n.svg', // Partly cloudy (night)
-                                                    '04d' => '04d.svg', // Cloudy (day)
-                                                    '04n' => '04n.svg', // Cloudy (night)
-                                                    '09d' => '09d.svg', // Light rain (day)
-                                                    '09n' => '09n.svg', // Light rain (night)
-                                                    '10d' => '10d.svg', // Rain (day)
-                                                    '10n' => '10n.svg', // Rain (night)
-                                                    '11d' => '11d.svg', // Heavy rain (day)
-                                                    '11n' => '11n.svg', // Heavy rain (night)
-                                                    '13d' => '13d.svg', // Snow (day)
-                                                    '13n' => '13n.svg', // Snow (night)
-                                                    '15d' => '15d.svg', // Light sleet showers (day)
-                                                    '15n' => '15n.svg', // Light sleet showers (night)
-                                                    '20d' => '20d.svg', // Fog (day)
-                                                    '20n' => '20n.svg', // Fog (night)
-                                                    '50d' => '50d.svg', // Drizzle (day)
-                                                    '50n' => '50n.svg', // Drizzle (night)
+                                                    'clearsky_day' => 'clearsky_day.svg',
+                                                    'clearsky_night' => 'clearsky_night.svg',
+                                                    'fair_day' => 'fair_day.svg',
+                                                    'fair_night' => 'fair_night.svg',
+                                                    'partlycloudy_day' => 'partlycloudy_day.svg',
+                                                    'partlycloudy_night' => 'partlycloudy_night.svg',
+                                                    'cloudy' => 'cloudy.svg',
+                                                    'lightrain' => 'lightrain.svg',
+                                                    'lightrainshowers_day' => 'lightrainshowers_day.svg',
+                                                    'lightrainshowers_night' => 'lightrainshowers_night.svg',
+                                                    'rainshowers_day' => 'rainshowers_day.svg',
+                                                    'rainshowers_night' => 'rainshowers_night.svg',
+                                                    'rain' => 'rain.svg',
+                                                    'heavyrain' => 'heavyrain.svg',
+                                                    'snow' => 'snow.svg',
+                                                    'sleet' => 'sleet.svg',
+                                                    'fog' => 'fog.svg',
+                                                    'lightssleetshowers_day' => 'lightssleetshowers_day.svg',
+                                                    'lightssleetshowers_night' => 'lightssleetshowers_night.svg',
+                                                    'heavysleetshowers_day' => 'heavysleetshowers_day.svg',
+                                                    'heavysleetshowers_night' => 'heavysleetshowers_night.svg',
+                                                    'lightsnowshowers_day' => 'lightsnowshowers_day.svg',
+                                                    'lightsnowshowers_night' => 'lightsnowshowers_night.svg',
+                                                    'heavysnowshowers_day' => 'heavysnowshowers_day.svg',
+                                                    'heavysnowshowers_night' => 'heavysnowshowers_night.svg',
+                                                    'drizzle' => 'drizzle.svg',
                                                     'unknown' => 'unknown.svg',
                                                 ];
-                                                $conditionMapping = [
-                                                    'clearsky_day' => '01d',
-                                                    'clearsky_night' => '01n',
-                                                    'fair_day' => '02d',
-                                                    'fair_night' => '02n',
-                                                    'partlycloudy_day' => '03d',
-                                                    'partlycloudy_night' => '03n',
-                                                    'cloudy' => '04d',
-                                                    'lightrain' => '09d',
-                                                    'lightrainshowers_day' => '09d',
-                                                    'lightrainshowers_night' => '09n',
-                                                    'rainshowers_day' => '10d',
-                                                    'rainshowers_night' => '10n',
-                                                    'rain' => '10d', // Default to day, adjust if night variant needed
-                                                    'heavyrain' => '11d',
-                                                    'snow' => '13d',
-                                                    'sleet' => '15d',
-                                                    'fog' => '20d',
-                                                    'lightssleetshowers_day' => '15d',
-                                                    'lightssleetshowers_night' => '15n',
-                                                    'heavysleetshowers_day' => '15d',
-                                                    'heavysleetshowers_night' => '15n',
-                                                    'lightsnowshowers_day' => '13d',
-                                                    'lightsnowshowers_night' => '13n',
-                                                    'heavysnowshowers_day' => '13d',
-                                                    'heavysnowshowers_night' => '13n',
-                                                    'drizzle' => '50d',
-                                                ];
-                                                $mappedCondition = $conditionMapping[$forecast['condition']] ?? $forecast['condition'];
-                                                $iconFile = $iconMap[$mappedCondition] ?? $iconMap['unknown'];
+                                                $iconFile = $iconMap[$forecast['condition']] ?? $iconMap['unknown'];
                                                 $iconUrl = asset("svg/{$iconFile}"); // Assuming SVGs are in public/svg/
 
                                                 $beaufort = match (true) {
