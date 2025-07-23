@@ -258,7 +258,7 @@
                             <label><input type="radio" name="windUnit" value="m/s"> m/s</label>
                         </div>
                         <div class="unit-switch">
-                            Rainfall Unit:
+                            Precipitation Unit:
                             <label><input type="radio" name="rainUnit" value="mm" checked> mm</label>
                             <label><input type="radio" name="rainUnit" value="inches"> inches</label>
                         </div>
@@ -287,8 +287,10 @@
                                             <th>Weather Conditions</th>
                                             <th>Temperature (°C)</th>
                                             <th>Feels Like (°C)</th>
+                                            <th>Precipitation Amount</th>
                                             <th>Wind Speed</th>
                                             <th>Wind Gust</th>
+                                            <th>Wind Cardinal</th>
                                             <th>Direction</th>
                                             <th>Cloud Level (m)</th>
                                             <th>Snow Level (m)</th>
@@ -356,6 +358,9 @@
                                                 };
                                                 $gustClass = "wind-cell-$beaufort";
 
+                                                // Precipitation Amount (use controller data)
+                                                $precipitation = is_numeric($forecast['precipitation']) ? floatval($forecast['precipitation']) : 0;
+
                                                 // Cloud Level (using cloud_area_fraction and dew_point if available)
                                                 $cloudCover = is_numeric($forecast['cloud_area_fraction']) ? floatval($forecast['cloud_area_fraction']) / 100 : 0.5;
                                                 $dewPoint = is_numeric($forecast['dew_point']) ? floatval($forecast['dew_point']) : ($temp - ((100 - ($forecast['relative_humidity'] ?? 50)) / 5));
@@ -363,7 +368,7 @@
 
                                                 // Snow Level (150m per 1°C below 0°C, adjusted for altitude)
                                                 $snowLevel = ($temp <= 0) ? max(0, 1000 + ($temp * 150) + ($altitude / 2)) : -1;
-                                                $snowAboveSummit = ($snowLevel > 0 && $snowLevel > $altitude) ? '-' : $snowLevel;
+                                                $snowAboveSummit = ($snowLevel > 0 && $snowLevel > $altitude) ? '^' : $snowLevel;
 
                                                 $tempClass = 'temp-cell-fallback';
                                                 if ($temp !== null) {
@@ -395,8 +400,10 @@
                                                 </td>
                                                 <td class="{{ $tempClass }}" data-temp="{{ $temp }}">{{ $temp }}</td>
                                                 <td class="{{ $tempClass }}" data-temp="{{ $feelsLike }}">{{ $feelsLike }}</td>
+                                                <td class="rain-cell" data-precipitation="{{ $precipitation }}">{{ $precipitation }}</td>
                                                 <td class="wind-speed wind-cell-0" data-original="{{ $windSpeedMs }}">{{ round($windSpeedMs, 1) }}</td>
                                                 <td class="wind-gust {{ $gustClass }}" data-original="{{ $windGust }}">{{ round($windGust, 1) }}</td>
+                                                <td>{{ $ordinal ?: 'N/A' }}</td>
                                                 <td class="direction-cell">
                                                     @if (is_numeric($direction))
                                                         <i class="wi wi-direction-up" style="transform: rotate({{ $arrowRotation }}deg);"></i>
