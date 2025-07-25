@@ -189,7 +189,7 @@
             });
         }
 
-        function updateRainfall() {
+        function updatePrecipitation() {
             const unit = document.querySelector('input[name="rainUnit"]:checked').value;
             document.querySelectorAll('.rain-cell').forEach(cell => {
                 let value = parseFloat(cell.dataset.precipitation) || 0;
@@ -217,12 +217,12 @@
             document.querySelectorAll('.rain-cell').forEach(cell => {
                 cell.dataset.precipitation = cell.textContent;
             });
-            updateRainfall();
+            updatePrecipitation();
             document.querySelectorAll('input[name="windUnit"]').forEach(radio => {
                 radio.addEventListener('change', updateWindSpeeds);
             });
             document.querySelectorAll('input[name="rainUnit"]').forEach(radio => {
-                radio.addEventListener('change', updateRainfall);
+                radio.addEventListener('change', updatePrecipitation);
             });
         });
     </script>
@@ -292,6 +292,9 @@
                                             <th>Wind Gust</th>
                                             <th>Wind Cardinal</th>
                                             <th>Direction</th>
+                                            <th>UV Index</th>
+                                            <th>Humidity (%)</th>
+                                            <th>Cloud Cover (%)</th>
                                             <th>Cloud Level (m)</th>
                                             <th>Snow Level (m)</th>
                                             <th>Snow Cover</th>
@@ -361,10 +364,19 @@
                                                 // Precipitation Amount (use controller data)
                                                 $precipitation = is_numeric($forecast['precipitation']) ? floatval($forecast['precipitation']) : 0;
 
+                                                // UV Index
+                                                $uvIndex = is_numeric($forecast['ultraviolet_index']) ? floatval($forecast['ultraviolet_index']) : 0;
+
+                                                // Humidity
+                                                $humidity = is_numeric($forecast['relative_humidity']) ? floatval($forecast['relative_humidity']) : 0;
+
+                                                // Cloud Cover
+                                                $cloudCover = is_numeric($forecast['cloud_area_fraction']) ? floatval($forecast['cloud_area_fraction']) : 0;
+
                                                 // Cloud Level (using cloud_area_fraction and dew_point if available)
-                                                $cloudCover = is_numeric($forecast['cloud_area_fraction']) ? floatval($forecast['cloud_area_fraction']) / 100 : 0.5;
+                                                $cloudCoverFraction = is_numeric($forecast['cloud_area_fraction']) ? floatval($forecast['cloud_area_fraction']) / 100 : 0.5;
                                                 $dewPoint = is_numeric($forecast['dew_point']) ? floatval($forecast['dew_point']) : ($temp - ((100 - ($forecast['relative_humidity'] ?? 50)) / 5));
-                                                $cloudLevel = max(0, ($temp - $dewPoint) * 100 * (1 - $cloudCover)); // Adjust with cloud cover influence
+                                                $cloudLevel = max(0, ($temp - $dewPoint) * 100 * (1 - $cloudCoverFraction)); // Adjust with cloud cover influence
 
                                                 // Snow Level (150m per 1°C below 0°C, adjusted for altitude)
                                                 $snowLevel = ($temp <= 0) ? max(0, 1000 + ($temp * 150) + ($altitude / 2)) : -1;
@@ -411,6 +423,9 @@
                                                         {{ $ordinal }}
                                                     @endif
                                                 </td>
+                                                <td class="uv-cell">{{ round($uvIndex, 1) }}</td>
+                                                <td class="humidity-cell">{{ round($humidity, 1) }}</td>
+                                                <td>{{ round($cloudCover) }}</td>
                                                 <td>{{ round($cloudLevel) }}</td>
                                                 <td>{{ $snowAboveSummit }}</td>
                                                 <td>Placeholder</td>
