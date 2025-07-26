@@ -28,6 +28,7 @@ class WeatherController extends Controller
         'snow' => 'snow.svg',
         'sleet' => 'sleet.svg',
         'fog' => 'fog.svg',
+        'lightrainshowers_day' => 'lightrainshowers_day.svg',
         'lightssleetshowers_day' => 'lightssleetshowers_day.svg',
         'lightssleetshowers_night' => 'lightssleetshowers_night.svg',
         'heavysleetshowers_day' => 'heavysleetshowers_day.svg',
