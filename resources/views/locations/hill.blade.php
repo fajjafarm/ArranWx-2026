@@ -39,64 +39,6 @@
             font-size: 20px;
             margin-right: 5px;
         }
-        .forecast-table td.temp-cell-minus-40 { background: #01081e; color: white; }
-        .forecast-table td.temp-cell-minus-30 { background: #020f39; color: white; }
-        .forecast-table td.temp-cell-minus-20 { background: #02154f; color: white; }
-        .forecast-table td.temp-cell-minus-15 { background: #082376; color: white; }
-        .forecast-table td.temp-cell-minus-10 { background: #435897; color: white; }
-        .forecast-table td.temp-cell-minus-8 { background: #3075ac; color: white; }
-        .forecast-table td.temp-cell-minus-6 { background: #38aec4; color: black; }
-        .forecast-table td.temp-cell-minus-4 { background: #38aec4; color: black; }
-        .forecast-table td.temp-cell-minus-2 { background: #60c3c1; color: black; }
-        .forecast-table td.temp-cell-0 { background: #7fcebc; color: black; }
-        .forecast-table td.temp-cell-2 { background: #91d5ba; color: black; }
-        .forecast-table td.temp-cell-4 { background: #b6e3b7; color: black; }
-        .forecast-table td.temp-cell-6 { background: #cfebb2; color: black; }
-        .forecast-table td.temp-cell-8 { background: #e3ecab; color: black; }
-        .forecast-table td.temp-cell-10 { background: #ffeea1; color: black; }
-        .forecast-table td.temp-cell-12 { background: #ffe796; color: black; }
-        .forecast-table td.temp-cell-14 { background: #ffd881; color: black; }
-        .forecast-table td.temp-cell-16 { background: #ffc96c; color: black; }
-        .forecast-table td.temp-cell-18 { background: #ffc261; color: black; }
-        .forecast-table td.temp-cell-20 { background: #ffb34c; color: black; }
-        .forecast-table td.temp-cell-22 { background: #fc9f46; color: black; }
-        .forecast-table td.temp-cell-24 { background: #f67639; color: black; }
-        .forecast-table td.temp-cell-27 { background: #e13d32; color: black; }
-        .forecast-table td.temp-cell-30 { background: #c30031; color: white; }
-        .forecast-table td.temp-cell-35 { background: #70001c; color: white; }
-        .forecast-table td.temp-cell-40 { background: #3a000e; color: white; }
-        .forecast-table td.temp-cell-45 { background: #1f0007; color: white; }
-        .forecast-table td.temp-cell-50 { background: #100002; color: white; }
-        .forecast-table td.temp-cell-fallback { background: #ff0000; color: white; }
-        .forecast-table td.rain-cell {
-            background: #ffffff;
-            color: black;
-            transition: background 0.3s ease;
-        }
-        .forecast-table td.fog-cell { background: #d3cce3; color: black; }
-        .forecast-table td.humidity-cell { background: #a1c4fd; color: black; }
-        .forecast-table td.pressure-cell { background: #d4fc79; color: black; }
-        .forecast-table td.uv-cell {
-            background: #f3e5f5;
-            color: black;
-            text-align: center;
-        }
-        .forecast-table td.direction-cell { background: #ffecd2; color: black; }
-        .forecast-table td.condition-cell { background: #ffffff; color: black; }
-        .forecast-table td { background: #ffffff; color: black; }
-        .wind-cell-0 { background: #e6f3e6; color: black; }
-        .wind-cell-1 { background: #d4edda; color: black; }
-        .wind-cell-2 { background: #c3e6cb; color: black; }
-        .wind-cell-3 { background: #b1dfbb; color: black; }
-        .wind-cell-4 { background: #a3e4d7; color: black; }
-        .wind-cell-5 { background: #81ecec; color: black; }
-        .wind-cell-6 { background: #80deea; color: white; }
-        .wind-cell-7 { background: #4fc3f7; color: white; }
-        .wind-cell-8 { background: #42a5f5; color: white; }
-        .wind-cell-9 { background: #0288d1; color: white; }
-        .wind-cell-10 { background: #ffca28; color: white; }
-        .wind-cell-11 { background: #ef6c00; color: white; }
-        .wind-cell-12 { background: #d32f2f; color: white; }
         .condition-cell img {
             width: 48px;
             height: 48px;
@@ -164,19 +106,6 @@
             return (value * conversions[fromUnit][toUnit]).toFixed(1);
         }
 
-        function interpolateColor(startColor, endColor, factor) {
-            const r1 = parseInt(startColor.substr(1, 2), 16);
-            const g1 = parseInt(startColor.substr(3, 2), 16);
-            const b1 = parseInt(startColor.substr(5, 2), 16);
-            const r2 = parseInt(endColor.substr(1, 2), 16);
-            const g2 = parseInt(endColor.substr(3, 2), 16);
-            const b2 = parseInt(endColor.substr(5, 2), 16);
-            const r = Math.round(r1 + (r2 - r1) * factor).toString(16).padStart(2, '0');
-            const g = Math.round(g1 + (g2 - g1) * factor).toString(16).padStart(2, '0');
-            const b = Math.round(b1 + (b2 - b1) * factor).toString(16).padStart(2, '0');
-            return `#${r}${g}${b}`;
-        }
-
         function updateWindSpeeds() {
             const unit = document.querySelector('input[name="windUnit"]:checked').value;
             document.querySelectorAll('.wind-speed, .wind-gust').forEach(cell => {
@@ -196,11 +125,17 @@
                 if (!isNaN(value)) {
                     cell.textContent = unit === 'inches' ? (value * 0.0393701).toFixed(2) : value;
                     value = Math.min(10, Math.max(0, value / (unit === 'inches' ? 0.0393701 : 1)));
+                    cell.setAttribute('style', cell.dataset.originalStyle);
                     if (value === 0) {
                         cell.style.backgroundColor = '#ffffff';
                     } else {
                         const intensity = (value > 0 ? (value - 0.01) / 9.99 : 0);
-                        cell.style.backgroundColor = interpolateColor('#b3e5fc', '#435897', intensity);
+                        const r1 = 179; const g1 = 229; const b1 = 252;
+                        const r2 = 67; const g2 = 88; const b2 = 151;
+                        const r = Math.max(0, Math.min(255, Math.floor(r1 + (r2 - r1) * intensity))).toString(16).padStart(2, '0');
+                        const g = Math.max(0, Math.min(255, Math.floor(g1 + (g2 - g1) * intensity))).toString(16).padStart(2, '0');
+                        const b = Math.max(0, Math.min(255, Math.floor(b1 + (b2 - b1) * intensity))).toString(16).padStart(2, '0');
+                        cell.style.backgroundColor = `#${r}${g}${b}`;
                     }
                 }
             });
@@ -216,6 +151,7 @@
             });
             document.querySelectorAll('.rain-cell').forEach(cell => {
                 cell.dataset.precipitation = cell.textContent;
+                cell.dataset.originalStyle = cell.getAttribute('style');
             });
             updatePrecipitation();
             document.querySelectorAll('input[name="windUnit"]').forEach(radio => {
@@ -301,133 +237,35 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($day['forecasts'] as $index => $forecast)
-                                            @php
-                                                $iconMap = [
-                                                    'clearsky_day' => 'clearsky_day.svg',
-                                                    'clearsky_night' => 'clearsky_night.svg',
-                                                    'fair_day' => 'fair_day.svg',
-                                                    'fair_night' => 'fair_night.svg',
-                                                    'partlycloudy_day' => 'partlycloudy_day.svg',
-                                                    'partlycloudy_night' => 'partlycloudy_night.svg',
-                                                    'cloudy' => 'cloudy.svg',
-                                                    'lightrain' => 'lightrain.svg',
-                                                    'rain' => 'rain.svg',
-                                                    'heavyrain' => 'heavyrain.svg',
-                                                    'rainshowers_day' => 'rainshowers_day.svg',
-                                                    'rainshowers_night' => 'rainshowers_night.svg',
-                                                    'snow' => 'snow.svg',
-                                                    'sleet' => 'sleet.svg',
-                                                    'fog' => 'fog.svg',
-                                                    'lightssleetshowers_day' => 'lightssleetshowers_day.svg',
-                                                    'lightssleetshowers_night' => 'lightssleetshowers_night.svg',
-                                                    'heavysleetshowers_day' => 'heavysleetshowers_day.svg',
-                                                    'heavysleetshowers_night' => 'heavysleetshowers_night.svg',
-                                                    'lightsnowshowers_day' => 'lightsnowshowers_day.svg',
-                                                    'lightsnowshowers_night' => 'lightsnowshowers_night.svg',
-                                                    'heavysnowshowers_day' => 'heavysnowshowers_day.svg',
-                                                    'heavysnowshowers_night' => 'heavysnowshowers_night.svg',
-                                                    'unknown' => 'unknown.svg',
-                                                ];
-                                                $iconFile = $iconMap[$forecast['condition']] ?? $iconMap['unknown'];
-                                                $iconUrl = asset("svg/{$iconFile}");
-
-                                                // Use altitude from the controller
-                                                $altitude = $altitude ?? 0;
-
-                                                // Temperature and Feels Like (wind chill)
-                                                $temp = is_numeric($forecast['temperature']) ? floatval($forecast['temperature']) : 0;
-                                                $windSpeedMs = is_numeric($forecast['wind_speed']) ? floatval($forecast['wind_speed']) : 0;
-                                                $feelsLike = ($temp <= 10 && $windSpeedMs > 4.8) ?
-                                                    (13.12 + 0.6215 * $temp - 11.37 * pow($windSpeedMs, 0.16) + 0.3965 * $temp * pow($windSpeedMs, 0.16)) : $temp;
-                                                $feelsLike = round($feelsLike, 1);
-
-                                                // Wind Gust (already calculated by controller, use as-is)
-                                                $windGust = is_numeric($forecast['wind_gust']) ? floatval($forecast['wind_gust']) : 0;
-                                                $beaufort = match (true) {
-                                                    $windGust < 0.5 => 0,
-                                                    $windGust < 1.6 => 1,
-                                                    $windGust < 3.4 => 2,
-                                                    $windGust < 5.5 => 3,
-                                                    $windGust < 8.0 => 4,
-                                                    $windGust < 10.8 => 5,
-                                                    $windGust < 13.9 => 6,
-                                                    $windGust < 17.2 => 7,
-                                                    $windGust < 20.8 => 8,
-                                                    $windGust < 24.5 => 9,
-                                                    $windGust < 28.5 => 10,
-                                                    $windGust < 32.7 => 11,
-                                                    default => 12,
-                                                };
-                                                $gustClass = "wind-cell-$beaufort";
-
-                                                // Precipitation Amount (use controller data)
-                                                $precipitation = is_numeric($forecast['precipitation']) ? floatval($forecast['precipitation']) : 0;
-
-                                                // UV Index
-                                                $uvIndex = is_numeric($forecast['ultraviolet_index']) ? floatval($forecast['ultraviolet_index']) : 0;
-
-                                                // Humidity
-                                                $humidity = is_numeric($forecast['relative_humidity']) ? floatval($forecast['relative_humidity']) : 0;
-
-                                                // Cloud Cover
-                                                $cloudCover = is_numeric($forecast['cloud_area_fraction']) ? floatval($forecast['cloud_area_fraction']) : 0;
-
-                                                // Cloud Level (using cloud_area_fraction and dew_point if available)
-                                                $cloudCoverFraction = is_numeric($forecast['cloud_area_fraction']) ? floatval($forecast['cloud_area_fraction']) / 100 : 0.5;
-                                                $dewPoint = is_numeric($forecast['dew_point']) ? floatval($forecast['dew_point']) : ($temp - ((100 - ($forecast['relative_humidity'] ?? 50)) / 5));
-                                                $cloudLevel = max(0, ($temp - $dewPoint) * 100 * (1 - $cloudCoverFraction)); // Adjust with cloud cover influence
-
-                                                // Snow Level (150m per 1°C below 0°C, adjusted for altitude)
-                                                $snowLevel = ($temp <= 0) ? max(0, 1000 + ($temp * 150) + ($altitude / 2)) : -1;
-                                                $snowAboveSummit = ($snowLevel > 0 && $snowLevel > $altitude) ? '^' : $snowLevel;
-
-                                                $tempClass = 'temp-cell-fallback';
-                                                if ($temp !== null) {
-                                                    $tempKey = null;
-                                                    $tempRanges = [-40, -30, -20, -15, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 27, 30, 35, 40, 45, 50];
-                                                    foreach ($tempRanges as $range) {
-                                                        if ($temp <= $range) {
-                                                            $tempKey = $range;
-                                                            break;
-                                                        }
-                                                    }
-                                                    $tempKey = $tempKey ?? 50;
-                                                    $tempClass = 'temp-cell-' . ($tempKey < 0 ? 'minus-' . abs($tempKey) : $tempKey);
-                                                }
-
-                                                $direction = is_numeric($forecast['wind_from_direction_degrees']) ? floatval($forecast['wind_from_direction_degrees']) : null;
-                                                $ordinal = $forecast['wind_direction'] ?? '';
-                                                $arrowRotation = is_numeric($direction) ? ($direction + 180) % 360 : 0;
-                                            @endphp
+                                        @foreach ($day['forecasts'] as $forecast)
                                             <tr>
                                                 <td>{{ $forecast['time'] }}</td>
                                                 <td class="condition-cell">
-                                                    @if (file_exists(public_path("svg/{$iconFile}")))
-                                                        <img src="{{ $iconUrl }}" alt="{{ $forecast['condition'] }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                                                    @if (filter_var($forecast['iconUrl'], FILTER_VALIDATE_URL))
+                                                        <img src="{{ $forecast['iconUrl'] }}" alt="{{ $forecast['condition'] }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
                                                         <span style="display:none;">{{ $forecast['condition'] }}</span>
                                                     @else
                                                         <span>{{ $forecast['condition'] }}</span>
                                                     @endif
                                                 </td>
-                                                <td class="{{ $tempClass }}" data-temp="{{ $temp }}">{{ $temp }}</td>
-                                                <td class="{{ $tempClass }}" data-temp="{{ $feelsLike }}">{{ $feelsLike }}</td>
-                                                <td class="rain-cell" data-precipitation="{{ $precipitation }}">{{ $precipitation }}</td>
-                                                <td class="wind-speed wind-cell-0" data-original="{{ $windSpeedMs }}">{{ round($windSpeedMs, 1) }}</td>
-                                                <td class="wind-gust {{ $gustClass }}" data-original="{{ $windGust }}">{{ round($windGust, 1) }}</td>
-                                                <td>{{ $ordinal ?: 'N/A' }}</td>
+                                                <td class="{{ $forecast['temp_class'] }}" data-temp="{{ $forecast['temperature'] }}">{{ $forecast['temperature'] }}</td>
+                                                <td class="{{ $forecast['temp_class'] }}" data-temp="{{ $forecast['feels_like'] ?? $forecast['temperature'] }}">{{ $forecast['feels_like'] ?? $forecast['temperature'] }}</td>
+                                                <td class="rain-cell" data-precipitation="{{ $forecast['precipitation'] }}" style="{{ $forecast['rain_style'] }}">{{ $forecast['precipitation'] }}</td>
+                                                <td class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}">{{ round($forecast['wind_speed'], 1) }}</td>
+                                                <td class="wind-gust {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_gust'] }}">{{ round($forecast['wind_gust'], 1) }}</td>
+                                                <td>{{ $forecast['wind_direction'] ?: 'N/A' }}</td>
                                                 <td class="direction-cell">
-                                                    @if (is_numeric($direction))
-                                                        <i class="wi wi-direction-up" style="transform: rotate({{ $arrowRotation }}deg);"></i>
+                                                    @if (is_numeric($forecast['wind_from_direction_degrees']))
+                                                        <i class="wi wi-direction-up" style="transform: rotate({{ ($forecast['wind_from_direction_degrees'] + 180) % 360 }}deg);"></i>
                                                     @else
-                                                        {{ $ordinal }}
+                                                        {{ $forecast['wind_direction'] }}
                                                     @endif
                                                 </td>
-                                                <td class="uv-cell">{{ round($uvIndex, 1) }}</td>
-                                                <td class="humidity-cell">{{ round($humidity, 1) }}</td>
-                                                <td>{{ round($cloudCover) }}</td>
-                                                <td>{{ round($cloudLevel) }}</td>
-                                                <td>{{ $snowAboveSummit }}</td>
+                                                <td class="uv-cell">{{ round($forecast['ultraviolet_index'], 1) }}</td>
+                                                <td class="humidity-cell">{{ round($forecast['relative_humidity'], 1) }}</td>
+                                                <td>{{ round($forecast['cloud_area_fraction']) }}</td>
+                                                <td>{{ round($forecast['cloud_level'] ?? 0) }}</td>
+                                                <td>{{ $forecast['snow_level'] ?? '-' }}</td>
                                                 <td>Placeholder</td>
                                             </tr>
                                         @endforeach
