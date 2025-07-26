@@ -98,8 +98,8 @@
         .wind-cell-11 { background: #ef6c00; color: white; }
         .wind-cell-12 { background: #d32f2f; color: white; }
         .condition-cell img {
-            width: 24px;
-            height: 24px;
+            width: 48px;
+            height: 48px;
             vertical-align: middle;
         }
         .direction-cell i {
@@ -147,7 +147,7 @@
         @media (max-width: 768px) {
             .table-weather { display: block; overflow-x: auto; }
             .table-weather th, .table-weather td { padding: 6px; font-size: 12px; }
-            .condition-cell img { width: 18px; height: 18px; }
+            .condition-cell img { width: 36px; height: 36px; }
         }
     </style>
 @endsection
