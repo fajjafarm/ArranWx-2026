@@ -12,31 +12,89 @@ use Illuminate\Support\Carbon;
 
 class WeatherController extends Controller
 {
-    protected $conditionsMap = [
-        'clearsky_day' => 'clearsky_day',
-        'clearsky_night' => 'clearsky_night',
-        'fair_day' => 'fair_day',
-        'fair_night' => 'fair_night',
-        'partlycloudy_day' => 'partlycloudy_day',
-        'partlycloudy_night' => 'partlycloudy_night',
-        'cloudy' => 'cloudy',
-        'rain' => 'rain',
-        'lightrain' => 'lightrain',
-        'heavyrain' => 'heavyrain',
-        'rainshowers_day' => 'rainshowers_day',
-        'rainshowers_night' => 'rainshowers_night',
-        'snow' => 'snow',
-        'sleet' => 'sleet',
-        'fog' => 'fog',
-        'lightssleetshowers_day' => 'lightssleetshowers_day',
-        'lightssleetshowers_night' => 'lightssleetshowers_night',
-        'heavysleetshowers_day' => 'heavysleetshowers_day',
-        'heavysleetshowers_night' => 'heavysleetshowers_night',
-        'lightsnowshowers_day' => 'lightsnowshowers_day',
-        'lightsnowshowers_night' => 'lightsnowshowers_night',
-        'heavysnowshowers_day' => 'heavysnowshowers_day',
-        'heavysnowshowers_night' => 'heavysnowshowers_night',
+    protected $iconMap = [
+        'clearsky_day' => 'clearsky_day.svg',
+        'clearsky_night' => 'clearsky_night.svg',
+        'fair_day' => 'fair_day.svg',
+        'fair_night' => 'fair_night.svg',
+        'partlycloudy_day' => 'partlycloudy_day.svg',
+        'partlycloudy_night' => 'partlycloudy_night.svg',
+        'cloudy' => 'cloudy.svg',
+        'lightrain' => 'lightrain.svg',
+        'rain' => 'rain.svg',
+        'heavyrain' => 'heavyrain.svg',
+        'rainshowers_day' => 'rainshowers_day.svg',
+        'rainshowers_night' => 'rainshowers_night.svg',
+        'snow' => 'snow.svg',
+        'sleet' => 'sleet.svg',
+        'fog' => 'fog.svg',
+        'lightssleetshowers_day' => 'lightssleetshowers_day.svg',
+        'lightssleetshowers_night' => 'lightssleetshowers_night.svg',
+        'heavysleetshowers_day' => 'heavysleetshowers_day.svg',
+        'heavysleetshowers_night' => 'heavysleetshowers_night.svg',
+        'lightsnowshowers_day' => 'lightsnowshowers_day.svg',
+        'lightsnowshowers_night' => 'lightsnowshowers_night.svg',
+        'heavysnowshowers_day' => 'heavysnowshowers_day.svg',
+        'heavysnowshowers_night' => 'heavysnowshowers_night.svg',
+        'unknown' => 'unknown.svg',
     ];
+
+    protected function getTemperatureClass($temperature)
+    {
+        if ($temperature === null) return 'temp-cell-fallback';
+        $tempRanges = [-40, -30, -20, -15, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 27, 30, 35, 40, 45, 50];
+        foreach ($tempRanges as $range) {
+            if ($temperature <= $range) {
+                return 'temp-cell-' . ($range < 0 ? 'minus-' . abs($range) : $range);
+            }
+        }
+        return 'temp-cell-' . ($temperature >= 50 ? '50' : 'fallback');
+    }
+
+    protected function getWindClass($windGust)
+    {
+        $beaufort = match (true) {
+            $windGust < 0.5 => 0,
+            $windGust < 1.6 => 1,
+            $windGust < 3.4 => 2,
+            $windGust < 5.5 => 3,
+            $windGust < 8.0 => 4,
+            $windGust < 10.8 => 5,
+            $windGust < 13.9 => 6,
+            $windGust < 17.2 => 7,
+            $windGust < 20.8 => 8,
+            $windGust < 24.5 => 9,
+            $windGust < 28.5 => 10,
+            $windGust < 32.7 => 11,
+            default => 12,
+        };
+        return "wind-cell-$beaufort";
+    }
+
+    protected function getRainStyle($precipitation)
+    {
+        $value = max(0, min(10, floatval($precipitation ?? 0)));
+        if ($value === 0) {
+            return 'background-color: #ffffff; color: black;';
+        }
+        $intensity = ($value > 0 ? ($value - 0.01) / 9.99 : 0);
+        $r1 = 179; $g1 = 229; $b1 = 252; // #b3e5fc
+        $r2 = 67; $g2 = 88; $b2 = 151; // #435897
+        $r = dechex(max(0, min(255, floor($r1 + ($r2 - $r1) * $intensity))));
+        $g = dechex(max(0, min(255, floor($g1 + ($g2 - $g1) * $intensity))));
+        $b = dechex(max(0, min(255, floor($b1 + ($b2 - $b1) * $intensity))));
+        return "background-color: #$r$g$b; color: black; transition: background 0.3s ease;";
+    }
+
+    protected function getFeelsLike($temperature, $windSpeed)
+    {
+        $temp = floatval($temperature ?? 0);
+        $wind = floatval($windSpeed ?? 0);
+        if ($temp <= 10 && $wind > 4.8) {
+            return round(13.12 + 0.6215 * $temp - 11.37 * pow($wind, 0.16) + 0.3965 * $temp * pow($wind, 0.16), 1);
+        }
+        return round($temp, 1);
+    }
 
     /**
      * Display the main weather dashboard.
@@ -204,11 +262,11 @@ class WeatherController extends Controller
                     $altitudeMultiplier = $locationType === 'Hill' ? (1 + ($locationAltitude / 100) * 0.015) : 1;
                     $windGust = $details['wind_speed_of_gust'] ?? ($windSpeed * $gustFactor * $altitudeMultiplier);
 
-                 $symbolCode = $next1Hour['summary']['symbol_code'] ?? 'unknown';
-$condition = $symbolCode; // Use the raw symbol_code instead of mapping
-if ($symbolCode === 'N/A' || !isset($this->conditionsMap[$symbolCode])) {
-    Log::warning("Unmapped or missing symbol_code", ['time' => $time, 'symbol_code' => $symbolCode, 'entry' => $entry]);
-}
+                    $symbolCode = $next1Hour['summary']['symbol_code'] ?? 'unknown';
+                    $condition = $symbolCode; // Use the raw symbol_code instead of mapping
+                    if ($symbolCode === 'N/A' || !isset($this->iconMap[$symbolCode])) {
+                        Log::warning("Unmapped or missing symbol_code", ['time' => $time, 'symbol_code' => $symbolCode, 'entry' => $entry]);
+                    }
                     $condition = $symbolCode;
                     if ($time->hour >= 20 || $time->hour <= 1) {
                         $condition = str_replace('_day', '_night', $condition);
@@ -229,6 +287,11 @@ if ($symbolCode === 'N/A' || !isset($this->conditionsMap[$symbolCode])) {
                         'relative_humidity' => $details['relative_humidity'] ?? null,
                         'air_pressure' => $details['air_pressure_at_sea_level'] ?? null,
                         'ultraviolet_index' => $details['ultraviolet_index_clear_sky'] ?? null,
+                        'temp_class' => $this->getTemperatureClass($details['air_temperature'] ?? null),
+                        'wind_class' => $this->getWindClass($windGust),
+                        'rain_style' => $this->getRainStyle($next1Hour['details']['precipitation_amount'] ?? 0),
+                        'iconUrl' => asset("svg/" . ($this->iconMap[$condition] ?? $this->iconMap['unknown'])),
+                        'feels_like' => $this->getFeelsLike($details['air_temperature'] ?? null, $windSpeed),
                     ];
                 }
             }
