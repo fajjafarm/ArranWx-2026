@@ -98,10 +98,10 @@
     <script>
         function convertWindSpeed(value, fromUnit, toUnit) {
             const conversions = {
-                'm/s': { 'mph': 2.23694, 'km/h': 3.6, 'knots': 1.94384, 'm/s': 1 },
-                'mph': { 'm/s': 0.44704, 'km/h': 1.60934, 'knots': 0.868976, 'mph': 1 },
-                'km/h': { 'm/s': 0.277778, 'mph': 0.621371, 'knots': 0.539957, 'km/h': 1 },
-                'knots': { 'm/s': 0.514444, 'mph': 1.15078, 'km/h': 1.852, 'knots': 1 }
+                'mph': { 'mph': 1, 'km/h': 1.60934, 'knots': 0.868976, 'm/s': 0.44704 },
+                'km/h': { 'mph': 0.621371, 'km/h': 1, 'knots': 0.539957, 'm/s': 0.277778 },
+                'knots': { 'mph': 1.15078, 'km/h': 1.852, 'knots': 1, 'm/s': 0.514444 },
+                'm/s': { 'mph': 2.23694, 'km/h': 3.6, 'knots': 1.94384, 'm/s': 1 }
             };
             return (value * conversions[fromUnit][toUnit]).toFixed(1);
         }
@@ -112,7 +112,7 @@
                 let value = parseFloat(cell.dataset.original) || 0;
                 if (!isNaN(value)) {
                     const originalBeaufort = parseInt(cell.className.match(/wind-cell-(\d+)/)?.[1]) || 0;
-                    cell.textContent = convertWindSpeed(value, 'm/s', unit);
+                    cell.textContent = convertWindSpeed(value, 'mph', unit);
                     cell.className = `wind-speed ${originalBeaufort >= 0 && originalBeaufort <= 12 ? `wind-cell-${originalBeaufort}` : 'wind-cell-0'}`;
                 }
             });
@@ -147,7 +147,7 @@
                 cell.dataset.original = value;
                 const beaufort = parseInt(cell.className.match(/wind-cell-(\d+)/)?.[1]) || 0;
                 cell.className = `wind-speed ${beaufort >= 0 && beaufort <= 12 ? `wind-cell-${beaufort}` : 'wind-cell-0'}`;
-                cell.textContent = convertWindSpeed(value, 'm/s', 'mph');
+                cell.textContent = convertWindSpeed(value, 'mph', 'mph'); // Default to mph
             });
             document.querySelectorAll('.rain-cell').forEach(cell => {
                 cell.dataset.precipitation = cell.textContent;
@@ -228,6 +228,7 @@
                                             <th>Wind Gust</th>
                                             <th>Wind Cardinal</th>
                                             <th>Direction</th>
+                                            <th>Beaufort Scale</th>
                                             <th>UV Index</th>
                                             <th>Humidity (%)</th>
                                             <th>Cloud Cover (%)</th>
@@ -251,8 +252,8 @@
                                                 <td class="{{ $forecast['temp_class'] }}" data-temp="{{ $forecast['temperature'] }}">{{ $forecast['temperature'] }}</td>
                                                 <td class="{{ $forecast['temp_class'] }}" data-temp="{{ $forecast['feels_like'] ?? $forecast['temperature'] }}">{{ $forecast['feels_like'] ?? $forecast['temperature'] }}</td>
                                                 <td class="rain-cell" data-precipitation="{{ $forecast['precipitation'] }}" style="{{ $forecast['rain_style'] }}">{{ $forecast['precipitation'] }}</td>
-                                                <td class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}">{{ round($forecast['wind_speed'], 1) }}</td>
-                                                <td class="wind-gust {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_gust'] }}">{{ round($forecast['wind_gust'], 1) }}</td>
+                                                <td class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}">{{ $forecast['wind_speed'] }}</td>
+                                                <td class="wind-gust {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_gust'] }}">{{ $forecast['wind_gust'] }}</td>
                                                 <td>{{ $forecast['wind_direction'] ?: 'N/A' }}</td>
                                                 <td class="direction-cell">
                                                     @if (is_numeric($forecast['wind_from_direction_degrees']))
@@ -261,10 +262,11 @@
                                                         {{ $forecast['wind_direction'] }}
                                                     @endif
                                                 </td>
+                                                <td>{{ $forecast['beaufort_scale'] }}</td>
                                                 <td class="uv-cell">{{ round($forecast['ultraviolet_index'], 1) }}</td>
                                                 <td class="humidity-cell">{{ round($forecast['relative_humidity'], 1) }}</td>
                                                 <td>{{ round($forecast['cloud_area_fraction']) }}</td>
-                                                <td>{{ round($forecast['cloud_level'] ?? 0) }}</td>
+                                                <td>{{ $forecast['cloud_level'] }}</td>
                                                 <td>{{ $forecast['snow_level'] ?? '-' }}</td>
                                                 <td>Placeholder</td>
                                             </tr>

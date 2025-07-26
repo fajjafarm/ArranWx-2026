@@ -28,7 +28,6 @@ class WeatherController extends Controller
         'snow' => 'snow.svg',
         'sleet' => 'sleet.svg',
         'fog' => 'fog.svg',
-        'lightrainshowers_day' => 'lightrainshowers_day.svg',
         'lightssleetshowers_day' => 'lightssleetshowers_day.svg',
         'lightssleetshowers_night' => 'lightssleetshowers_night.svg',
         'heavysleetshowers_day' => 'heavysleetshowers_day.svg',
@@ -52,24 +51,24 @@ class WeatherController extends Controller
         return 'temp-cell-' . ($temperature >= 50 ? '50' : 'fallback');
     }
 
-    protected function getWindClass($windGust)
+    protected function getWindClass($windSpeed)
     {
         $beaufort = match (true) {
-            $windGust < 0.5 => 0,
-            $windGust < 1.6 => 1,
-            $windGust < 3.4 => 2,
-            $windGust < 5.5 => 3,
-            $windGust < 8.0 => 4,
-            $windGust < 10.8 => 5,
-            $windGust < 13.9 => 6,
-            $windGust < 17.2 => 7,
-            $windGust < 20.8 => 8,
-            $windGust < 24.5 => 9,
-            $windGust < 28.5 => 10,
-            $windGust < 32.7 => 11,
+            $windSpeed < 0.5 => 0,
+            $windSpeed < 1.6 => 1,
+            $windSpeed < 3.4 => 2,
+            $windSpeed < 5.5 => 3,
+            $windSpeed < 8.0 => 4,
+            $windSpeed < 10.8 => 5,
+            $windSpeed < 13.9 => 6,
+            $windSpeed < 17.2 => 7,
+            $windSpeed < 20.8 => 8,
+            $windSpeed < 24.5 => 9,
+            $windSpeed < 28.5 => 10,
+            $windSpeed < 32.7 => 11,
             default => 12,
         };
-        return "wind-cell-$beaufort";
+        return $beaufort;
     }
 
     protected function getRainStyle($precipitation)
@@ -271,7 +270,8 @@ class WeatherController extends Controller
                         $next1Hour = $entry['data']['next_6_hours'] ?? ['summary' => ['symbol_code' => 'N/A'], 'details' => ['precipitation_amount' => 0]];
                     }
 
-                    $windSpeed = $details['wind_speed'] ?? 0;
+                    $windSpeedMs = $details['wind_speed'] ?? 0;
+                    $windGustMs = $details['wind_speed_of_gust'] ?? $windSpeedMs;
                     $cloudCover = $details['cloud_area_fraction'] ?? 0;
                     $pressure = $details['air_pressure_at_sea_level'] ?? null;
                     $locationType = $location ? $location->type ?? 'Village' : 'Village';
@@ -287,7 +287,15 @@ class WeatherController extends Controller
                     }
                     $previousPressure = $pressure;
                     $altitudeMultiplier = $locationType === 'Hill' ? (1 + ($locationAltitude / 100) * 0.015) : 1;
-                    $windGust = $details['wind_speed_of_gust'] ?? ($windSpeed * $gustFactor * $altitudeMultiplier);
+                    $windGustMs = $windGustMs ?: ($windSpeedMs * $gustFactor * $altitudeMultiplier);
+
+                    // Convert from m/s to mph (1 m/s = 2.23694 mph)
+                    $windSpeedMph = round($windSpeedMs * 2.23694, 1);
+                    $windGustMph = round($windGustMs * 2.23694, 1);
+
+                    $windBeaufort = $this->getWindClass($windSpeedMs);
+                    $gustBeaufort = $this->getWindClass($windGustMs);
+                    $beaufortDisplay = ($windBeaufort === $gustBeaufort) ? "F$windBeaufort" : "F$windBeaufort-F$gustBeaufort";
 
                     $symbolCode = $next1Hour['summary']['symbol_code'] ?? 'unknown';
                     $condition = $symbolCode; // Use the raw symbol_code instead of mapping
@@ -305,8 +313,8 @@ class WeatherController extends Controller
                         'dew_point' => $details['dew_point_temperature'] ?? null,
                         'precipitation' => $next1Hour['details']['precipitation_amount'] ?? 0,
                         'condition' => $condition,
-                        'wind_speed' => $windSpeed,
-                        'wind_gust' => round($windGust, 1),
+                        'wind_speed' => $windSpeedMph,
+                        'wind_gust' => $windGustMph,
                         'wind_direction' => $this->degreesToCardinal($details['wind_from_direction'] ?? null),
                         'wind_from_direction_degrees' => $details['wind_from_direction'] ?? null,
                         'cloud_area_fraction' => $details['cloud_area_fraction'] ?? null,
@@ -315,16 +323,17 @@ class WeatherController extends Controller
                         'air_pressure' => $details['air_pressure_at_sea_level'] ?? null,
                         'ultraviolet_index' => $details['ultraviolet_index_clear_sky'] ?? null,
                         'temp_class' => $this->getTemperatureClass($details['air_temperature'] ?? null),
-                        'wind_class' => $this->getWindClass($windGust),
+                        'wind_class' => $this->getWindClass($windGustMs),
                         'rain_style' => $this->getRainStyle($next1Hour['details']['precipitation_amount'] ?? 0),
                         'iconUrl' => asset("svg/" . ($this->iconMap[$condition] ?? $this->iconMap['unknown'])),
-                        'feels_like' => $this->getFeelsLike($details['air_temperature'] ?? null, $windSpeed),
+                        'feels_like' => $this->getFeelsLike($details['air_temperature'] ?? null, $windSpeedMs),
                         'cloud_level' => $this->getCloudLevel(
                             $details['air_temperature'] ?? null,
                             $details['dew_point_temperature'] ?? null,
                             $details['cloud_area_fraction'] ?? null,
                             $details['relative_humidity'] ?? null
                         ),
+                        'beaufort_scale' => $beaufortDisplay,
                     ];
                 }
             }
