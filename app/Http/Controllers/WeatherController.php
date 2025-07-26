@@ -28,7 +28,6 @@ class WeatherController extends Controller
         'snow' => 'snow.svg',
         'sleet' => 'sleet.svg',
         'fog' => 'fog.svg',
-        'lightrainshowers_day' => 'lightrainshowers_day.svg',
         'lightssleetshowers_day' => 'lightssleetshowers_day.svg',
         'lightssleetshowers_night' => 'lightssleetshowers_night.svg',
         'heavysleetshowers_day' => 'heavysleetshowers_day.svg',
@@ -95,6 +94,32 @@ class WeatherController extends Controller
             return round(13.12 + 0.6215 * $temp - 11.37 * pow($wind, 0.16) + 0.3965 * $temp * pow($wind, 0.16), 1);
         }
         return round($temp, 1);
+    }
+
+    protected function getCloudLevel($temperature, $dewPoint, $cloudAreaFraction, $relativeHumidity = null)
+    {
+        $temp = floatval($temperature ?? 0);
+        $dew = floatval($dewPoint ?? null);
+
+        // Estimate dew point if not available using relative humidity
+        if ($dew === null && $relativeHumidity !== null) {
+            $rh = floatval($relativeHumidity);
+            $dew = $temp - ((100 - $rh) / 5);
+        }
+
+        // Use temperature if dew point is still unavailable
+        if ($dew === null) {
+            $dew = $temp;
+        }
+
+        // Base cloud base height formula: 125 * (T - Td)
+        $baseHeight = 125 * max(0, ($temp - $dew));
+
+        // Adjust based on cloud area fraction (higher cover lowers base slightly)
+        $cloudFraction = floatval($cloudAreaFraction ?? 0) / 100;
+        $adjustment = $cloudFraction > 0.5 ? (1 - $cloudFraction) * 100 : 0; // Reduce height by up to 50m for high cloud cover
+
+        return round(max(0, $baseHeight - $adjustment));
     }
 
     /**
@@ -293,6 +318,12 @@ class WeatherController extends Controller
                         'rain_style' => $this->getRainStyle($next1Hour['details']['precipitation_amount'] ?? 0),
                         'iconUrl' => asset("svg/" . ($this->iconMap[$condition] ?? $this->iconMap['unknown'])),
                         'feels_like' => $this->getFeelsLike($details['air_temperature'] ?? null, $windSpeed),
+                        'cloud_level' => $this->getCloudLevel(
+                            $details['air_temperature'] ?? null,
+                            $details['dew_point_temperature'] ?? null,
+                            $details['cloud_area_fraction'] ?? null,
+                            $details['relative_humidity'] ?? null
+                        ),
                     ];
                 }
             }
