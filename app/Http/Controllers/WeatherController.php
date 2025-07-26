@@ -271,12 +271,12 @@ class WeatherController extends Controller
                     }
 
                     $windSpeedMs = $details['wind_speed'] ?? 0;
-                    $windGustMs = $details['wind_speed_of_gust'] ?? $windSpeedMs;
                     $cloudCover = $details['cloud_area_fraction'] ?? 0;
                     $pressure = $details['air_pressure_at_sea_level'] ?? null;
                     $locationType = $location ? $location->type ?? 'Village' : 'Village';
                     $locationAltitude = $location ? $location->altitude ?? 0 : ($altitude ?? 0);
 
+                    // Custom wind gust calculation
                     $gustFactor = $locationType === 'Hill' ? 1.6 : 1.5;
                     if ($cloudCover > 75) $gustFactor += 0.2;
                     elseif ($cloudCover < 25) $gustFactor -= 0.1;
@@ -287,7 +287,7 @@ class WeatherController extends Controller
                     }
                     $previousPressure = $pressure;
                     $altitudeMultiplier = $locationType === 'Hill' ? (1 + ($locationAltitude / 100) * 0.015) : 1;
-                    $windGustMs = $windGustMs ?: ($windSpeedMs * $gustFactor * $altitudeMultiplier);
+                    $windGustMs = ($windSpeedMs * $gustFactor * $altitudeMultiplier);
 
                     // Convert from m/s to mph (1 m/s = 2.23694 mph)
                     $windSpeedMph = round($windSpeedMs * 2.23694, 1);
