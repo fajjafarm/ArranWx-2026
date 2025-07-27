@@ -163,12 +163,6 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
-                <h1 class="h3 mb-4">{{ $title }}</h1>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-12">
                 <div class="header-village">
                     <h4>Weather Warnings</h4>
                     <p class="warning-placeholder">No warnings currently available. Check back later.</p>
