@@ -219,12 +219,12 @@
                                 <table class="table table-striped table-weather">
                                     <thead>
                                         <tr>
-                                            <th>Time (BST)</th>
-                                            <th>Weather Conditions</th>
-                                            <th>Temperature (°C)</th>
+                                            <th>Time</th>
+                                            <th>Weather</th>
+                                            <th>Temp. (°C)</th>
                                             <th>Feels Like (°C)</th>
                                             <th>Dew Point (°C)</th>
-                                            <th>Precipitation Amount</th>
+                                            <th>Precip.</th>
                                             <th>Wind Speed</th>
                                             <th>Wind Gust</th>
                                             <th>Wind Cardinal</th>
@@ -236,6 +236,25 @@
                                             <th>Cloud Level (m)</th>
                                             <th>Snow Level (m)</th>
                                             <th>Snow Cover</th>
+                                        </tr>
+                                        <tr>
+                                            <th>BST</th>
+                                            <th></th>
+                                            <th>°C</th>
+                                            <th>°C</th>
+                                            <th>°C</th>
+                                            <th>mm</th>
+                                            <th>mph</th>
+                                            <th>mph</th>
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                            <th>%</th>
+                                            <th>%</th>
+                                            <th>m</th>
+                                            <th>m</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
                                     <tbody>
