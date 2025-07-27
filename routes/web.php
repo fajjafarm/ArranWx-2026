@@ -30,6 +30,7 @@ Route::prefix('resources')->name('resources.')->group(function () {
     Route::get('/earthquakes', [ResourcesController::class, 'earthquakes'])->name('earthquakes');
     Route::get('/webcams', [ResourcesController::class, 'webcams'])->name('webcams');
     Route::get('/tides/{location}', [ResourcesController::class, 'tides'])->name('tides');
+    Route::get('/forecast/{slug}/{layout?}', [WeatherController::class, 'indexBySlug'])->name('forecast.slug.layout');
 });
 
 // Catch-all routes (must be last)

@@ -154,9 +154,10 @@ class WeatherController extends Controller
      * Display the weather dashboard for a specific location using a slug.
      *
      * @param string $slug
+     * @param string|null $layout
      * @return \Illuminate\View\View
      */
-    public function indexBySlug($slug)
+    public function indexBySlug($slug, $layout = null)
     {
         $location = Location::whereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [Str::lower($slug)])->firstOrFail();
         $lat = $location->latitude;
@@ -165,11 +166,9 @@ class WeatherController extends Controller
         $timezone = $location->timezone ?? 'Europe/London'; // Ensure fallback
         $title = "{$location->name} Weather";
         $forecasts = $this->getTenDayForecast($lat, $lon, $altitude, $timezone, $location);
-        $template = match ($location->type) {
-            'Village' => 'locations.village',
-            'Hill' => 'locations.hill',
-            'Marine' => 'locations.marine',
-            default => 'index',
+        $template = match ($layout) {
+            'stacked' => 'locations.hill-stacked',
+            default => 'locations.hill',
         };
         return view($template, compact('lat', 'lon', 'title', 'forecasts'));
     }
