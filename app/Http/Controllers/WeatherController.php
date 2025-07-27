@@ -96,18 +96,28 @@ class WeatherController extends Controller
         return round($temp, 1);
     }
 
+    protected function calculateDewPoint($temperature, $relativeHumidity)
+    {
+        $temp = floatval($temperature ?? 0);
+        if ($relativeHumidity === null || $relativeHumidity <= 0 || $relativeHumidity > 100) {
+            return $temp; // Fallback to temperature if RH is invalid
+        }
+        $rh = floatval($relativeHumidity) / 100; // Convert to decimal
+        $a = 17.27;
+        $b = 237.7;
+        $alpha = ($a * $temp) / ($b + $temp) + log($rh);
+        $dewPoint = ($b * $alpha) / ($a - $alpha);
+        return round($dewPoint, 1);
+    }
+
     protected function getCloudLevel($temperature, $dewPoint, $cloudAreaFraction, $relativeHumidity = null)
     {
         $temp = floatval($temperature ?? 0);
         $dew = floatval($dewPoint ?? null);
 
-        // Calculate dew point using Magnus-Tetens approximation if not available
+        // Use calculated dew point if not provided
         if ($dew === null && $relativeHumidity !== null) {
-            $rh = floatval($relativeHumidity) / 100; // Convert to decimal
-            $a = 17.27;
-            $b = 237.7;
-            $alpha = ($a * $temp) / ($b + $temp) + log($rh);
-            $dew = ($b * $alpha) / ($a - $alpha);
+            $dew = $this->calculateDewPoint($temp, $relativeHumidity);
         }
 
         // Use temperature if dew point is still unavailable
@@ -314,7 +324,7 @@ class WeatherController extends Controller
                         'time' => $time->format('H:i'),
                         'temperature' => $details['air_temperature'] ?? null,
                         'dew_point' => $details['dew_point_temperature'] ?? null,
-                        'dew_point_calculated' => $this->getCloudLevel($details['air_temperature'] ?? null, null, null, $details['relative_humidity'] ?? null),
+                        'dew_point_calculated' => $this->calculateDewPoint($details['air_temperature'] ?? null, $details['relative_humidity'] ?? null),
                         'precipitation' => $next1Hour['details']['precipitation_amount'] ?? 0,
                         'condition' => $condition,
                         'wind_speed' => $windSpeedMph,
