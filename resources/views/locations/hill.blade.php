@@ -83,9 +83,7 @@
             margin-right: 15px;
         }
         .table-weather { width: 100%; border-collapse: collapse; }
-        .table-weather th, .table-weather td { padding: 8px; text-align: center; border-bottom: 1px solid #dee2e6; }
-        .table-weather th { background-color: #f8f9fa; font-weight: 600; }
-        .table-weather tbody tr:nth-child(even) { background-color: #f8f9fa; }
+        .table-weather th, .table-weather td { padding: 8px; text-align: center; border: 1px solid #dee2e6; }
         @media (max-width: 768px) {
             .table-weather { display: block; overflow-x: auto; }
             .table-weather th, .table-weather td { padding: 6px; font-size: 12px; }
