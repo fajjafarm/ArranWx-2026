@@ -40,8 +40,8 @@
             margin-right: 5px;
         }
         .condition-cell img {
-            width: 48px;
-            height: 48px;
+            width: 36px;
+            height: 36px;
             vertical-align: middle;
         }
         .direction-cell i {
@@ -89,7 +89,7 @@
         @media (max-width: 768px) {
             .table-weather { display: block; overflow-x: auto; }
             .table-weather th, .table-weather td { padding: 6px; font-size: 12px; }
-            .condition-cell img { width: 36px; height: 36px; }
+            .condition-cell img { width: 27px; height: 27px; }
         }
     </style>
 @endsection
@@ -221,9 +221,9 @@
                                         <tr>
                                             <th>Time</th>
                                             <th>Weather</th>
-                                            <th>Temp. (°C)</th>
-                                            <th>Feels Like (°C)</th>
-                                            <th>Dew Point (°C)</th>
+                                            <th>Temp.</th>
+                                            <th>Feels Like</th>
+                                            <th>Dew Point</th>
                                             <th>Precip.</th>
                                             <th>Wind Speed</th>
                                             <th>Wind Gust</th>
@@ -231,10 +231,10 @@
                                             <th>Direction</th>
                                             <th>Beaufort Scale</th>
                                             <th>UV Index</th>
-                                            <th>Humidity (%)</th>
-                                            <th>Cloud Cover (%)</th>
-                                            <th>Cloud Level (m)</th>
-                                            <th>Snow Level (m)</th>
+                                            <th>Humidity</th>
+                                            <th>Cloud Cover</th>
+                                            <th>Cloud Base</th>
+                                            <th>Snow Level</th>
                                             <th>Snow Cover</th>
                                         </tr>
                                         <tr>
@@ -252,7 +252,7 @@
                                             <th></th>
                                             <th>%</th>
                                             <th>%</th>
-                                            <th>m</th>
+                                            <th>m AGL</th>
                                             <th>m</th>
                                             <th></th>
                                         </tr>
