@@ -343,7 +343,7 @@ class WeatherController extends Controller
                         'feels_like' => $this->getFeelsLike($details['air_temperature'] ?? null, $windSpeedMs),
                         'cloud_level' => $this->getCloudLevel(
                             $details['air_temperature'] ?? null,
-                            $details['dew_point_temperature'] ?? null,
+                            $this->calculateDewPoint($details['air_temperature'] ?? null, $details['relative_humidity'] ?? null),
                             $details['cloud_area_fraction'] ?? null,
                             $details['relative_humidity'] ?? null
                         ),
