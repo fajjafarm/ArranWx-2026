@@ -223,6 +223,7 @@
                                             <th>Weather Conditions</th>
                                             <th>Temperature (°C)</th>
                                             <th>Feels Like (°C)</th>
+                                            <th>Dew Point (°C)</th>
                                             <th>Precipitation Amount</th>
                                             <th>Wind Speed</th>
                                             <th>Wind Gust</th>
@@ -251,6 +252,7 @@
                                                 </td>
                                                 <td class="{{ $forecast['temp_class'] }}" data-temp="{{ $forecast['temperature'] }}">{{ $forecast['temperature'] }}</td>
                                                 <td class="{{ $forecast['temp_class'] }}" data-temp="{{ $forecast['feels_like'] ?? $forecast['temperature'] }}">{{ $forecast['feels_like'] ?? $forecast['temperature'] }}</td>
+                                                <td class="{{ $forecast['temp_class'] }}" data-temp="{{ $forecast['dew_point_calculated'] }}">{{ $forecast['dew_point_calculated'] }}</td>
                                                 <td class="rain-cell" data-precipitation="{{ $forecast['precipitation'] }}" style="{{ $forecast['rain_style'] }}">{{ $forecast['precipitation'] }}</td>
                                                 <td class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}">{{ $forecast['wind_speed'] }}</td>
                                                 <td class="wind-gust {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_gust'] }}">{{ $forecast['wind_gust'] }}</td>
