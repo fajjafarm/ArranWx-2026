@@ -174,7 +174,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">10-Day Hill Weather Forecast</h4>
+                        <h4 class="card-title">{{ $title }} 10-Day Hill Weather Forecast</h4>
                         <div class="unit-switch">
                             Wind Speed Unit:
                             <label><input type="radio" name="windUnit" value="mph" checked> mph</label>
