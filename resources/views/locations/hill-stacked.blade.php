@@ -41,17 +41,43 @@
             padding: 8px;
             background: #fff;
         }
-        .condition-cell img {
+        .weather-icon {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .weather-icon img {
             width: 36px;
             height: 36px;
             vertical-align: middle;
         }
-        .direction-cell i {
-            font-size: 34px;
-            font-weight: bold;
+        .weather-condition {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .card-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .card-row > div {
+            flex: 1;
+            text-align: center;
+        }
+        .three-column-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .three-column-row > div {
+            flex: 1;
+            text-align: center;
         }
         .rain-cell {
             transition: background 0.3s ease;
+        }
+        .direction-cell i {
+            font-size: 34px;
+            font-weight: bold;
         }
         .api-source-footer {
             margin-top: 20px;
@@ -84,7 +110,9 @@
             margin-right: 15px;
         }
         @media (max-width: 768px) {
-            .condition-cell img { width: 27px; height: 27px; }
+            .weather-icon img { width: 27px; height: 27px; }
+            .card-row, .three-column-row { flex-direction: column; }
+            .card-row > div, .three-column-row > div { margin-bottom: 5px; }
         }
     </style>
 @endsection
@@ -161,6 +189,7 @@
 
 @section('content')
     <div class="container-fluid">
+
         <div class="row">
             <div class="col-12">
                 <div class="header-village">
@@ -207,23 +236,36 @@
                                 </div>
                                 @foreach ($day['forecasts'] as $forecast)
                                     <div class="weather-card">
-                                        <p><strong>Time:</strong> {{ $forecast['time'] }} BST</p>
-                                        <p><strong>Weather:</strong> <img src="{{ $forecast['iconUrl'] }}" alt="{{ $forecast['condition'] }}"> {{ $forecast['condition'] }}</p>
-                                        <p><strong>Temp.:</strong> {{ $forecast['temperature'] }}°C</p>
-                                        <p><strong>Feels Like:</strong> {{ $forecast['feels_like'] ?? $forecast['temperature'] }}°C</p>
-                                        <p><strong>Dew Point:</strong> {{ $forecast['dew_point_calculated'] }}°C</p>
-                                        <p><strong>Precip.:</strong> <span class="rain-cell" data-precipitation="{{ $forecast['precipitation'] }}" style="{{ $forecast['rain_style'] }}">{{ $forecast['precipitation'] }}</span>mm</p>
-                                        <p><strong>Wind Speed:</strong> <span class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}">{{ $forecast['wind_speed'] }}</span>mph</p>
-                                        <p><strong>Wind Gust:</strong> <span class="wind-gust {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_gust'] }}">{{ $forecast['wind_gust'] }}</span>mph</p>
-                                        <p><strong>Wind Cardinal:</strong> {{ $forecast['wind_direction'] ?: 'N/A' }}</p>
-                                        <p><strong>Direction:</strong> <i class="wi wi-direction-up" style="transform: rotate({{ ($forecast['wind_from_direction_degrees'] + 180) % 360 }}deg);"></i></p>
-                                        <p><strong>Beaufort Scale:</strong> {{ $forecast['beaufort_scale'] }}</p>
-                                        <p><strong>UV Index:</strong> {{ round($forecast['ultraviolet_index'], 1) }}</p>
-                                        <p><strong>Humidity:</strong> {{ round($forecast['relative_humidity'], 1) }}%</p>
-                                        <p><strong>Cloud Cover:</strong> {{ round($forecast['cloud_area_fraction']) }}%</p>
-                                        <p><strong>Cloud Base:</strong> {{ $forecast['cloud_level'] }}m AGL</p>
-                                        <p><strong>Snow Level:</strong> {{ $forecast['snow_level'] ?? '-' }}m</p>
-                                        <p><strong>Snow Cover:</strong> Placeholder</p>
+                                        <div class="weather-icon">
+                                            @if (filter_var($forecast['iconUrl'], FILTER_VALIDATE_URL))
+                                                <img src="{{ $forecast['iconUrl'] }}" alt="{{ $forecast['condition'] }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                                                <span style="display:none;">{{ $forecast['condition'] }}</span>
+                                            @else
+                                                <span>{{ $forecast['condition'] }}</span>
+                                            @endif
+                                        </div>
+                                        <div class="weather-condition">{{ $forecast['condition'] }}</div>
+                                        <div class="card-row">
+                                            <div><strong>Temp.:</strong> {{ $forecast['temperature'] }}°C</div>
+                                            <div><strong>Feels Like:</strong> {{ $forecast['feels_like'] ?? $forecast['temperature'] }}°C</div>
+                                            <div><strong>Dew Point:</strong> {{ $forecast['dew_point_calculated'] }}°C</div>
+                                        </div>
+                                        <div class="card-row">
+                                            <div><strong>Wind Speed:</strong> <span class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}">{{ $forecast['wind_speed'] }}</span>mph</div>
+                                            <div><strong>Wind Gust:</strong> <span class="wind-gust {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_gust'] }}">{{ $forecast['wind_gust'] }}</span>mph</div>
+                                            <div><strong>Wind Cardinal:</strong> {{ $forecast['wind_direction'] ?: 'N/A' }}</div>
+                                            <div><strong>Beaufort Scale:</strong> {{ $forecast['beaufort_scale'] }}</div>
+                                        </div>
+                                        <div class="three-column-row">
+                                            <div><strong>UV Index:</strong> {{ round($forecast['ultraviolet_index'], 1) }}</div>
+                                            <div><strong>Humidity:</strong> {{ round($forecast['relative_humidity'], 1) }}%</div>
+                                            <div><strong>Cloud Cover:</strong> {{ round($forecast['cloud_area_fraction']) }}%</div>
+                                        </div>
+                                        <div class="three-column-row">
+                                            <div><strong>Cloud Base:</strong> {{ $forecast['cloud_level'] }}m AGL</div>
+                                            <div><strong>Snow Level:</strong> {{ $forecast['snow_level'] ?? '-' }}m</div>
+                                            <div><strong>Snow Cover:</strong> Placeholder</div>
+                                        </div>
                                     </div>
                                 @endforeach
                             @endforeach
