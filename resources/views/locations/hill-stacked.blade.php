@@ -40,22 +40,25 @@
             margin-bottom: 10px;
             padding: 8px;
             background: #fff;
-            max-width: 600px; /* Constrain card width for tidiness */
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
         }
+        .time-display {
+            text-align: center;
+            font-size: 0.9em;
+            color: #333;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
         .weather-icon {
             text-align: center;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
         .weather-icon img {
             width: 36px;
             height: 36px;
             vertical-align: middle;
-        }
-        .weather-condition {
-            text-align: center;
-            margin-bottom: 10px;
         }
         .card-row {
             display: flex;
@@ -66,8 +69,8 @@
             flex: 1;
             text-align: center;
             padding: 2px 5px;
-            background: #f9f9f9; /* Subtle grid-like background */
-            border: 1px solid #eee; /* Light border for grid effect */
+            background: #f9f9f9;
+            border: 1px solid #eee;
             border-radius: 3px;
         }
         .three-column-row {
@@ -79,8 +82,8 @@
             flex: 1;
             text-align: center;
             padding: 2px 5px;
-            background: #f9f9f9; /* Subtle grid-like background */
-            border: 1px solid #eee; /* Light border for grid effect */
+            background: #f9f9f9;
+            border: 1px solid #eee;
             border-radius: 3px;
         }
         .rain-cell {
@@ -252,6 +255,7 @@
                                 </div>
                                 @foreach ($day['forecasts'] as $forecast)
                                     <div class="weather-card">
+                                        <div class="time-display">{{ $forecast['time'] }} BST</div>
                                         <div class="weather-icon">
                                             @if (filter_var($forecast['iconUrl'], FILTER_VALIDATE_URL))
                                                 <img src="{{ $forecast['iconUrl'] }}" alt="{{ $forecast['condition'] }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
@@ -260,7 +264,6 @@
                                                 <span>{{ $forecast['condition'] }}</span>
                                             @endif
                                         </div>
-                                        <div class="weather-condition">{{ $forecast['condition'] }}</div>
                                         <div class="card-row">
                                             <div><strong>Temp.:</strong> {{ $forecast['temperature'] }}°C</div>
                                             <div><strong>Feels Like:</strong> {{ $forecast['feels_like'] ?? $forecast['temperature'] }}°C</div>
