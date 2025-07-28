@@ -1,8 +1,7 @@
 @extends('layouts.vertical')
 
 @php
-    use App\Http\Controllers\WeatherController;
-    $controller = new WeatherController();
+    // No need to instantiate WeatherController
 @endphp
 
 @section('html-attribute')
@@ -74,9 +73,6 @@
             flex: 1;
             text-align: center;
             padding: 2px 5px;
-            background: #f9f9f9;
-            border: 1px solid #eee;
-            border-radius: 3px;
         }
         .three-column-row {
             display: flex;
@@ -87,9 +83,6 @@
             flex: 1;
             text-align: center;
             padding: 2px 5px;
-            background: #f9f9f9;
-            border: 1px solid #eee;
-            border-radius: 3px;
         }
         .temp-cell-minus-40 { background: #01081e; color: white; }
         .temp-cell-minus-30 { background: #020f39; color: white; }
@@ -201,8 +194,8 @@
                         cell.style.backgroundColor = '#ffffff';
                     } else {
                         const intensity = (value > 0 ? (value - 0.01) / 9.99 : 0);
-                        const r1 = 179; const g1 = 229; const b1 = 252;
-                        const r2 = 67; const g2 = 88; const b2 = 151;
+                        const r1 = 179; const g1 = 229; const b1 = 252; // Light blue start
+                        const r2 = 67; const g2 = 88; const b2 = 151;  // Dark blue end
                         const r = Math.max(0, Math.min(255, Math.floor(r1 + (r2 - r1) * intensity))).toString(16).padStart(2, '0');
                         const g = Math.max(0, Math.min(255, Math.floor(g1 + (g2 - g1) * intensity))).toString(16).padStart(2, '0');
                         const b = Math.max(0, Math.min(255, Math.floor(b1 + (b2 - b1) * intensity))).toString(16).padStart(2, '0');
@@ -299,9 +292,9 @@
                                             @endif
                                         </div>
                                         <div class="card-row">
-                                            <div class="{{ $controller->getTemperatureColorClass($forecast['temperature']) }}"><strong>Temp.:</strong> {{ $forecast['temperature'] }}°C</div>
-                                            <div class="{{ $controller->getTemperatureColorClass($forecast['feels_like'] ?? $forecast['temperature']) }}"><strong>Feels Like:</strong> {{ $forecast['feels_like'] ?? $forecast['temperature'] }}°C</div>
-                                            <div class="{{ $controller->getTemperatureColorClass($forecast['dew_point_calculated']) }}"><strong>Dew Point:</strong> {{ $forecast['dew_point_calculated'] }}°C</div>
+                                            <div class="{{ get_temperature_color_class($forecast['temperature']) }}"><strong>Temp.:</strong> {{ $forecast['temperature'] }}°C</div>
+                                            <div class="{{ get_temperature_color_class($forecast['feels_like'] ?? $forecast['temperature']) }}"><strong>Feels Like:</strong> {{ $forecast['feels_like'] ?? $forecast['temperature'] }}°C</div>
+                                            <div class="{{ get_temperature_color_class($forecast['dew_point_calculated']) }}"><strong>Dew Point:</strong> {{ $forecast['dew_point_calculated'] }}°C</div>
                                         </div>
                                         <div class="card-row">
                                             <div><strong>Wind Speed:</strong> <span class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}">{{ $forecast['wind_speed'] }}</span>mph</div>
