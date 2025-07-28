@@ -40,6 +40,9 @@
             margin-bottom: 10px;
             padding: 8px;
             background: #fff;
+            max-width: 600px; /* Constrain card width for tidiness */
+            margin-left: auto;
+            margin-right: auto;
         }
         .weather-icon {
             text-align: center;
@@ -62,6 +65,10 @@
         .card-row > div {
             flex: 1;
             text-align: center;
+            padding: 2px 5px;
+            background: #f9f9f9; /* Subtle grid-like background */
+            border: 1px solid #eee; /* Light border for grid effect */
+            border-radius: 3px;
         }
         .three-column-row {
             display: flex;
@@ -71,6 +78,10 @@
         .three-column-row > div {
             flex: 1;
             text-align: center;
+            padding: 2px 5px;
+            background: #f9f9f9; /* Subtle grid-like background */
+            border: 1px solid #eee; /* Light border for grid effect */
+            border-radius: 3px;
         }
         .rain-cell {
             transition: background 0.3s ease;
@@ -112,7 +123,7 @@
         @media (max-width: 768px) {
             .weather-icon img { width: 27px; height: 27px; }
             .card-row, .three-column-row { flex-direction: column; }
-            .card-row > div, .three-column-row > div { margin-bottom: 5px; }
+            .card-row > div, .three-column-row > div { margin-bottom: 5px; width: 100%; }
         }
     </style>
 @endsection
@@ -189,6 +200,11 @@
 
 @section('content')
     <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="h3 mb-4">{{ $title }}</h1>
+            </div>
+        </div>
 
         <div class="row">
             <div class="col-12">
@@ -203,7 +219,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">{{ $title }} 10-Day Hill Weather Forecast</h4>
+                        <h4 class="card-title">10-Day Hill Weather Forecast</h4>
                         <div class="unit-switch">
                             Wind Speed Unit:
                             <label><input type="radio" name="windUnit" value="mph" checked> mph</label>
