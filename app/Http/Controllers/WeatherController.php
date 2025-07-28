@@ -95,8 +95,8 @@ class WeatherController extends Controller
         $r1 = 179; $g1 = 229; $b1 = 252; // #b3e5fc
         $r2 = 67; $g2 = 88; $b2 = 151; // #435897
         $r = dechex(max(0, min(255, floor($r1 + ($r2 - $r1) * $intensity))));
-        $g = dechex(max(0, min(255, floor($g1 + ($g2 - g1) * $intensity))));
-        $b = dechex(max(0, min(255, floor($b1 + ($b2 - $b1) * intensity))));
+        $g = dechex(max(0, min(255, floor($g1 + ($g2 - $g1) * $intensity))));
+        $b = dechex(max(0, min(255, floor($b1 + ($b2 - $b1) * $intensity))));
         return "background-color: #$r$g$b; color: black; transition: background 0.3s ease;";
     }
 
