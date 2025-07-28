@@ -1,5 +1,10 @@
 @extends('layouts.vertical')
 
+@php
+    use App\Http\Controllers\WeatherController;
+    $controller = new WeatherController();
+@endphp
+
 @section('html-attribute')
     lang="en"
 @endsection
@@ -86,6 +91,35 @@
             border: 1px solid #eee;
             border-radius: 3px;
         }
+        .temp-cell-minus-40 { background: #01081e; color: white; }
+        .temp-cell-minus-30 { background: #020f39; color: white; }
+        .temp-cell-minus-20 { background: #02154f; color: white; }
+        .temp-cell-minus-15 { background: #082376; color: white; }
+        .temp-cell-minus-10 { background: #435897; color: white; }
+        .temp-cell-minus-8 { background: #3075ac; color: white; }
+        .temp-cell-minus-6 { background: #38aec4; color: black; }
+        .temp-cell-minus-4 { background: #38aec4; color: black; }
+        .temp-cell-minus-2 { background: #60c3c1; color: black; }
+        .temp-cell-0 { background: #7fcebc; color: black; }
+        .temp-cell-2 { background: #91d5ba; color: black; }
+        .temp-cell-4 { background: #b6e3b7; color: black; }
+        .temp-cell-6 { background: #cfebb2; color: black; }
+        .temp-cell-8 { background: #e3ecab; color: black; }
+        .temp-cell-10 { background: #ffeea1; color: black; }
+        .temp-cell-12 { background: #ffe796; color: black; }
+        .temp-cell-14 { background: #ffd881; color: black; }
+        .temp-cell-16 { background: #ffc96c; color: black; }
+        .temp-cell-18 { background: #ffc261; color: black; }
+        .temp-cell-20 { background: #ffb34c; color: black; }
+        .temp-cell-22 { background: #fc9f46; color: black; }
+        .temp-cell-24 { background: #f67639; color: black; }
+        .temp-cell-27 { background: #e13d32; color: black; }
+        .temp-cell-30 { background: #c30031; color: white; }
+        .temp-cell-35 { background: #70001c; color: white; }
+        .temp-cell-40 { background: #3a000e; color: white; }
+        .temp-cell-45 { background: #1f0007; color: white; }
+        .temp-cell-50 { background: #100002; color: white; }
+        .temp-cell-fallback { background: #ff0000; color: white; }
         .rain-cell {
             transition: background 0.3s ease;
         }
@@ -265,9 +299,9 @@
                                             @endif
                                         </div>
                                         <div class="card-row">
-                                            <div><strong>Temp.:</strong> {{ $forecast['temperature'] }}°C</div>
-                                            <div><strong>Feels Like:</strong> {{ $forecast['feels_like'] ?? $forecast['temperature'] }}°C</div>
-                                            <div><strong>Dew Point:</strong> {{ $forecast['dew_point_calculated'] }}°C</div>
+                                            <div class="{{ $controller->getTemperatureColorClass($forecast['temperature']) }}"><strong>Temp.:</strong> {{ $forecast['temperature'] }}°C</div>
+                                            <div class="{{ $controller->getTemperatureColorClass($forecast['feels_like'] ?? $forecast['temperature']) }}"><strong>Feels Like:</strong> {{ $forecast['feels_like'] ?? $forecast['temperature'] }}°C</div>
+                                            <div class="{{ $controller->getTemperatureColorClass($forecast['dew_point_calculated']) }}"><strong>Dew Point:</strong> {{ $forecast['dew_point_calculated'] }}°C</div>
                                         </div>
                                         <div class="card-row">
                                             <div><strong>Wind Speed:</strong> <span class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}">{{ $forecast['wind_speed'] }}</span>mph</div>
