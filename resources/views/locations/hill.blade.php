@@ -97,39 +97,6 @@
         .table-weather tr:nth-child(odd) td:nth-child(2) {
             background-color: #f8f9fa;
         }
-        /* Ensure temperature cells override table background */
-        .table-weather td.temp-cell {
-            background-color: inherit !important; /* Allow temperature class backgrounds */
-        }
-        .temp-cell-minus-40 { background: #01081e !important; color: white; }
-        .temp-cell-minus-30 { background: #020f39 !important; color: white; }
-        .temp-cell-minus-20 { background: #02154f !important; color: white; }
-        .temp-cell-minus-15 { background: #082376 !important; color: white; }
-        .temp-cell-minus-10 { background: #435897 !important; color: white; }
-        .temp-cell-minus-8 { background: #3075ac !important; color: white; }
-        .temp-cell-minus-6 { background: #38aec4 !important; color: black; }
-        .temp-cell-minus-4 { background: #38aec4 !important; color: black; }
-        .temp-cell-minus-2 { background: #60c3c1 !important; color: black; }
-        .temp-cell-0 { background: #7fcebc !important; color: black; }
-        .temp-cell-2 { background: #91d5ba !important; color: black; }
-        .temp-cell-4 { background: #b6e3b7 !important; color: black; }
-        .temp-cell-6 { background: #cfebb2 !important; color: black; }
-        .temp-cell-8 { background: #e3ecab !important; color: black; }
-        .temp-cell-10 { background: #ffeea1 !important; color: black; }
-        .temp-cell-12 { background: #ffe796 !important; color: black; }
-        .temp-cell-14 { background: #ffd881 !important; color: black; }
-        .temp-cell-16 { background: #ffc96c !important; color: black; }
-        .temp-cell-18 { background: #ffc261 !important; color: black; }
-        .temp-cell-20 { background: #ffb34c !important; color: black; }
-        .temp-cell-22 { background: #fc9f46 !important; color: black; }
-        .temp-cell-24 { background: #f67639 !important; color: black; }
-        .temp-cell-27 { background: #e13d32 !important; color: black; }
-        .temp-cell-30 { background: #c30031 !important; color: white; }
-        .temp-cell-35 { background: #70001c !important; color: white; }
-        .temp-cell-40 { background: #3a000e !important; color: white; }
-        .temp-cell-45 { background: #1f0007 !important; color: white; }
-        .temp-cell-50 { background: #100002 !important; color: white; }
-        .temp-cell-fallback { background: #ff0000 !important; color: white; }
         @media (max-width: 768px) {
             .table-weather { display: block; overflow-x: auto; }
             .table-weather th, .table-weather td { padding: 6px; font-size: 12px; }
@@ -307,9 +274,9 @@
                                                         <span>{{ $forecast['condition'] }}</span>
                                                     @endif
                                                 </td>
-                                                <td class="{{ get_temperature_color_class($forecast['temperature']) }} temp-cell" data-temp="{{ $forecast['temperature'] }}">{{ $forecast['temperature'] }}</td>
-                                                <td class="{{ get_temperature_color_class($forecast['feels_like'] ?? $forecast['temperature']) }} temp-cell" data-temp="{{ $forecast['feels_like'] ?? $forecast['temperature'] }}">{{ $forecast['feels_like'] ?? $forecast['temperature'] }}</td>
-                                                <td class="{{ get_temperature_color_class($forecast['dew_point_calculated']) }} temp-cell" data-temp="{{ $forecast['dew_point_calculated'] }}">{{ $forecast['dew_point_calculated'] }}</td>
+                                                <td class="temp-cell" data-temp="{{ $forecast['temperature'] }}" style="background: {{ get_temperature_color($forecast['temperature']) }}; color: {{ get_temperature_text_color($forecast['temperature']) }};">{{ $forecast['temperature'] }}</td>
+                                                <td class="temp-cell" data-temp="{{ $forecast['feels_like'] ?? $forecast['temperature'] }}" style="background: {{ get_temperature_color($forecast['feels_like'] ?? $forecast['temperature']) }}; color: {{ get_temperature_text_color($forecast['feels_like'] ?? $forecast['temperature']) }};">{{ $forecast['feels_like'] ?? $forecast['temperature'] }}</td>
+                                                <td class="temp-cell" data-temp="{{ $forecast['dew_point_calculated'] }}" style="background: {{ get_temperature_color($forecast['dew_point_calculated']) }}; color: {{ get_temperature_text_color($forecast['dew_point_calculated']) }};">{{ $forecast['dew_point_calculated'] }}</td>
                                                 <td class="rain-cell" data-precipitation="{{ $forecast['precipitation'] }}" style="{{ $forecast['rain_style'] }}">{{ $forecast['precipitation'] }}</td>
                                                 <td class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}">{{ $forecast['wind_speed'] }}</td>
                                                 <td class="wind-gust {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_gust'] }}">{{ $forecast['wind_gust'] }}</td>
@@ -343,12 +310,12 @@
         <div class="scale-keys">
             <h4>Temperature Scale Key (°C)</h4>
             <table>
-                <tr><td class="temp-cell-minus-40">≤ -40</td><td class="temp-cell-minus-30">-30</td><td class="temp-cell-minus-20">-20</td><td class="temp-cell-minus-15">-15</td><td class="temp-cell-minus-10">-10</td></tr>
-                <tr><td class="temp-cell-minus-8">-8</td><td class="temp-cell-minus-6">-6</td><td class="temp-cell-minus-4">-4</td><td class="temp-cell-minus-2">-2</td><td class="temp-cell-0">0</td></tr>
-                <tr><td class="temp-cell-2">2</td><td class="temp-cell-4">4</td><td class="temp-cell-6">6</td><td class="temp-cell-8">8</td><td class="temp-cell-10">10</td></tr>
-                <tr><td class="temp-cell-12">12</td><td class="temp-cell-14">14</td><td class="temp-cell-16">16</td><td class="temp-cell-18">18</td><td class="temp-cell-20">20</td></tr>
-                <tr><td class="temp-cell-22">22</td><td class="temp-cell-24">24</td><td class="temp-cell-27">27</td><td class="temp-cell-30">30</td><td class="temp-cell-35">35</td></tr>
-                <tr><td class="temp-cell-40">40</td><td class="temp-cell-45">45</td><td class="temp-cell-50">≥ 50</td></tr>
+                <tr><td style="background: #01081e; color: white;">≤ -40</td><td style="background: #020f39; color: white;">-30</td><td style="background: #02154f; color: white;">-20</td><td style="background: #082376; color: white;">-15</td><td style="background: #435897; color: white;">-10</td></tr>
+                <tr><td style="background: #3075ac; color: white;">-8</td><td style="background: #38aec4; color: black;">-6</td><td style="background: #38aec4; color: black;">-4</td><td style="background: #60c3c1; color: black;">-2</td><td style="background: #7fcebc; color: black;">0</td></tr>
+                <tr><td style="background: #91d5ba; color: black;">2</td><td style="background: #b6e3b7; color: black;">4</td><td style="background: #cfebb2; color: black;">6</td><td style="background: #e3ecab; color: black;">8</td><td style="background: #ffeea1; color: black;">10</td></tr>
+                <tr><td style="background: #ffe796; color: black;">12</td><td style="background: #ffd881; color: black;">14</td><td style="background: #ffc96c; color: black;">16</td><td style="background: #ffc261; color: black;">18</td><td style="background: #ffb34c; color: black;">20</td></tr>
+                <tr><td style="background: #fc9f46; color: black;">22</td><td style="background: #f67639; color: black;">24</td><td style="background: #e13d32; color: black;">27</td><td style="background: #c30031; color: white;">30</td><td style="background: #70001c; color: white;">35</td></tr>
+                <tr><td style="background: #3a000e; color: white;">40</td><td style="background: #1f0007; color: white;">45</td><td style="background: #100002; color: white;">≥ 50</td></tr>
             </table>
             <h4>Beaufort Scale Key</h4>
             <table>
