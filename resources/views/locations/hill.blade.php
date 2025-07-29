@@ -82,15 +82,26 @@
            .unit-switch label {
                margin-right: 15px;
            }
-           .table-weather { width: 100%; border-collapse: collapse; }
+           .table-weather { 
+               width: 100%; 
+               border-collapse: collapse; 
+           }
            .table-weather th, .table-weather td { 
                padding: 8px; 
                text-align: center; 
                border: 1px solid #dee2e6; 
-               background-color: transparent !important; /* Reset Bootstrap striped background */
            }
-           .table-weather td.temp-cell { /* Target forecast cells specifically */
-               background-color: inherit !important; /* Ensure no override */
+           /* Custom striping for Time and Weather columns only */
+           .table-weather tr:nth-child(odd) td:nth-child(1),
+           .table-weather tr:nth-child(odd) td:nth-child(2) {
+               background-color: #f8f9fa;
+           }
+           /* Reset background for temperature and other cells */
+           .table-weather td:nth-child(n+3) {
+               background-color: transparent !important;
+           }
+           .table-weather td.temp-cell { /* Target temperature cells specifically */
+               background-color: inherit !important; /* Ensure temperature classes take precedence */
            }
            .temp-cell-minus-40 { background: #01081e !important; color: white; }
            .temp-cell-minus-30 { background: #020f39 !important; color: white; }
@@ -245,7 +256,7 @@
                                            @endif
                                        </span>
                                    </div>
-                                   <table class="table table-striped table-weather">
+                                   <table class="table table-weather">
                                        <thead>
                                            <tr>
                                                <th>Time</th>
