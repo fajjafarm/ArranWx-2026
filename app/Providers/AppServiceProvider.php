@@ -11,14 +11,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
-    }
-
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
         if (!function_exists('get_temperature_color')) {
     function get_temperature_color($temperature) {
         $colors = [
@@ -77,5 +69,13 @@ if (!function_exists('get_temperature_text_color')) {
         return 'white'; // Fallback color
     }
 }
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        //
     }
 }
