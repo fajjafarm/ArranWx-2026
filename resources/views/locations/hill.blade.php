@@ -83,9 +83,14 @@
                margin-right: 15px;
            }
            .table-weather { width: 100%; border-collapse: collapse; }
-           .table-weather th, .table-weather td { padding: 8px; text-align: center; border: 1px solid #dee2e6; }
-           .table-weather td.temp-cell { /* Ensure specificity */
-               background-color: inherit !important; /* Reset any inherited styles */
+           .table-weather th, .table-weather td { 
+               padding: 8px; 
+               text-align: center; 
+               border: 1px solid #dee2e6; 
+               background-color: transparent !important; /* Reset Bootstrap striped background */
+           }
+           .table-weather td.temp-cell { /* Target forecast cells specifically */
+               background-color: inherit !important; /* Ensure no override */
            }
            .temp-cell-minus-40 { background: #01081e !important; color: white; }
            .temp-cell-minus-30 { background: #020f39 !important; color: white; }
