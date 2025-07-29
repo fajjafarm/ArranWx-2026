@@ -1,3 +1,4 @@
+<?php
 if (!function_exists('get_temperature_color')) {
     function get_temperature_color($temperature) {
         $colors = [
