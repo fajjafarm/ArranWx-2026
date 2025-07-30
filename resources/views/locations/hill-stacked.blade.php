@@ -134,6 +134,29 @@
             return (value * conversions[fromUnit][toUnit]).toFixed(1);
         }
 
+        function get_wind_color(value, unit) {
+            const knots = convertWindSpeed(value, unit, 'knots');
+            if (knots < 1) return '#e6f3ff'; // Calm (light blue)
+            if (knots <= 3) return '#b3d9ff'; // Light air
+            if (knots <= 6) return '#80cfff'; // Light breeze
+            if (knots <= 10) return '#4db8ff'; // Gentle breeze
+            if (knots <= 16) return '#1a94ff'; // Moderate breeze
+            if (knots <= 21) return '#0073e6'; // Fresh breeze
+            if (knots <= 27) return '#005bb3'; // Strong breeze
+            if (knots <= 33) return '#004080'; // Near gale
+            if (knots <= 40) return '#00264d'; // Gale
+            if (knots <= 47) return '#001a33'; // Strong/severe gale
+            if (knots <= 55) return '#000d1a'; // Storm
+            if (knots <= 63) return '#000000'; // Violent storm
+            if (knots >= 64) return '#330000'; // Hurricane-force
+            return '#ff0000'; // Fallback (red)
+        }
+
+        function get_wind_text_color(value, unit) {
+            const knots = convertWindSpeed(value, unit, 'knots');
+            return knots <= 47 ? 'black' : 'white'; // Black text up to Strong/severe gale, white beyond
+        }
+
         function updateWindSpeeds() {
             const unit = document.querySelector('input[name="windUnit"]:checked').value;
             document.querySelectorAll('.wind-speed, .wind-gust').forEach(cell => {
@@ -192,30 +215,6 @@
                 radio.addEventListener('change', updatePrecipitation);
             });
         });
-
-        // Helper functions for wind speed colors
-        function get_wind_color(value, unit) {
-            const knots = convertWindSpeed(value, unit, 'knots');
-            if (knots < 1) return '#e6f3ff'; // Calm (light blue)
-            if (knots <= 3) return '#b3d9ff'; // Light air
-            if (knots <= 6) return '#80cfff'; // Light breeze
-            if (knots <= 10) return '#4db8ff'; // Gentle breeze
-            if (knots <= 16) return '#1a94ff'; // Moderate breeze
-            if (knots <= 21) return '#0073e6'; // Fresh breeze
-            if (knots <= 27) return '#005bb3'; // Strong breeze
-            if (knots <= 33) return '#004080'; // Near gale
-            if (knots <= 40) return '#00264d'; // Gale
-            if (knots <= 47) return '#001a33'; // Strong/severe gale
-            if (knots <= 55) return '#000d1a'; // Storm
-            if (knots <= 63) return '#000000'; // Violent storm
-            if (knots >= 64) return '#330000'; // Hurricane-force
-            return '#ff0000'; // Fallback (red)
-        }
-
-        function get_wind_text_color(value, unit) {
-            const knots = convertWindSpeed(value, unit, 'knots');
-            return knots <= 47 ? 'black' : 'white'; // Black text up to Strong/severe gale, white beyond
-        }
     </script>
 @endsection
 
@@ -288,8 +287,8 @@
                                             <div style="background: {{ get_temperature_color($forecast['dew_point_calculated']) }}; color: {{ get_temperature_text_color($forecast['dew_point_calculated']) }};"><strong>Dew Point:</strong> {{ $forecast['dew_point_calculated'] }}°C</div>
                                         </div>
                                         <div class="card-row">
-                                            <div><strong>Wind Speed:</strong> <span class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}" style="background: {{ get_wind_color($forecast['wind_speed'], 'mph') }}; color: {{ get_wind_text_color($forecast['wind_speed'], 'mph') }}">{{ $forecast['wind_speed'] }}</span>mph</div>
-                                            <div><strong>Wind Gust:</strong> <span class="wind-gust {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_gust'] }}" style="background: {{ get_wind_color($forecast['wind_gust'], 'mph') }}; color: {{ get_wind_text_color($forecast['wind_gust'], 'mph') }}">{{ $forecast['wind_gust'] }}</span>mph</div>
+                                            <div><strong>Wind Speed:</strong> <span class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}">{{ $forecast['wind_speed'] }}</span>mph</div>
+                                            <div><strong>Wind Gust:</strong> <span class="wind-gust {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_gust'] }}">{{ $forecast['wind_gust'] }}</span>mph</div>
                                             <div><strong>Wind Cardinal:</strong> {{ $forecast['wind_direction'] ?: 'N/A' }}</div>
                                             <div><strong>Beaufort Scale:</strong> {{ $forecast['beaufort_scale'] }}</div>
                                         </div>
