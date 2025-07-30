@@ -1,4 +1,5 @@
 <?php
+
 if (!function_exists('get_temperature_color')) {
     function get_temperature_color($temperature) {
         $colors = [
@@ -55,5 +56,63 @@ if (!function_exists('get_temperature_text_color')) {
             }
         }
         return 'white'; // Fallback color
+    }
+}
+
+if (!function_exists('get_precipitation_color')) {
+    function get_precipitation_color($precipitation) {
+        if ($precipitation == 0) return '#ffffff';
+        if ($precipitation <= 2) return '#afe0f9';
+        if ($precipitation <= 5) return '#7dc4e6';
+        if ($precipitation <= 10) return '#4da8d3';
+        if ($precipitation <= 20) return '#1a8cc0';
+        return '#0066b3'; // >20
+    }
+}
+
+if (!function_exists('get_uv_color')) {
+    function get_uv_color($uv) {
+        if ($uv <= 2) return '#e6ffe6';
+        if ($uv <= 5) return '#ccffcc';
+        if ($uv <= 7) return '#ffff99';
+        if ($uv <= 10) return '#ffd700';
+        return '#ff8c00'; // 11+
+    }
+}
+
+if (!function_exists('get_humidity_color')) {
+    function get_humidity_color($humidity) {
+        if ($humidity <= 30) return '#e6f3ff';
+        if ($humidity <= 50) return '#b3d9ff';
+        if ($humidity <= 70) return '#80cfff';
+        if ($humidity <= 85) return '#4db8ff';
+        return '#1a94ff'; // 86-100
+    }
+}
+
+if (!function_exists('get_cloud_cover_color')) {
+    function get_cloud_cover_color($cover) {
+        if ($cover <= 10) return '#ffffff';
+        if ($cover <= 50) return '#e6f3ff';
+        if ($cover <= 90) return '#b3d9ff';
+        return '#80cfff'; // 91-100
+    }
+}
+
+if (!function_exists('get_cloud_base_color')) {
+    function get_cloud_base_color($height) {
+        if ($height <= 500) return '#ffffff';
+        if ($height <= 2000) return '#e6f3ff';
+        if ($height <= 5000) return '#b3d9ff';
+        return '#80cfff'; // >5000
+    }
+}
+
+if (!function_exists('get_snow_level_color')) {
+    function get_snow_level_color($level) {
+        if ($level == 0 || $level === '-') return '#ffffff';
+        if ($level <= 1000) return '#e6f3ff';
+        if ($level <= 2000) return '#b3d9ff';
+        return '#80cfff'; // >2000
     }
 }
