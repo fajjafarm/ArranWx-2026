@@ -116,3 +116,42 @@ if (!function_exists('get_snow_level_color')) {
         return '#80cfff'; // >2000
     }
 }
+
+if (!function_exists('convertWindSpeed')) {
+    function convertWindSpeed($value, $fromUnit, $toUnit) {
+        $conversions = [
+            'mph' => ['mph' => 1, 'km/h' => 1.60934, 'knots' => 0.868976, 'm/s' => 0.44704],
+            'km/h' => ['mph' => 0.621371, 'km/h' => 1, 'knots' => 0.539957, 'm/s' => 0.277778],
+            'knots' => ['mph' => 1.15078, 'km/h' => 1.852, 'knots' => 1, 'm/s' => 0.514444],
+            'm/s' => ['mph' => 2.23694, 'km/h' => 3.6, 'knots' => 1.94384, 'm/s' => 1]
+        ];
+        return $value * $conversions[$fromUnit][$toUnit];
+    }
+}
+
+if (!function_exists('get_wind_color')) {
+    function get_wind_color($value, $unit) {
+        $knots = convertWindSpeed($value, $unit, 'knots');
+        if ($knots < 1) return '#e6f3ff'; // Calm (light blue)
+        if ($knots <= 3) return '#b3d9ff'; // Light air
+        if ($knots <= 6) return '#80cfff'; // Light breeze
+        if ($knots <= 10) return '#4db8ff'; // Gentle breeze
+        if ($knots <= 16) return '#1a94ff'; // Moderate breeze
+        if ($knots <= 21) return '#0073e6'; // Fresh breeze
+        if ($knots <= 27) return '#005bb3'; // Strong breeze
+        if ($knots <= 33) return '#004080'; // Near gale
+        if ($knots <= 40) return '#00264d'; // Gale
+        if ($knots <= 47) return '#001a33'; // Strong/severe gale
+        if ($knots <= 55) return '#000d1a'; // Storm
+        if ($knots <= 63) return '#000000'; // Violent storm
+        if ($knots >= 64) return '#330000'; // Hurricane-force
+        return '#ff0000'; // Fallback (red)
+    }
+}
+
+if (!function_exists('get_wind_text_color')) {
+    function get_wind_text_color($value, $unit) {
+        $knots = convertWindSpeed($value, $unit, 'knots');
+        return $knots <= 47 ? 'black' : 'white'; // Black text up to Strong/severe gale, white beyond
+    }
+}

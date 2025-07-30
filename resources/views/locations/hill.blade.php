@@ -107,52 +107,6 @@
 
 @section('js')
     <script>
-        function convertWindSpeed(value, fromUnit, toUnit) {
-            const conversions = {
-                'mph': { 'mph': 1, 'km/h': 1.60934, 'knots': 0.868976, 'm/s': 0.44704 },
-                'km/h': { 'mph': 0.621371, 'km/h': 1, 'knots': 0.539957, 'm/s': 0.277778 },
-                'knots': { 'mph': 1.15078, 'km/h': 1.852, 'knots': 1, 'm/s': 0.514444 },
-                'm/s': { 'mph': 2.23694, 'km/h': 3.6, 'knots': 1.94384, 'm/s': 1 }
-            };
-            return (value * conversions[fromUnit][toUnit]).toFixed(1);
-        }
-
-        function get_wind_color(value, unit) {
-            const knots = convertWindSpeed(value, unit, 'knots');
-            if (knots < 1) return '#e6f3ff'; // Calm (light blue)
-            if (knots <= 3) return '#b3d9ff'; // Light air
-            if (knots <= 6) return '#80cfff'; // Light breeze
-            if (knots <= 10) return '#4db8ff'; // Gentle breeze
-            if (knots <= 16) return '#1a94ff'; // Moderate breeze
-            if (knots <= 21) return '#0073e6'; // Fresh breeze
-            if (knots <= 27) return '#005bb3'; // Strong breeze
-            if (knots <= 33) return '#004080'; // Near gale
-            if (knots <= 40) return '#00264d'; // Gale
-            if (knots <= 47) return '#001a33'; // Strong/severe gale
-            if (knots <= 55) return '#000d1a'; // Storm
-            if (knots <= 63) return '#000000'; // Violent storm
-            if (knots >= 64) return '#330000'; // Hurricane-force
-            return '#ff0000'; // Fallback (red)
-        }
-
-        function get_wind_text_color(value, unit) {
-            const knots = convertWindSpeed(value, unit, 'knots');
-            return knots <= 47 ? 'black' : 'white'; // Black text up to Strong/severe gale, white beyond
-        }
-
-        function updateWindSpeeds() {
-            const unit = document.querySelector('input[name="windUnit"]:checked').value;
-            document.querySelectorAll('.wind-speed, .wind-gust').forEach(cell => {
-                let value = parseFloat(cell.dataset.original) || 0;
-                if (!isNaN(value)) {
-                    const convertedValue = convertWindSpeed(value, 'mph', unit);
-                    cell.textContent = convertedValue;
-                    cell.style.backgroundColor = get_wind_color(convertedValue, unit);
-                    cell.style.color = get_wind_text_color(convertedValue, unit);
-                }
-            });
-        }
-
         function updatePrecipitation() {
             const unit = document.querySelector('input[name="rainUnit"]:checked').value;
             document.querySelectorAll('.rain-cell').forEach(cell => {
@@ -177,23 +131,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.wind-speed, .wind-gust').forEach(cell => {
-                let value = parseFloat(cell.textContent) || 0;
-                cell.dataset.original = value;
-                const beaufort = parseInt(cell.className.match(/wind-cell-(\d+)/)?.[1]) || 0;
-                cell.className = `wind-speed ${beaufort >= 0 && beaufort <= 12 ? `wind-cell-${beaufort}` : 'wind-cell-0'}`;
-                cell.textContent = convertWindSpeed(value, 'mph', 'mph'); // Default to mph
-                cell.style.backgroundColor = get_wind_color(value, 'mph');
-                cell.style.color = get_wind_text_color(value, 'mph');
-            });
             document.querySelectorAll('.rain-cell').forEach(cell => {
                 cell.dataset.precipitation = cell.textContent;
                 cell.dataset.originalStyle = cell.getAttribute('style');
             });
             updatePrecipitation();
-            document.querySelectorAll('input[name="windUnit"]').forEach(radio => {
-                radio.addEventListener('change', updateWindSpeeds);
-            });
             document.querySelectorAll('input[name="rainUnit"]').forEach(radio => {
                 radio.addEventListener('change', updatePrecipitation);
             });
@@ -304,8 +246,8 @@
                                                 <td class="temp-cell" data-temp="{{ $forecast['feels_like'] ?? $forecast['temperature'] }}" style="background: {{ get_temperature_color($forecast['feels_like'] ?? $forecast['temperature']) }}; color: {{ get_temperature_text_color($forecast['feels_like'] ?? $forecast['temperature']) }};">{{ $forecast['feels_like'] ?? $forecast['temperature'] }}</td>
                                                 <td class="temp-cell" data-temp="{{ $forecast['dew_point_calculated'] }}" style="background: {{ get_temperature_color($forecast['dew_point_calculated']) }}; color: {{ get_temperature_text_color($forecast['dew_point_calculated']) }};">{{ $forecast['dew_point_calculated'] }}</td>
                                                 <td class="rain-cell" data-precipitation="{{ $forecast['precipitation'] }}" style="background: {{ get_precipitation_color($forecast['precipitation']) }};">{{ $forecast['precipitation'] }}</td>
-                                                <td class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}">{{ $forecast['wind_speed'] }}</td>
-                                                <td class="wind-gust {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_gust'] }}">{{ $forecast['wind_gust'] }}</td>
+                                                <td class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}" style="background: {{ get_wind_color($forecast['wind_speed'], 'mph') }}; color: {{ get_wind_text_color($forecast['wind_speed'], 'mph') }}">{{ $forecast['wind_speed'] }}</td>
+                                                <td class="wind-gust {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_gust'] }}" style="background: {{ get_wind_color($forecast['wind_gust'], 'mph') }}; color: {{ get_wind_text_color($forecast['wind_gust'], 'mph') }}">{{ $forecast['wind_gust'] }}</td>
                                                 <td>{{ $forecast['wind_direction'] ?: 'N/A' }}</td>
                                                 <td class="direction-cell">
                                                     @if (is_numeric($forecast['wind_from_direction_degrees']))
