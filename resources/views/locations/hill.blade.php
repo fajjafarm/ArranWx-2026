@@ -117,14 +117,38 @@
             return (value * conversions[fromUnit][toUnit]).toFixed(1);
         }
 
+        function get_wind_color(value, unit) {
+            const knots = convertWindSpeed(value, unit, 'knots');
+            if (knots < 1) return '#e6f3ff'; // Calm (light blue)
+            if (knots <= 3) return '#b3d9ff'; // Light air
+            if (knots <= 6) return '#80cfff'; // Light breeze
+            if (knots <= 10) return '#4db8ff'; // Gentle breeze
+            if (knots <= 16) return '#1a94ff'; // Moderate breeze
+            if (knots <= 21) return '#0073e6'; // Fresh breeze
+            if (knots <= 27) return '#005bb3'; // Strong breeze
+            if (knots <= 33) return '#004080'; // Near gale
+            if (knots <= 40) return '#00264d'; // Gale
+            if (knots <= 47) return '#001a33'; // Strong/severe gale
+            if (knots <= 55) return '#000d1a'; // Storm
+            if (knots <= 63) return '#000000'; // Violent storm
+            if (knots >= 64) return '#330000'; // Hurricane-force
+            return '#ff0000'; // Fallback (red)
+        }
+
+        function get_wind_text_color(value, unit) {
+            const knots = convertWindSpeed(value, unit, 'knots');
+            return knots <= 47 ? 'black' : 'white'; // Black text up to Strong/severe gale, white beyond
+        }
+
         function updateWindSpeeds() {
             const unit = document.querySelector('input[name="windUnit"]:checked').value;
             document.querySelectorAll('.wind-speed, .wind-gust').forEach(cell => {
                 let value = parseFloat(cell.dataset.original) || 0;
                 if (!isNaN(value)) {
-                    const originalBeaufort = parseInt(cell.className.match(/wind-cell-(\d+)/)?.[1]) || 0;
-                    cell.textContent = convertWindSpeed(value, 'mph', unit);
-                    cell.className = `wind-speed ${originalBeaufort >= 0 && originalBeaufort <= 12 ? `wind-cell-${originalBeaufort}` : 'wind-cell-0'}`;
+                    const convertedValue = convertWindSpeed(value, 'mph', unit);
+                    cell.textContent = convertedValue;
+                    cell.style.backgroundColor = get_wind_color(convertedValue, unit);
+                    cell.style.color = get_wind_text_color(convertedValue, unit);
                 }
             });
         }
@@ -159,6 +183,8 @@
                 const beaufort = parseInt(cell.className.match(/wind-cell-(\d+)/)?.[1]) || 0;
                 cell.className = `wind-speed ${beaufort >= 0 && beaufort <= 12 ? `wind-cell-${beaufort}` : 'wind-cell-0'}`;
                 cell.textContent = convertWindSpeed(value, 'mph', 'mph'); // Default to mph
+                cell.style.backgroundColor = get_wind_color(value, 'mph');
+                cell.style.color = get_wind_text_color(value, 'mph');
             });
             document.querySelectorAll('.rain-cell').forEach(cell => {
                 cell.dataset.precipitation = cell.textContent;
@@ -277,9 +303,9 @@
                                                 <td class="temp-cell" data-temp="{{ $forecast['temperature'] }}" style="background: {{ get_temperature_color($forecast['temperature']) }}; color: {{ get_temperature_text_color($forecast['temperature']) }};">{{ $forecast['temperature'] }}</td>
                                                 <td class="temp-cell" data-temp="{{ $forecast['feels_like'] ?? $forecast['temperature'] }}" style="background: {{ get_temperature_color($forecast['feels_like'] ?? $forecast['temperature']) }}; color: {{ get_temperature_text_color($forecast['feels_like'] ?? $forecast['temperature']) }};">{{ $forecast['feels_like'] ?? $forecast['temperature'] }}</td>
                                                 <td class="temp-cell" data-temp="{{ $forecast['dew_point_calculated'] }}" style="background: {{ get_temperature_color($forecast['dew_point_calculated']) }}; color: {{ get_temperature_text_color($forecast['dew_point_calculated']) }};">{{ $forecast['dew_point_calculated'] }}</td>
-                                                <td class="rain-cell" data-precipitation="{{ $forecast['precipitation'] }}" style="{{ $forecast['rain_style'] }}">{{ $forecast['precipitation'] }}</td>
-                                                <td class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}">{{ $forecast['wind_speed'] }}</td>
-                                                <td class="wind-gust {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_gust'] }}">{{ $forecast['wind_gust'] }}</td>
+                                                <td class="rain-cell" data-precipitation="{{ $forecast['precipitation'] }}" style="background: {{ get_precipitation_color($forecast['precipitation']) }};">{{ $forecast['precipitation'] }}</td>
+                                                <td class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}" style="background: {{ get_wind_color($forecast['wind_speed'], 'mph') }}; color: {{ get_wind_text_color($forecast['wind_speed'], 'mph') }}">{{ $forecast['wind_speed'] }}</td>
+                                                <td class="wind-gust {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_gust'] }}" style="background: {{ get_wind_color($forecast['wind_gust'], 'mph') }}; color: {{ get_wind_text_color($forecast['wind_gust'], 'mph') }}">{{ $forecast['wind_gust'] }}</td>
                                                 <td>{{ $forecast['wind_direction'] ?: 'N/A' }}</td>
                                                 <td class="direction-cell">
                                                     @if (is_numeric($forecast['wind_from_direction_degrees']))
@@ -289,11 +315,11 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $forecast['beaufort_scale'] }}</td>
-                                                <td class="uv-cell">{{ round($forecast['ultraviolet_index'], 1) }}</td>
-                                                <td class="humidity-cell">{{ round($forecast['relative_humidity'], 1) }}</td>
-                                                <td>{{ round($forecast['cloud_area_fraction']) }}</td>
-                                                <td>{{ $forecast['cloud_level'] }}</td>
-                                                <td>{{ $forecast['snow_level'] ?? '-' }}</td>
+                                                <td class="uv-cell" style="background: {{ get_uv_color($forecast['ultraviolet_index']) }};">{{ round($forecast['ultraviolet_index'], 1) }}</td>
+                                                <td class="humidity-cell" style="background: {{ get_humidity_color($forecast['relative_humidity']) }};">{{ round($forecast['relative_humidity'], 1) }}</td>
+                                                <td style="background: {{ get_cloud_cover_color($forecast['cloud_area_fraction']) }};">{{ round($forecast['cloud_area_fraction']) }}</td>
+                                                <td style="background: {{ get_cloud_base_color($forecast['cloud_level']) }};">{{ $forecast['cloud_level'] }}</td>
+                                                <td style="background: {{ get_snow_level_color($forecast['snow_level'] ?? 0) }};">{{ $forecast['snow_level'] ?? '-' }}</td>
                                                 <td>Placeholder</td>
                                             </tr>
                                         @endforeach
@@ -317,13 +343,43 @@
                 <tr><td style="background: #fc9f46; color: black;">22</td><td style="background: #f67639; color: black;">24</td><td style="background: #e13d32; color: black;">27</td><td style="background: #c30031; color: white;">30</td><td style="background: #70001c; color: white;">35</td></tr>
                 <tr><td style="background: #3a000e; color: white;">40</td><td style="background: #1f0007; color: white;">45</td><td style="background: #100002; color: white;">≥ 50</td></tr>
             </table>
-            <h4>Beaufort Scale Key</h4>
+            <h4>Beaufort Scale Key (knots)</h4>
             <table>
-                <tr><td class="wind-cell-0">0: <0.5 m/s - Calm</td><td class="wind-cell-1">1: 0.5-1.5 m/s - Light Air</td><td class="wind-cell-2">2: 1.6-3.3 m/s - Light Breeze</td></tr>
-                <tr><td class="wind-cell-3">3: 3.4-5.4 m/s - Gentle Breeze</td><td class="wind-cell-4">4: 5.5-7.9 m/s - Moderate Breeze</td><td class="wind-cell-5">5: 8.0-10.7 m/s - Fresh Breeze</td></tr>
-                <tr><td class="wind-cell-6">6: 10.8-13.8 m/s - Strong Breeze</td><td class="wind-cell-7">7: 13.9-17.1 m/s - Near Gale</td><td class="wind-cell-8">8: 17.2-20.7 m/s - Gale</td></tr>
-                <tr><td class="wind-cell-9">9: 20.8-24.4 m/s - Strong Gale</td><td class="wind-cell-10">10: 24.5-28.4 m/s - Storm</td><td class="wind-cell-11">11: 28.5-32.6 m/s - Violent Storm</td></tr>
-                <tr><td class="wind-cell-12">12: ≥32.7 m/s - Hurricane</td></tr>
+                <tr><td style="background: #e6f3ff; color: black;">0-1 (Calm)</td><td style="background: #b3d9ff; color: black;">1-3 (Light Air)</td><td style="background: #80cfff; color: black;">4-6 (Light Breeze)</td></tr>
+                <tr><td style="background: #4db8ff; color: black;">7-10 (Gentle Breeze)</td><td style="background: #1a94ff; color: black;">11-16 (Moderate Breeze)</td><td style="background: #0073e6; color: black;">17-21 (Fresh Breeze)</td></tr>
+                <tr><td style="background: #005bb3; color: black;">22-27 (Strong Breeze)</td><td style="background: #004080; color: black;">28-33 (Near Gale)</td><td style="background: #00264d; color: black;">34-40 (Gale)</td></tr>
+                <tr><td style="background: #001a33; color: white;">41-47 (Strong/Severe Gale)</td><td style="background: #000d1a; color: white;">48-55 (Storm)</td><td style="background: #000000; color: white;">56-63 (Violent Storm)</td></tr>
+                <tr><td style="background: #330000; color: white;">≥64 (Hurricane-force)</td></tr>
+            </table>
+            <h4>Precipitation Scale Key (mm)</h4>
+            <table>
+                <tr><td style="background: #ffffff; color: black;">0 (No Rain)</td><td style="background: #afe0f9; color: black;">0.1-2 (Light)</td><td style="background: #7dc4e6; color: black;">2.1-5 (Moderate)</td></tr>
+                <tr><td style="background: #4da8d3; color: black;">5.1-10 (Heavy)</td><td style="background: #1a8cc0; color: white;">10.1-20 (Very Heavy)</td><td style="background: #0066b3; color: white;">>20 (Extreme)</td></tr>
+            </table>
+            <h4>UV Index Scale Key</h4>
+            <table>
+                <tr><td style="background: #e6ffe6; color: black;">0-2 (Low)</td><td style="background: #ccffcc; color: black;">3-5 (Moderate)</td><td style="background: #ffff99; color: black;">6-7 (High)</td></tr>
+                <tr><td style="background: #ffd700; color: black;">8-10 (Very High)</td><td style="background: #ff8c00; color: white;">11+ (Extreme)</td></tr>
+            </table>
+            <h4>Humidity Scale Key (%)</h4>
+            <table>
+                <tr><td style="background: #e6f3ff; color: black;">0-30 (Very Dry)</td><td style="background: #b3d9ff; color: black;">31-50 (Dry)</td><td style="background: #80cfff; color: black;">51-70 (Comfortable)</td></tr>
+                <tr><td style="background: #4db8ff; color: black;">71-85 (Humid)</td><td style="background: #1a94ff; color: white;">86-100 (Very Humid)</td></tr>
+            </table>
+            <h4>Cloud Cover Scale Key (%)</h4>
+            <table>
+                <tr><td style="background: #ffffff; color: black;">0-10 (Clear)</td><td style="background: #e6f3ff; color: black;">11-50 (Partly Cloudy)</td><td style="background: #b3d9ff; color: black;">51-90 (Mostly Cloudy)</td></tr>
+                <tr><td style="background: #80cfff; color: black;">91-100 (Overcast)</td></tr>
+            </table>
+            <h4>Cloud Base Scale Key (m AGL)</h4>
+            <table>
+                <tr><td style="background: #ffffff; color: black;">0-500 (Low)</td><td style="background: #e6f3ff; color: black;">501-2000 (Medium)</td><td style="background: #b3d9ff; color: black;">2001-5000 (High)</td></tr>
+                <tr><td style="background: #80cfff; color: black;">>5000 (Very High)</td></tr>
+            </table>
+            <h4>Snow Level Scale Key (m)</h4>
+            <table>
+                <tr><td style="background: #ffffff; color: black;">0 (No Snow)</td><td style="background: #e6f3ff; color: black;">1-1000 (Low)</td><td style="background: #b3d9ff; color: black;">1001-2000 (Moderate)</td></tr>
+                <tr><td style="background: #80cfff; color: black;">>2000 (High)</td></tr>
             </table>
         </div>
         <div class="api-source-footer">
