@@ -132,26 +132,56 @@ if (!function_exists('convertWindSpeed')) {
 if (!function_exists('get_wind_color')) {
     function get_wind_color($value, $unit) {
         $knots = convertWindSpeed($value, $unit, 'knots');
-        if ($knots < 1) return '#e6f3ff'; // Calm (light blue)
-        if ($knots <= 3) return '#b3d9ff'; // Light air
-        if ($knots <= 6) return '#80cfff'; // Light breeze
-        if ($knots <= 10) return '#4db8ff'; // Gentle breeze
-        if ($knots <= 16) return '#1a94ff'; // Moderate breeze
-        if ($knots <= 21) return '#0073e6'; // Fresh breeze
-        if ($knots <= 27) return '#005bb3'; // Strong breeze
-        if ($knots <= 33) return '#004080'; // Near gale
-        if ($knots <= 40) return '#00264d'; // Gale
-        if ($knots <= 47) return '#001a33'; // Strong/severe gale
-        if ($knots <= 55) return '#000d1a'; // Storm
-        if ($knots <= 63) return '#000000'; // Violent storm
-        if ($knots >= 64) return '#330000'; // Hurricane-force
-        return '#ff0000'; // Fallback (red)
+        $beaufort = 0;
+        if ($knots >= 32.7) $beaufort = 12;
+        elseif ($knots >= 28.5) $beaufort = 11;
+        elseif ($knots >= 24.5) $beaufort = 10;
+        elseif ($knots >= 20.8) $beaufort = 9;
+        elseif ($knots >= 17.2) $beaufort = 8;
+        elseif ($knots >= 13.9) $beaufort = 7;
+        elseif ($knots >= 10.8) $beaufort = 6;
+        elseif ($knots >= 8.0) $beaufort = 5;
+        elseif ($knots >= 5.5) $beaufort = 4;
+        elseif ($knots >= 3.4) $beaufort = 3;
+        elseif ($knots >= 1.6) $beaufort = 2;
+        elseif ($knots >= 0.5) $beaufort = 1;
+
+        switch ($beaufort) {
+            case 0: return '#ADD8E6'; // Light Blue
+            case 1: return '#00CED1'; // Aqua
+            case 2: return '#19B481'; // Midpoint Aqua to Green
+            case 3: return '#32CD32'; // Green
+            case 4: return '#98E619'; // Midpoint Green to Yellow
+            case 5: return '#FFFF00'; // Yellow
+            case 6: return '#FFE45C'; // Midpoint Yellow to Peach
+            case 7: return '#FFDAB9'; // Peach
+            case 8: return '#F4B899'; // Midpoint Peach to Dark Salmon
+            case 9: return '#E9967A'; // Dark Salmon
+            case 10: return '#F44B3D'; // Midpoint Dark Salmon to Red
+            case 11: return '#FF0000'; // Red
+            case 12: return '#8A2BE2'; // Violet
+            default: return '#ADD8E6'; // Default to Light Blue
+        }
     }
 }
 
 if (!function_exists('get_wind_text_color')) {
     function get_wind_text_color($value, $unit) {
         $knots = convertWindSpeed($value, $unit, 'knots');
-        return $knots <= 47 ? 'black' : 'white'; // Black text up to Strong/severe gale, white beyond
+        $beaufort = 0;
+        if ($knots >= 32.7) $beaufort = 12;
+        elseif ($knots >= 28.5) $beaufort = 11;
+        elseif ($knots >= 24.5) $beaufort = 10;
+        elseif ($knots >= 20.8) $beaufort = 9;
+        elseif ($knots >= 17.2) $beaufort = 8;
+        elseif ($knots >= 13.9) $beaufort = 7;
+        elseif ($knots >= 10.8) $beaufort = 6;
+        elseif ($knots >= 8.0) $beaufort = 5;
+        elseif ($knots >= 5.5) $beaufort = 4;
+        elseif ($knots >= 3.4) $beaufort = 3;
+        elseif ($knots >= 1.6) $beaufort = 2;
+        elseif ($knots >= 0.5) $beaufort = 1;
+
+        return $beaufort <= 9 ? 'black' : 'white'; // Black text up to Force 9, white beyond
     }
 }

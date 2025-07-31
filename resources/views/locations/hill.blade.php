@@ -200,9 +200,9 @@
                                             <th>Precip.</th>
                                             <th>Wind Speed</th>
                                             <th>Wind Gust</th>
+                                            <th>Beaufort Scale</th>
                                             <th>Wind Cardinal</th>
                                             <th>Direction</th>
-                                            <th>Beaufort Scale</th>
                                             <th>UV Index</th>
                                             <th>Humidity</th>
                                             <th>Cloud Cover</th>
@@ -248,6 +248,7 @@
                                                 <td class="rain-cell" data-precipitation="{{ $forecast['precipitation'] }}" style="background: {{ get_precipitation_color($forecast['precipitation']) }};">{{ $forecast['precipitation'] }}</td>
                                                 <td class="wind-speed {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_speed'] }}" style="background: {{ get_wind_color($forecast['wind_speed'], 'mph') }}; color: {{ get_wind_text_color($forecast['wind_speed'], 'mph') }}">{{ $forecast['wind_speed'] }}</td>
                                                 <td class="wind-gust {{ $forecast['wind_class'] }}" data-original="{{ $forecast['wind_gust'] }}" style="background: {{ get_wind_color($forecast['wind_gust'], 'mph') }}; color: {{ get_wind_text_color($forecast['wind_gust'], 'mph') }}">{{ $forecast['wind_gust'] }}</td>
+                                                <td class="beaufort-cell" style="background: {{ get_wind_color(convertWindSpeed($forecast['wind_speed'], 'mph', 'knots') >= 32.7 ? 12 : ($forecast['beaufort_scale'] ?: 0), 'mph') }}; color: {{ get_wind_text_color(convertWindSpeed($forecast['wind_speed'], 'mph', 'knots') >= 32.7 ? 12 : ($forecast['beaufort_scale'] ?: 0), 'mph') }}">{{ $forecast['beaufort_scale'] }}</td>
                                                 <td>{{ $forecast['wind_direction'] ?: 'N/A' }}</td>
                                                 <td class="direction-cell">
                                                     @if (is_numeric($forecast['wind_from_direction_degrees']))
@@ -256,7 +257,6 @@
                                                         {{ $forecast['wind_direction'] }}
                                                     @endif
                                                 </td>
-                                                <td>{{ $forecast['beaufort_scale'] }}</td>
                                                 <td class="uv-cell" style="background: {{ get_uv_color($forecast['ultraviolet_index']) }};">{{ round($forecast['ultraviolet_index'], 1) }}</td>
                                                 <td class="humidity-cell" style="background: {{ get_humidity_color($forecast['relative_humidity']) }};">{{ round($forecast['relative_humidity'], 1) }}</td>
                                                 <td style="background: {{ get_cloud_cover_color($forecast['cloud_area_fraction']) }};">{{ round($forecast['cloud_area_fraction']) }}</td>
@@ -287,11 +287,11 @@
             </table>
             <h4>Beaufort Scale Key (knots)</h4>
             <table>
-                <tr><td style="background: #e6f3ff; color: black;">0-1 (Calm)</td><td style="background: #b3d9ff; color: black;">1-3 (Light Air)</td><td style="background: #80cfff; color: black;">4-6 (Light Breeze)</td></tr>
-                <tr><td style="background: #4db8ff; color: black;">7-10 (Gentle Breeze)</td><td style="background: #1a94ff; color: black;">11-16 (Moderate Breeze)</td><td style="background: #0073e6; color: black;">17-21 (Fresh Breeze)</td></tr>
-                <tr><td style="background: #005bb3; color: black;">22-27 (Strong Breeze)</td><td style="background: #004080; color: black;">28-33 (Near Gale)</td><td style="background: #00264d; color: black;">34-40 (Gale)</td></tr>
-                <tr><td style="background: #001a33; color: white;">41-47 (Strong/Severe Gale)</td><td style="background: #000d1a; color: white;">48-55 (Storm)</td><td style="background: #000000; color: white;">56-63 (Violent Storm)</td></tr>
-                <tr><td style="background: #330000; color: white;">≥64 (Hurricane-force)</td></tr>
+                <tr><td style="background: #ADD8E6; color: black;">0-0.5 (Calm)</td><td style="background: #00CED1; color: black;">0.5-1.5 (Light Air)</td><td style="background: #19B481; color: black;">1.6-3.3 (Light Breeze)</td></tr>
+                <tr><td style="background: #32CD32; color: black;">3.4-5.4 (Gentle Breeze)</td><td style="background: #98E619; color: black;">5.5-7.9 (Moderate Breeze)</td><td style="background: #FFFF00; color: black;">8.0-10.7 (Fresh Breeze)</td></tr>
+                <tr><td style="background: #FFE45C; color: black;">10.8-13.8 (Strong Breeze)</td><td style="background: #FFDAB9; color: black;">13.9-17.1 (Near Gale)</td><td style="background: #F4B899; color: black;">17.2-20.7 (Gale)</td></tr>
+                <tr><td style="background: #E9967A; color: black;">20.8-24.4 (Strong Gale)</td><td style="background: #F44B3D; color: black;">24.5-28.4 (Storm)</td><td style="background: #FF0000; color: white;">28.5-32.6 (Violent Storm)</td></tr>
+                <tr><td style="background: #8A2BE2; color: white;">≥32.7 (Hurricane)</td></tr>
             </table>
             <h4>Precipitation Scale Key (mm)</h4>
             <table>
