@@ -119,6 +119,7 @@ if (!function_exists('get_snow_level_color')) {
 
 if (!function_exists('convertWindSpeed')) {
     function convertWindSpeed($value, $fromUnit, $toUnit) {
+        $value = floatval($value); // Cast to float to handle string inputs
         $conversions = [
             'mph' => ['mph' => 1, 'km/h' => 1.60934, 'knots' => 0.868976, 'm/s' => 0.44704],
             'km/h' => ['mph' => 0.621371, 'km/h' => 1, 'knots' => 0.539957, 'm/s' => 0.277778],
