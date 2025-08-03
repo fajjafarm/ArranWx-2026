@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WeatherController;
 use App\Http\Controllers\ResourcesController;
+use App\Http\Controllers\WeatherWarningController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -34,6 +35,9 @@ Route::prefix('resources')->name('resources.')->group(function () {
     Route::get('/tides/{location}', [ResourcesController::class, 'tides'])->name('tides');
    
 });
+
+Route::get('/weather/warnings', [WeatherWarningController::class, 'index'])->name('weather.warnings');
+Route::get('/weather/emergency', [WeatherWarningController::class, 'emergency'])->name('weather.emergency');
 
 // Catch-all routes (must be last)
 Route::get('{first}/{second}/{third}', [RoutingController::class, 'thirdLevel'])->name('third');
