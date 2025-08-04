@@ -49,6 +49,46 @@
                                 @foreach ($marineWarnings as $warning)
                                     @include('weather.warning-card', ['warning' => $warning])
                                 @endforeach
+                                @foreach ($floodWarnings as $warning)
+                                    @include('weather.warning-card', ['warning' => $warning])
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ferry Status -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ferry Status</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Route</th>
+                                    <th>Description</th>
+                                    <th>Severity</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($ferryStatuses as $status)
+                                    <tr>
+                                        <td>{{ $status['route'] }}</td>
+                                        <td>{{ $status['description'] }}</td>
+                                        <td>
+                                            <span class="badge {{ $status['severity'] == 'Amber' ? 'bg-warning' : ($status['severity'] == 'Red' ? 'bg-danger' : ($status['severity'] == 'Yellow' ? 'bg-info' : 'bg-success')) }} rounded-pill">
+                                                {{ $status['severity'] }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $status['time'] }}</td>
+                                    </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
