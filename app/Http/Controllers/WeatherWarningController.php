@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
-use Goutte\Client;
 use SimpleXMLElement;
 
 class WeatherWarningController extends Controller
@@ -156,57 +155,30 @@ class WeatherWarningController extends Controller
     {
         return Cache::remember('ferry_statuses', now()->addHours(2), function () {
             try {
-                $client = new Client();
-                $crawler = $client->request('GET', 'https://www.calmac.co.uk/service-status', [
-                    'headers' => ['User-Agent' => 'ArranWeatherApp/1.0'],
-                ]);
-
-                $statuses = [];
-                $crawler->filter('.service-status-item')->each(function ($node) use (&$statuses) {
-                    $route = $node->filter('.route-name')->text();
-                    $status = $node->filter('.status')->text();
-                    $details = $node->filter('.details')->text();
-                    $updated = $node->filter('.updated')->text();
-
-                    if (in_array($route, ['Lochranza - Claonaig', 'Brodick - Troon', 'Ardrossan - Brodick'])) {
-                        $severity = strpos($status, 'Disrupted') !== false ? 'Amber' : (strpos($status, 'Cancelled') !== false ? 'Red' : 'Green');
-                        $statuses[] = [
-                            'type' => 'Ferry',
-                            'route' => $route,
-                            'description' => trim($details),
-                            'severity' => $severity,
-                            'time' => $updated ?: now(),
-                        ];
-                    }
-                });
-
-                // Supplement with X posts for recent updates
-                $xUpdates = $this->fetchXUpdates();
-                $statuses = array_merge($statuses, $xUpdates);
-
-                // Fallback data from web results
-                $statuses[] = [
-                    'type' => 'Ferry',
-                    'route' => 'Ardrossan - Brodick',
-                    'description' => 'No scheduled service until 7 September 2025 due to MV Caledonian Isles issues. Use Troon-Brodick instead.',
-                    'severity' => 'Red',
-                    'time' => '2025-08-03 06:10 BST',
+                // Static data from @CalMac_Updates posts until X API is set up
+                $statuses = [
+                    [
+                        'type' => 'Ferry',
+                        'route' => 'Ardrossan - Brodick',
+                        'description' => 'No scheduled service until 7 September 2025 due to MV Caledonian Isles issues. Use Troon-Brodick instead.',
+                        'severity' => 'Red',
+                        'time' => '2025-08-03 06:10 BST',
+                    ],
+                    [
+                        'type' => 'Ferry',
+                        'route' => 'Troon - Brodick',
+                        'description' => 'Sailings cancelled on 4 August due to strong winds from Storm Floris: Depart Troon – 06:30, 09:15, 10:50, 13:35, 17:10; Depart Brodick – 07:30, 08:40, 11:25, 13:00, 16:15.',
+                        'severity' => 'Amber',
+                        'time' => '2025-08-04 05:43 BST',
+                    ],
+                    [
+                        'type' => 'Ferry',
+                        'route' => 'Claonaig - Lochranza',
+                        'description' => 'Due to strong winds from Storm Floris, sailings limited to Dep Lochranza 08:15, Dep Claonaig 08:50 on 4 August. Other sailings cancelled.',
+                        'severity' => 'Amber',
+                        'time' => '2025-08-03 10:34 BST',
+                    ],
                 ];
-                $statuses[] = [
-                    'type' => 'Ferry',
-                    'route' => 'Brodick - Troon',
-                    'description' => 'MV Glen Sannox and MV Alfred operating until 7 September 2025. No service 10-17 February 2025 for MV Alfred overhaul.',
-                    'severity' => 'Yellow',
-                    'time' => '2025-07-31 05:16 BST',
-                ];
-                $statuses[] = [
-                    'type' => 'Ferry',
-                    'route' => 'Lochranza - Claonaig',
-                    'description' => 'Service disrupted on 4 August due to strong winds from Storm Floris. Sailings at 08:15 from Lochranza and 08:50 from Claonaig.',
-                    'severity' => 'Amber',
-                    'time' => '2025-08-03 10:34 BST',
-                ];
-
                 return $statuses;
             } catch (\Exception $e) {
                 return [
@@ -214,35 +186,6 @@ class WeatherWarningController extends Controller
                 ];
             }
         });
-    }
-
-    private function fetchXUpdates()
-    {
-        // Note: X API requires authentication, so using static data from provided posts
-        // In a production environment, consider scraping @CalMac_Updates page or using X API with credentials
-        return [
-            [
-                'type' => 'Ferry',
-                'route' => 'Ardrossan - Brodick',
-                'description' => 'No scheduled service until 7 September 2025 due to MV Caledonian Isles issues. Use Troon-Brodick instead.',
-                'severity' => 'Red',
-                'time' => '2025-08-02 05:14 BST',
-            ],
-            [
-                'type' => 'Ferry',
-                'route' => 'Brodick - Troon',
-                'description' => 'MV Glen Sannox and MV Alfred operating until 7 September 2025.',
-                'severity' => 'Yellow',
-                'time' => '2025-07-30 06:30 BST',
-            ],
-            [
-                'type' => 'Ferry',
-                'route' => 'Lochranza - Claonaig',
-                'description' => 'Service disrupted on 4 August due to strong winds from Storm Floris. Limited sailings.',
-                'severity' => 'Amber',
-                'time' => '2025-08-03 10:34 BST',
-            ],
-        ];
     }
 
     // Unchanged mock methods for travel and utility faults
