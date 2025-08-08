@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WeatherController;
 use App\Http\Controllers\ResourcesController;
 use App\Http\Controllers\WeatherWarningController;
+use App\Http\Controllers\MarineController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -20,6 +21,8 @@ Route::get('/', [WeatherController::class, 'index'])->name('dashboards.index');
  Route::get('/forecast/{slug}/{layout?}', [WeatherController::class, 'indexBySlug'])->name('forecast.slug.layout');
 Route::get('/forecast/{slug}', [WeatherController::class, 'indexBySlug'])->name('forecast');
 
+Route::get('/marine-forecast', [MarineController::class, 'index'])->name('marine.forecast');
+Route::get('/marine-forecast/{slug}', [MarineController::class, 'indexBySlug'])->name('marine.forecast.slug');
 
 Route::prefix('resources')->name('resources.')->group(function () {
     Route::get('/flight-radar', [ResourcesController::class, 'flightRadar'])->name('flight-radar');
