@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WeatherController;
 use App\Http\Controllers\ResourcesController;
 use App\Http\Controllers\WeatherWarningController;
+use App\Http\Controllers\MarineController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,11 +19,13 @@ use App\Http\Controllers\WeatherWarningController;
 Route::get('/', [WeatherController::class, 'index'])->name('dashboards.index');
 
 // Dynamic location route
- Route::get('/forecast/{slug}/{layout?}', [WeatherController::class, 'indexBySlug'])->name('forecast.slug.layout');
+Route::get('/forecast/{slug}/{layout?}', [WeatherController::class, 'indexBySlug'])->name('forecast.slug.layout');
 Route::get('/forecast/{slug}', [WeatherController::class, 'indexBySlug'])->name('forecast');
 
-Route::get('/marine-forecast', [App\Http\Controllers\MarineController::class, 'index'])->name('marine.forecast');
-Route::get('/marine-forecast/{slug}', [App\Http\Controllers\MarineController::class, 'indexBySlug'])->name('marine.forecast.slug');
+// Marine forecast routes
+Route::get('/marine-forecast', [MarineController::class, 'index'])->name('marine.forecast');
+Route::get('/marine-forecast/{slug}/{layout?}', [MarineController::class, 'indexBySlug'])->name('marine.forecast.slug.layout');
+Route::get('/marine-forecast/{slug}', [MarineController::class, 'indexBySlug'])->name('marine.forecast.slug');
 
 Route::prefix('resources')->name('resources.')->group(function () {
     Route::get('/flight-radar', [ResourcesController::class, 'flightRadar'])->name('flight-radar');
@@ -36,7 +39,6 @@ Route::prefix('resources')->name('resources.')->group(function () {
     Route::get('/earthquakes', [ResourcesController::class, 'earthquakes'])->name('earthquakes');
     Route::get('/webcams', [ResourcesController::class, 'webcams'])->name('webcams');
     Route::get('/tides/{location}', [ResourcesController::class, 'tides'])->name('tides');
-   
 });
 
 Route::get('/weather/warnings', [WeatherWarningController::class, 'index'])->name('weather.warnings');

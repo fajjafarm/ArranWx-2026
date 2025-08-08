@@ -86,7 +86,7 @@ class MarineController extends WeatherController
             $chart_labels[] = Carbon::parse($time)->format('M d H:i');
             $chart_data['wave_height'][] = $hourly['wave_height'];
             $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-            $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
+            $chart_data['sea_level_height_msl'] = $hourly['sea_level_height_msl'];
         }
         
         // Placeholder for weather warnings
@@ -106,9 +106,10 @@ class MarineController extends WeatherController
      * Display the marine forecast for a specific location using a slug.
      *
      * @param string $slug
+     * @param string|null $layout
      * @return \Illuminate\View\View
      */
-    public function indexBySlug($slug)
+    public function indexBySlug($slug, $layout = null)
     {
         $location = Location::whereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [Str::lower($slug)])->firstOrFail();
         $lat = $location->latitude;
@@ -174,7 +175,7 @@ class MarineController extends WeatherController
             $chart_labels[] = Carbon::parse($time)->format('M d H:i');
             $chart_data['wave_height'][] = $hourly['wave_height'];
             $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-            $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
+            $chart_data['sea_level_height_msl'] = $hourly['sea_level_height_msl'];
         }
         
         // Placeholder for weather warnings
