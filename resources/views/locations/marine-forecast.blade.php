@@ -5,9 +5,7 @@
 @endsection
 
 @section('content')
-    <!-- Start Content -->
     <div class="container-fluid">
-        <!-- Start Page Title -->
         <div class="row">
             <div class="col-12">
                 <div class="page-title-box">
@@ -21,9 +19,7 @@
                 </div>
             </div>
         </div>
-        <!-- End Page Title -->
 
-        <!-- Weather Warnings -->
         @if(!empty($warnings))
             <div class="row mb-3">
                 @foreach($warnings as $warning)
@@ -40,7 +36,6 @@
             </div>
         @endif
 
-        <!-- Search Bar -->
         <div class="row mb-3">
             <div class="col-12">
                 <div class="card">
@@ -56,8 +51,7 @@
             </div>
         </div>
 
-        <!-- Graphs -->
-        @if(!empty($chart_labels))
+        @if(!empty($chart_labels) && !empty($chart_data['wave_height']))
             <div class="row">
                 <div class="col-12">
                     <div class="card">
@@ -78,7 +72,6 @@
             </div>
         @endif
 
-        <!-- Daily Tables -->
         @if(!empty($forecast_days))
             @foreach($forecast_days as $date => $data)
                 <div class="row">
@@ -110,14 +103,14 @@
                                                         <img src="{{ $hourly['iconUrl'] }}" alt="{{ $hourly['weather'] }}" width="24" height="24" class="me-1">
                                                         {{ $hourly['weather'] }}
                                                     </td>
-                                                    <td class="{{ $hourly['temp_class'] }}">{{ number_format($hourly['temperature'], 1) ?? 'N/A' }}</td>
-                                                    <td>{{ number_format($hourly['wave_height'], 2) ?? 'N/A' }}</td>
-                                                    <td>{{ number_format($hourly['sea_surface_temperature'], 1) ?? 'N/A' }}</td>
-                                                    <td>{{ number_format($hourly['sea_level_height_msl'], 2) ?? 'N/A' }}</td>
-                                                    <td>{{ round($hourly['wave_direction']) ?? 'N/A' }}</td>
-                                                    <td>{{ number_format($hourly['wave_period'], 2) ?? 'N/A' }}</td>
-                                                    <td>{{ number_format($hourly['ocean_current_velocity'], 2) ?? 'N/A' }}</td>
-                                                    <td>{{ round($hourly['ocean_current_direction']) ?? 'N/A' }}</td>
+                                                    <td class="{{ $hourly['temp_class'] }}">{{ $hourly['temperature'] ? number_format($hourly['temperature'], 1) : 'N/A' }}</td>
+                                                    <td>{{ $hourly['wave_height'] ? number_format($hourly['wave_height'], 2) : 'N/A' }}</td>
+                                                    <td>{{ $hourly['sea_surface_temperature'] ? number_format($hourly['sea_surface_temperature'], 1) : 'N/A' }}</td>
+                                                    <td>{{ $hourly['sea_level_height_msl'] ? number_format($hourly['sea_level_height_msl'], 2) : 'N/A' }}</td>
+                                                    <td>{{ $hourly['wave_direction'] ? round($hourly['wave_direction']) : 'N/A' }}</td>
+                                                    <td>{{ $hourly['wave_period'] ? number_format($hourly['wave_period'], 2) : 'N/A' }}</td>
+                                                    <td>{{ $hourly['ocean_current_velocity'] ? number_format($hourly['ocean_current_velocity'], 2) : 'N/A' }}</td>
+                                                    <td>{{ $hourly['ocean_current_direction'] ? round($hourly['ocean_current_direction']) : 'N/A' }}</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -138,66 +131,68 @@
             </div>
         @endif
     </div>
-    <!-- End Content -->
 
-    <!-- Chart.js Script -->
-    @if(!empty($chart_labels))
+    @if(!empty($chart_labels) && !empty($chart_data['wave_height']))
         @push('footer-scripts')
             <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
-                    const ctx = document.getElementById('marineChart').getContext('2d');
-                    const marineChart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: @json($chart_labels),
-                            datasets: [
-                                {
-                                    label: 'Wave Height (m)',
-                                    data: @json($chart_data['wave_height']),
-                                    borderColor: '#007bff',
-                                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                                    fill: true,
-                                    tension: 0.4
-                                },
-                                {
-                                    label: 'Sea Surface Temperature (°C)',
-                                    data: @json($chart_data['sea_surface_temperature']),
-                                    borderColor: '#28a745',
-                                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                                    fill: true,
-                                    tension: 0.4
-                                },
-                                {
-                                    label: 'Sea Level Height (m)',
-                                    data: @json($chart_data['sea_level_height_msl']),
-                                    borderColor: '#dc3545',
-                                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                                    fill: true,
-                                    tension: 0.4
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            scales: {
-                                x: {
-                                    title: { display: true, text: 'Time' },
-                                    ticks: {
-                                        maxTicksLimit: 20 // Limit labels for readability over 7 days
+                    try {
+                        const ctx = document.getElementById('marineChart').getContext('2d');
+                        const marineChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: @json($chart_labels),
+                                datasets: [
+                                    {
+                                        label: 'Wave Height (m)',
+                                        data: @json($chart_data['wave_height']),
+                                        borderColor: '#007bff',
+                                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                                        fill: true,
+                                        tension: 0.4
+                                    },
+                                    {
+                                        label: 'Sea Surface Temperature (°C)',
+                                        data: @json($chart_data['sea_surface_temperature']),
+                                        borderColor: '#28a745',
+                                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                                        fill: true,
+                                        tension: 0.4
+                                    },
+                                    {
+                                        label: 'Sea Level Height (m)',
+                                        data: @json($chart_data['sea_level_height_msl']),
+                                        borderColor: '#dc3545',
+                                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                                        fill: true,
+                                        tension: 0.4
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: {
+                                    x: {
+                                        title: { display: true, text: 'Time' },
+                                        ticks: {
+                                            maxTicksLimit: 20
+                                        }
+                                    },
+                                    y: {
+                                        title: { display: true, text: 'Value' },
+                                        beginAtZero: false
                                     }
                                 },
-                                y: {
-                                    title: { display: true, text: 'Value' },
-                                    beginAtZero: false
+                                plugins: {
+                                    legend: { position: 'top' },
+                                    tooltip: { mode: 'index', intersect: false }
                                 }
-                            },
-                            plugins: {
-                                legend: { position: 'top' },
-                                tooltip: { mode: 'index', intersect: false }
                             }
-                        }
-                    });
+                        });
+                    } catch (error) {
+                        console.error('Chart.js error:', error);
+                    }
                 });
             </script>
         @endpush

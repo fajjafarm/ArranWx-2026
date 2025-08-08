@@ -12,27 +12,19 @@ use Illuminate\Support\Carbon;
 
 class MarineController extends WeatherController
 {
-    /**
-     * Display the marine forecast for a given location.
-     *
-     * @param Request $request
-     * @return \Illuminate\View\View
-     */
     public function index(Request $request)
     {
-        $lat = $request->query('lat', 55.541664); // Default to Isle of Arran
+        $lat = $request->query('lat', 55.541664);
         $lon = $request->query('lon', -5.1249847);
         $locationName = $request->query('location', 'Isle of Arran');
         $title = "Marine Forecast - $locationName";
         
-        // Fetch marine and weather data
         $marineData = $this->getSevenDayMarineForecast($lat, $lon);
         $weatherData = $this->getTenDayForecast($lat, $lon, null, 'Europe/London');
         
         Log::info('Marine data', ['marineData' => $marineData]);
         Log::info('Weather data', ['weatherData' => $weatherData]);
         
-        // Prepare chart data (7 days = 168 hours)
         $chart_labels = [];
         $chart_data = [
             'wave_height' => [],
@@ -40,25 +32,14 @@ class MarineController extends WeatherController
             'sea_level_height_msl' => [],
         ];
         
-        // Merge data for tables
         $forecast_days = [];
         $marineTimes = $marineData['hourly']['time'] ?? [];
-        $weatherTimes = [];
         
-        // Collect weather data timestamps
-        foreach ($weatherData as $day) {
-            foreach ($day['forecasts'] as $forecast) {
-                $weatherTimes[] = Carbon::parse($day['date'] . ' ' . $forecast['time'])->toIso8601String();
-            }
-        }
-        
-        Log::info('Marine times', ['count' => count($marineTimes)]);
-        Log::info('Weather times', ['count' => count($weatherTimes)]);
-        
-        // Process marine data and match with weather data
         foreach ($marineTimes as $index => $time) {
             if ($index >= 168) break; // Limit to 7 days
             $date = Carbon::parse($time)->toDateString();
+            $marineCarbon = Carbon::parse($time);
+            
             $hourly = [
                 'time' => $time,
                 'wave_height' => $marineData['hourly']['wave_height'][$index] ?? null,
@@ -68,39 +49,40 @@ class MarineController extends WeatherController
                 'wave_period' => $marineData['hourly']['wave_period'][$index] ?? null,
                 'ocean_current_velocity' => $marineData['hourly']['ocean_current_velocity'][$index] ?? null,
                 'ocean_current_direction' => $marineData['hourly']['ocean_current_direction'][$index] ?? null,
+                'weather' => 'N/A',
+                'temperature' => null,
+                'temp_class' => 'temp-cell-0',
+                'iconUrl' => asset("svg/unknown.svg"),
             ];
             
-            // Find matching weather data (within 1 hour)
-            $weatherMatch = null;
-            $marineCarbon = Carbon::parse($time);
             foreach ($weatherData as $day) {
                 foreach ($day['forecasts'] as $forecast) {
                     $weatherTime = Carbon::parse($day['date'] . ' ' . $forecast['time']);
-                    if ($marineCarbon->diffInMinutes($weatherTime) <= 60) {
-                        $weatherMatch = $forecast;
-                        $hourly['time'] = $weatherTime->toIso8601String(); // Align with weather time
+                    if ($marineCarbon->diffInMinutes($weatherTime) <= 30) { // Tighter matching window
+                        $hourly['time'] = $weatherTime->toIso8601String();
+                        $hourly['weather'] = $forecast['condition'] ?? 'N/A';
+                        $hourly['temperature'] = $forecast['temperature'] ?? null;
+                        $hourly['temp_class'] = $this->getTemperatureClass($hourly['temperature']);
+                        $hourly['iconUrl'] = asset("svg/" . ($this->iconMap[$forecast['condition']] ?? $this->iconMap['unknown']));
                         break 2;
                     }
                 }
             }
             
-            $hourly['weather'] = $weatherMatch['condition'] ?? 'N/A';
-            $hourly['temperature'] = $weatherMatch['temperature'] ?? null;
-            $hourly['temp_class'] = $this->getTemperatureClass($hourly['temperature']); // Compute temperature class
-            $hourly['iconUrl'] = $weatherMatch ? asset("svg/" . ($this->iconMap[$weatherMatch['condition']] ?? $this->iconMap['unknown'])) : asset("svg/unknown.svg");
-            
-            $forecast_days[$date][] = $hourly;
-            
-            // Chart data
-            $chart_labels[] = Carbon::parse($hourly['time'])->format('M d H:i');
-            $chart_data['wave_height'][] = $hourly['wave_height'];
-            $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-            $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
+            $timeKey = $marineCarbon->format('H:i');
+            if (!isset($forecast_days[$date][$timeKey])) { // Prevent duplicate times
+                $forecast_days[$date][$timeKey] = $hourly;
+                
+                $chart_labels[] = $marineCarbon->format('M d H:i');
+                $chart_data['wave_height'][] = $hourly['wave_height'];
+                $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
+                $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
+            }
         }
         
         Log::info('Forecast days', ['count' => count($forecast_days)]);
+        Log::info('Chart labels', ['count' => count($chart_labels)]);
         
-        // Placeholder for weather warnings
         $warnings = [
             [
                 'title' => 'High Wave Warning',
@@ -113,13 +95,6 @@ class MarineController extends WeatherController
         return view('locations.marine-forecast', compact('lat', 'lon', 'title', 'forecast_days', 'chart_labels', 'chart_data', 'warnings'));
     }
     
-    /**
-     * Display the marine forecast for a specific location using a slug.
-     *
-     * @param string $slug
-     * @param string|null $layout
-     * @return \Illuminate\View\View
-     */
     public function indexBySlug($slug, $layout = null)
     {
         $location = Location::whereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [Str::lower($slug)])->firstOrFail();
@@ -127,14 +102,12 @@ class MarineController extends WeatherController
         $lon = $location->longitude;
         $title = "Marine Forecast - {$location->name}";
         
-        // Fetch marine and weather data
         $marineData = $this->getSevenDayMarineForecast($lat, $lon);
         $weatherData = $this->getTenDayForecast($lat, $lon, $location->altitude, $location->timezone ?? 'Europe/London');
         
         Log::info('Marine data (slug)', ['marineData' => $marineData]);
         Log::info('Weather data (slug)', ['weatherData' => $weatherData]);
         
-        // Prepare chart data
         $chart_labels = [];
         $chart_data = [
             'wave_height' => [],
@@ -142,23 +115,14 @@ class MarineController extends WeatherController
             'sea_level_height_msl' => [],
         ];
         
-        // Merge data for tables
         $forecast_days = [];
         $marineTimes = $marineData['hourly']['time'] ?? [];
-        $weatherTimes = [];
-        
-        foreach ($weatherData as $day) {
-            foreach ($day['forecasts'] as $forecast) {
-                $weatherTimes[] = Carbon::parse($day['date'] . ' ' . $forecast['time'])->toIso8601String();
-            }
-        }
-        
-        Log::info('Marine times (slug)', ['count' => count($marineTimes)]);
-        Log::info('Weather times (slug)', ['count' => count($weatherTimes)]);
         
         foreach ($marineTimes as $index => $time) {
             if ($index >= 168) break; // Limit to 7 days
             $date = Carbon::parse($time)->toDateString();
+            $marineCarbon = Carbon::parse($time);
+            
             $hourly = [
                 'time' => $time,
                 'wave_height' => $marineData['hourly']['wave_height'][$index] ?? null,
@@ -168,39 +132,40 @@ class MarineController extends WeatherController
                 'wave_period' => $marineData['hourly']['wave_period'][$index] ?? null,
                 'ocean_current_velocity' => $marineData['hourly']['ocean_current_velocity'][$index] ?? null,
                 'ocean_current_direction' => $marineData['hourly']['ocean_current_direction'][$index] ?? null,
+                'weather' => 'N/A',
+                'temperature' => null,
+                'temp_class' => 'temp-cell-0',
+                'iconUrl' => asset("svg/unknown.svg"),
             ];
             
-            // Find matching weather data (within 1 hour)
-            $weatherMatch = null;
-            $marineCarbon = Carbon::parse($time);
             foreach ($weatherData as $day) {
                 foreach ($day['forecasts'] as $forecast) {
                     $weatherTime = Carbon::parse($day['date'] . ' ' . $forecast['time']);
-                    if ($marineCarbon->diffInMinutes($weatherTime) <= 60) {
-                        $weatherMatch = $forecast;
-                        $hourly['time'] = $weatherTime->toIso8601String(); // Align with weather time
+                    if ($marineCarbon->diffInMinutes($weatherTime) <= 30) {
+                        $hourly['time'] = $weatherTime->toIso8601String();
+                        $hourly['weather'] = $forecast['condition'] ?? 'N/A';
+                        $hourly['temperature'] = $forecast['temperature'] ?? null;
+                        $hourly['temp_class'] = $this->getTemperatureClass($hourly['temperature']);
+                        $hourly['iconUrl'] = asset("svg/" . ($this->iconMap[$forecast['condition']] ?? $this->iconMap['unknown']));
                         break 2;
                     }
                 }
             }
             
-            $hourly['weather'] = $weatherMatch['condition'] ?? 'N/A';
-            $hourly['temperature'] = $weatherMatch['temperature'] ?? null;
-            $hourly['temp_class'] = $this->getTemperatureClass($hourly['temperature']); // Compute temperature class
-            $hourly['iconUrl'] = $weatherMatch ? asset("svg/" . ($this->iconMap[$weatherMatch['condition']] ?? $this->iconMap['unknown'])) : asset("svg/unknown.svg");
-            
-            $forecast_days[$date][] = $hourly;
-            
-            // Chart data
-            $chart_labels[] = Carbon::parse($hourly['time'])->format('M d H:i');
-            $chart_data['wave_height'][] = $hourly['wave_height'];
-            $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-            $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
+            $timeKey = $marineCarbon->format('H:i');
+            if (!isset($forecast_days[$date][$timeKey])) {
+                $forecast_days[$date][$timeKey] = $hourly;
+                
+                $chart_labels[] = $marineCarbon->format('M d H:i');
+                $chart_data['wave_height'][] = $hourly['wave_height'];
+                $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
+                $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
+            }
         }
         
         Log::info('Forecast days (slug)', ['count' => count($forecast_days)]);
+        Log::info('Chart labels (slug)', ['count' => count($chart_labels)]);
         
-        // Placeholder for weather warnings
         $warnings = [
             [
                 'title' => 'High Wave Warning',
@@ -210,23 +175,14 @@ class MarineController extends WeatherController
             ],
         ];
         
-        $template = 'locations.marine-forecast'; // Default template
-        // Example: if ($layout === 'stacked') { $template = 'locations.marine-stacked'; }
-        
+        $template = 'locations.marine-forecast';
         return view($template, compact('lat', 'lon', 'title', 'forecast_days', 'chart_labels', 'chart_data', 'warnings'));
     }
     
-    /**
-     * Fetch 7-day marine forecast data from Open-Meteo API.
-     *
-     * @param float $lat
-     * @param float $lon
-     * @return array
-     */
     protected function getSevenDayMarineForecast($lat, $lon)
     {
         $cacheKey = "marine_forecast_{$lat}_{$lon}";
-        $cacheTtl = 21600; // 6 hours in seconds
+        $cacheTtl = 21600;
         
         $marineData = Cache::get($cacheKey);
         if ($marineData !== null) {
