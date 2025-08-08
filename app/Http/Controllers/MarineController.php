@@ -37,11 +37,14 @@ class MarineController extends WeatherController
         
         foreach ($marineTimes as $index => $time) {
             if ($index >= 168) break; // Limit to 7 days
-            $date = Carbon::parse($time)->toDateString();
             $marineCarbon = Carbon::parse($time);
+            $date = $marineCarbon->toDateString();
+            $hour = $marineCarbon->format('H:00'); // Round to nearest hour
+            
+            if (isset($forecast_days[$date][$hour])) continue; // Skip duplicates
             
             $hourly = [
-                'time' => $time,
+                'time' => $marineCarbon->toIso8601String(),
                 'wave_height' => $marineData['hourly']['wave_height'][$index] ?? null,
                 'sea_surface_temperature' => $marineData['hourly']['sea_surface_temperature'][$index] ?? null,
                 'sea_level_height_msl' => $marineData['hourly']['sea_level_height_msl'][$index] ?? null,
@@ -55,29 +58,35 @@ class MarineController extends WeatherController
                 'iconUrl' => asset("svg/unknown.svg"),
             ];
             
+            $closestWeather = null;
+            $minDiff = PHP_INT_MAX;
             foreach ($weatherData as $day) {
                 foreach ($day['forecasts'] as $forecast) {
                     $weatherTime = Carbon::parse($day['date'] . ' ' . $forecast['time']);
-                    if ($marineCarbon->diffInMinutes($weatherTime) <= 30) { // Tighter matching window
+                    $diff = abs($marineCarbon->diffInMinutes($weatherTime));
+                    if ($diff <= 60 && $diff < $minDiff) { // Find closest within 60 minutes
+                        $closestWeather = $forecast;
+                        $minDiff = $diff;
                         $hourly['time'] = $weatherTime->toIso8601String();
-                        $hourly['weather'] = $forecast['condition'] ?? 'N/A';
-                        $hourly['temperature'] = $forecast['temperature'] ?? null;
-                        $hourly['temp_class'] = $this->getTemperatureClass($hourly['temperature']);
-                        $hourly['iconUrl'] = asset("svg/" . ($this->iconMap[$forecast['condition']] ?? $this->iconMap['unknown']));
-                        break 2;
                     }
                 }
             }
             
-            $timeKey = $marineCarbon->format('H:i');
-            if (!isset($forecast_days[$date][$timeKey])) { // Prevent duplicate times
-                $forecast_days[$date][$timeKey] = $hourly;
-                
-                $chart_labels[] = $marineCarbon->format('M d H:i');
-                $chart_data['wave_height'][] = $hourly['wave_height'];
-                $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-                $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
+            if ($closestWeather) {
+                $hourly['weather'] = $closestWeather['condition'] ?? 'N/A';
+                $hourly['temperature'] = $closestWeather['temperature'] ?? null;
+                $hourly['temp_class'] = $this->getTemperatureClass($hourly['temperature']);
+                $hourly['iconUrl'] = asset("svg/" . ($this->iconMap[$closestWeather['condition']] ?? $this->iconMap['unknown']));
             }
+            
+            $forecast_days[$date][$hour] = $hourly;
+            
+            $chart_labels[] = $marineCarbon->format('M d H:i');
+            $chart_data['wave_height'][] = $hourly['wave_height'] ?? null;
+            $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'] ?? null;
+            $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'] ?? null;
+            
+            Log::debug('Hourly data', ['time' => $hourly['time'], 'weather' => $hourly['weather'], 'temperature' => $hourly['temperature']]);
         }
         
         Log::info('Forecast days', ['count' => count($forecast_days)]);
@@ -119,12 +128,15 @@ class MarineController extends WeatherController
         $marineTimes = $marineData['hourly']['time'] ?? [];
         
         foreach ($marineTimes as $index => $time) {
-            if ($index >= 168) break; // Limit to 7 days
-            $date = Carbon::parse($time)->toDateString();
+            if ($index >= 168) break;
             $marineCarbon = Carbon::parse($time);
+            $date = $marineCarbon->toDateString();
+            $hour = $marineCarbon->format('H:00');
+            
+            if (isset($forecast_days[$date][$hour])) continue;
             
             $hourly = [
-                'time' => $time,
+                'time' => $marineCarbon->toIso8601String(),
                 'wave_height' => $marineData['hourly']['wave_height'][$index] ?? null,
                 'sea_surface_temperature' => $marineData['hourly']['sea_surface_temperature'][$index] ?? null,
                 'sea_level_height_msl' => $marineData['hourly']['sea_level_height_msl'][$index] ?? null,
@@ -138,29 +150,35 @@ class MarineController extends WeatherController
                 'iconUrl' => asset("svg/unknown.svg"),
             ];
             
+            $closestWeather = null;
+            $minDiff = PHP_INT_MAX;
             foreach ($weatherData as $day) {
                 foreach ($day['forecasts'] as $forecast) {
                     $weatherTime = Carbon::parse($day['date'] . ' ' . $forecast['time']);
-                    if ($marineCarbon->diffInMinutes($weatherTime) <= 30) {
+                    $diff = abs($marineCarbon->diffInMinutes($weatherTime));
+                    if ($diff <= 60 && $diff < $minDiff) {
+                        $closestWeather = $forecast;
+                        $minDiff = $diff;
                         $hourly['time'] = $weatherTime->toIso8601String();
-                        $hourly['weather'] = $forecast['condition'] ?? 'N/A';
-                        $hourly['temperature'] = $forecast['temperature'] ?? null;
-                        $hourly['temp_class'] = $this->getTemperatureClass($hourly['temperature']);
-                        $hourly['iconUrl'] = asset("svg/" . ($this->iconMap[$forecast['condition']] ?? $this->iconMap['unknown']));
-                        break 2;
                     }
                 }
             }
             
-            $timeKey = $marineCarbon->format('H:i');
-            if (!isset($forecast_days[$date][$timeKey])) {
-                $forecast_days[$date][$timeKey] = $hourly;
-                
-                $chart_labels[] = $marineCarbon->format('M d H:i');
-                $chart_data['wave_height'][] = $hourly['wave_height'];
-                $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-                $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
+            if ($closestWeather) {
+                $hourly['weather'] = $closestWeather['condition'] ?? 'N/A';
+                $hourly['temperature'] = $closestWeather['temperature'] ?? null;
+                $hourly['temp_class'] = $this->getTemperatureClass($hourly['temperature']);
+                $hourly['iconUrl'] = asset("svg/" . ($this->iconMap[$closestWeather['condition']] ?? $this->iconMap['unknown']));
             }
+            
+            $forecast_days[$date][$hour] = $hourly;
+            
+            $chart_labels[] = $marineCarbon->format('M d H:i');
+            $chart_data['wave_height'][] = $hourly['wave_height'] ?? null;
+            $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'] ?? null;
+            $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'] ?? null;
+            
+            Log::debug('Hourly data (slug)', ['time' => $hourly['time'], 'weather' => $hourly['weather'], 'temperature' => $hourly['temperature']]);
         }
         
         Log::info('Forecast days (slug)', ['count' => count($forecast_days)]);
