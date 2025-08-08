@@ -57,7 +57,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">7-Day Marine Forecast Overview</h5>
-                            <div id="marineChart" style="height: 400px;"></div>
+                            <canvas id="marineChart" height="100"></canvas>
                         </div>
                     </div>
                 </div>
@@ -102,13 +102,13 @@
                                         <tbody>
                                             @foreach($data as $hourly)
                                                 @php
-                                                    $windDir = $hourly['wind_direction'] ? round($hourly['wind_direction'] / 45) * 45 : null;
                                                     $cardinal = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'];
-                                                    $windCardinal = $windDir !== null ? $cardinal[round($windDir / 45) % 8] : 'N/A';
-                                                    $waveDir = $hourly['wave_direction'] ? round($hourly['wave_direction'] / 45) * 45 : null;
-                                                    $waveCardinal = $waveDir !== null ? $cardinal[round($waveDir / 45) % 8] : 'N/A';
-                                                    $currentDir = $hourly['ocean_current_direction'] ? round($hourly['ocean_current_direction'] / 45) * 45 : null;
-                                                    $currentCardinal = $currentDir !== null ? $cardinal[round($currentDir / 45) % 8] : 'N/A';
+                                                    $windDir = is_numeric($hourly['wind_direction']) ? round($hourly['wind_direction'] / 45) * 45 : null;
+                                                    $windCardinal = $windDir !== null ? $cardinal[intval($windDir / 45) % 8] : 'N/A';
+                                                    $waveDir = is_numeric($hourly['wave_direction']) ? round($hourly['wave_direction'] / 45) * 45 : null;
+                                                    $waveCardinal = $waveDir !== null ? $cardinal[intval($waveDir / 45) % 8] : 'N/A';
+                                                    $currentDir = is_numeric($hourly['ocean_current_direction']) ? round($hourly['ocean_current_direction'] / 45) * 45 : null;
+                                                    $currentCardinal = $currentDir !== null ? $cardinal[intval($currentDir / 45) % 8] : 'N/A';
                                                 @endphp
                                                 <tr>
                                                     <td>{{ \Carbon\Carbon::parse($hourly['time'])->format('H:i') }}</td>
@@ -172,33 +172,22 @@
 
     @if(!empty($chart_labels) && !empty($chart_data['wave_height']))
         @push('footer-scripts')
-            <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
                     try {
                         const chartData = @json($chart_data);
                         const labels = @json($chart_labels);
                         
-                        if (!chartData.times.length || !chartData.wave_height.length) {
-                            console.error('Invalid chart data:', chartData);
+                        console.log('Chart Data:', chartData);
+                        console.log('Chart Labels:', labels);
+                        
+                        if (!labels.length || !chartData.wave_height.length) {
+                            console.error('Invalid chart data:', { labels, chartData });
                             return;
                         }
                         
-                        const data = chartData.times.map((time, index) => ({
-                            time: new Date(time),
-                            wave_height: chartData.wave_height[index] || 0,
-                            sea_surface_temperature: chartData.sea_surface_temperature[index] || 0,
-                            sea_level_height_msl: chartData.sea_level_height_msl[index] || 0
-                        }));
-                        
-                        const chartContainer = document.getElementById('marineChart');
-                        const chartCanvas = document.createElement('canvas');
-                        chartContainer.appendChild(chartCanvas);
-                        
-                        const ctx = chartCanvas.getContext('2d');
+                        const ctx = document.getElementById('marineChart').getContext('2d');
                         new Chart(ctx, {
                             type: 'line',
                             data: {
@@ -232,7 +221,6 @@
                             },
                             options: {
                                 responsive: true,
-                                maintainAspectRatio: false,
                                 scales: {
                                     x: {
                                         title: { display: true, text: 'Time' },
@@ -252,7 +240,7 @@
                             }
                         });
                     } catch (error) {
-                        console.error('Chart error:', error);
+                        console.error('Chart.js error:', error);
                     }
                 });
             </script>

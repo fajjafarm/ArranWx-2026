@@ -30,7 +30,6 @@ class MarineController extends WeatherController
             'wave_height' => [],
             'sea_surface_temperature' => [],
             'sea_level_height_msl' => [],
-            'times' => [],
         ];
         
         $forecast_days = [];
@@ -46,13 +45,13 @@ class MarineController extends WeatherController
             
             $hourly = [
                 'time' => $marineCarbon->toIso8601String(),
-                'wave_height' => $marineData['hourly']['wave_height'][$index] ?? null,
-                'sea_surface_temperature' => $marineData['hourly']['sea_surface_temperature'][$index] ?? null,
-                'sea_level_height_msl' => $marineData['hourly']['sea_level_height_msl'][$index] ?? null,
-                'wave_direction' => $marineData['hourly']['wave_direction'][$index] ?? null,
-                'wave_period' => $marineData['hourly']['wave_period'][$index] ?? null,
-                'ocean_current_velocity' => $marineData['hourly']['ocean_current_velocity'][$index] ?? null,
-                'ocean_current_direction' => $marineData['hourly']['ocean_current_direction'][$index] ?? null,
+                'wave_height' => is_numeric($marineData['hourly']['wave_height'][$index]) ? $marineData['hourly']['wave_height'][$index] : null,
+                'sea_surface_temperature' => is_numeric($marineData['hourly']['sea_surface_temperature'][$index]) ? $marineData['hourly']['sea_surface_temperature'][$index] : null,
+                'sea_level_height_msl' => is_numeric($marineData['hourly']['sea_level_height_msl'][$index]) ? $marineData['hourly']['sea_level_height_msl'][$index] : null,
+                'wave_direction' => is_numeric($marineData['hourly']['wave_direction'][$index]) ? $marineData['hourly']['wave_direction'][$index] : null,
+                'wave_period' => is_numeric($marineData['hourly']['wave_period'][$index]) ? $marineData['hourly']['wave_period'][$index] : null,
+                'ocean_current_velocity' => is_numeric($marineData['hourly']['ocean_current_velocity'][$index]) ? $marineData['hourly']['ocean_current_velocity'][$index] : null,
+                'ocean_current_direction' => is_numeric($marineData['hourly']['ocean_current_direction'][$index]) ? $marineData['hourly']['ocean_current_direction'][$index] : null,
                 'weather' => 'N/A',
                 'temperature' => null,
                 'temp_class' => 'temp-cell-0',
@@ -79,28 +78,46 @@ class MarineController extends WeatherController
             
             if ($closestWeather) {
                 $hourly['weather'] = $closestWeather['condition'] ?? 'N/A';
-                $hourly['temperature'] = $closestWeather['temperature'] ?? null;
+                $hourly['temperature'] = is_numeric($closestWeather['temperature']) ? $closestWeather['temperature'] : null;
                 $hourly['temp_class'] = $this->getTemperatureClass($hourly['temperature']);
                 $hourly['iconUrl'] = asset("svg/" . ($this->iconMap[$closestWeather['condition']] ?? $this->iconMap['unknown']));
-                $hourly['wind_speed'] = $closestWeather['wind_speed'] ?? null;
-                $hourly['wind_gusts'] = $closestWeather['wind_gusts'] ?? null;
-                $hourly['wind_direction'] = $closestWeather['wind_direction'] ?? null;
+                $hourly['wind_speed'] = is_numeric($closestWeather['wind_speed']) ? $closestWeather['wind_speed'] : null;
+                $hourly['wind_gusts'] = is_numeric($closestWeather['wind_gusts']) ? $closestWeather['wind_gusts'] : null;
+                $hourly['wind_direction'] = is_numeric($closestWeather['wind_direction']) ? $closestWeather['wind_direction'] : null;
                 $hourly['beaufort'] = $this->calculateBeaufort($hourly['wind_speed']);
             }
             
             $forecast_days[$date][$hour] = $hourly;
             
-            $chart_labels[] = $marineCarbon->format('Y-m-d H:i:s');
-            $chart_data['wave_height'][] = $hourly['wave_height'] ?? null;
-            $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'] ?? null;
-            $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'] ?? null;
-            $chart_data['times'][] = $marineCarbon->toIso8601String();
+            if ($hourly['wave_height'] !== null && $hourly['sea_surface_temperature'] !== null && $hourly['sea_level_height_msl'] !== null) {
+                $chart_labels[] = $marineCarbon->format('M d H:i');
+                $chart_data['wave_height'][] = $hourly['wave_height'];
+                $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
+                $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
+            }
             
-            Log::debug('Hourly data', ['time' => $hourly['time'], 'weather' => $hourly['weather'], 'temperature' => $hourly['temperature'], 'wind_speed' => $hourly['wind_speed']]);
+            Log::debug('Hourly data', [
+                'time' => $hourly['time'],
+                'weather' => $hourly['weather'],
+                'temperature' => $hourly['temperature'],
+                'wind_speed' => $hourly['wind_speed'],
+                'wind_direction' => $hourly['wind_direction'],
+                'wave_direction' => $hourly['wave_direction'],
+                'ocean_current_direction' => $hourly['ocean_current_direction'],
+                'chart_entry' => [
+                    'label' => $marineCarbon->format('M d H:i'),
+                    'wave_height' => $hourly['wave_height'],
+                    'sea_surface_temperature' => $hourly['sea_surface_temperature'],
+                    'sea_level_height_msl' => $hourly['sea_level_height_msl'],
+                ],
+            ]);
         }
         
         Log::info('Forecast days', ['count' => count($forecast_days)]);
         Log::info('Chart labels', ['count' => count($chart_labels), 'sample' => array_slice($chart_labels, 0, 5)]);
+        Log::info('Chart data', ['sample' => array_map(function($key) use ($chart_data) {
+            return array_slice($chart_data[$key], 0, 5);
+        }, array_keys($chart_data))]);
         
         $warnings = [
             [
@@ -132,7 +149,6 @@ class MarineController extends WeatherController
             'wave_height' => [],
             'sea_surface_temperature' => [],
             'sea_level_height_msl' => [],
-            'times' => [],
         ];
         
         $forecast_days = [];
@@ -148,13 +164,13 @@ class MarineController extends WeatherController
             
             $hourly = [
                 'time' => $marineCarbon->toIso8601String(),
-                'wave_height' => $marineData['hourly']['wave_height'][$index] ?? null,
-                'sea_surface_temperature' => $marineData['hourly']['sea_surface_temperature'][$index] ?? null,
-                'sea_level_height_msl' => $marineData['hourly']['sea_level_height_msl'][$index] ?? null,
-                'wave_direction' => $marineData['hourly']['wave_direction'][$index] ?? null,
-                'wave_period' => $marineData['hourly']['wave_period'][$index] ?? null,
-                'ocean_current_velocity' => $marineData['hourly']['ocean_current_velocity'][$index] ?? null,
-                'ocean_current_direction' => $marineData['hourly']['ocean_current_direction'][$index] ?? null,
+                'wave_height' => is_numeric($marineData['hourly']['wave_height'][$index]) ? $marineData['hourly']['wave_height'][$index] : null,
+                'sea_surface_temperature' => is_numeric($marineData['hourly']['sea_surface_temperature'][$index]) ? $marineData['hourly']['sea_surface_temperature'][$index] : null,
+                'sea_level_height_msl' => is_numeric($marineData['hourly']['sea_level_height_msl'][$index]) ? $marineData['hourly']['sea_level_height_msl'][$index] : null,
+                'wave_direction' => is_numeric($marineData['hourly']['wave_direction'][$index]) ? $marineData['hourly']['wave_direction'][$index] : null,
+                'wave_period' => is_numeric($marineData['hourly']['wave_period'][$index]) ? $marineData['hourly']['wave_period'][$index] : null,
+                'ocean_current_velocity' => is_numeric($marineData['hourly']['ocean_current_velocity'][$index]) ? $marineData['hourly']['ocean_current_velocity'][$index] : null,
+                'ocean_current_direction' => is_numeric($marineData['hourly']['ocean_current_direction'][$index]) ? $marineData['hourly']['ocean_current_direction'][$index] : null,
                 'weather' => 'N/A',
                 'temperature' => null,
                 'temp_class' => 'temp-cell-0',
@@ -181,28 +197,46 @@ class MarineController extends WeatherController
             
             if ($closestWeather) {
                 $hourly['weather'] = $closestWeather['condition'] ?? 'N/A';
-                $hourly['temperature'] = $closestWeather['temperature'] ?? null;
+                $hourly['temperature'] = is_numeric($closestWeather['temperature']) ? $closestWeather['temperature'] : null;
                 $hourly['temp_class'] = $this->getTemperatureClass($hourly['temperature']);
                 $hourly['iconUrl'] = asset("svg/" . ($this->iconMap[$closestWeather['condition']] ?? $this->iconMap['unknown']));
-                $hourly['wind_speed'] = $closestWeather['wind_speed'] ?? null;
-                $hourly['wind_gusts'] = $closestWeather['wind_gusts'] ?? null;
-                $hourly['wind_direction'] = $closestWeather['wind_direction'] ?? null;
+                $hourly['wind_speed'] = is_numeric($closestWeather['wind_speed']) ? $closestWeather['wind_speed'] : null;
+                $hourly['wind_gusts'] = is_numeric($closestWeather['wind_gusts']) ? $closestWeather['wind_gusts'] : null;
+                $hourly['wind_direction'] = is_numeric($closestWeather['wind_direction']) ? $closestWeather['wind_direction'] : null;
                 $hourly['beaufort'] = $this->calculateBeaufort($hourly['wind_speed']);
             }
             
             $forecast_days[$date][$hour] = $hourly;
             
-            $chart_labels[] = $marineCarbon->format('Y-m-d H:i:s');
-            $chart_data['wave_height'][] = $hourly['wave_height'] ?? null;
-            $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'] ?? null;
-            $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'] ?? null;
-            $chart_data['times'][] = $marineCarbon->toIso8601String();
+            if ($hourly['wave_height'] !== null && $hourly['sea_surface_temperature'] !== null && $hourly['sea_level_height_msl'] !== null) {
+                $chart_labels[] = $marineCarbon->format('M d H:i');
+                $chart_data['wave_height'][] = $hourly['wave_height'];
+                $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
+                $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
+            }
             
-            Log::debug('Hourly data (slug)', ['time' => $hourly['time'], 'weather' => $hourly['weather'], 'temperature' => $hourly['temperature'], 'wind_speed' => $hourly['wind_speed']]);
+            Log::debug('Hourly data (slug)', [
+                'time' => $hourly['time'],
+                'weather' => $hourly['weather'],
+                'temperature' => $hourly['temperature'],
+                'wind_speed' => $hourly['wind_speed'],
+                'wind_direction' => $hourly['wind_direction'],
+                'wave_direction' => $hourly['wave_direction'],
+                'ocean_current_direction' => $hourly['ocean_current_direction'],
+                'chart_entry' => [
+                    'label' => $marineCarbon->format('M d H:i'),
+                    'wave_height' => $hourly['wave_height'],
+                    'sea_surface_temperature' => $hourly['sea_surface_temperature'],
+                    'sea_level_height_msl' => $hourly['sea_level_height_msl'],
+                ],
+            ]);
         }
         
         Log::info('Forecast days (slug)', ['count' => count($forecast_days)]);
         Log::info('Chart labels (slug)', ['count' => count($chart_labels), 'sample' => array_slice($chart_labels, 0, 5)]);
+        Log::info('Chart data (slug)', ['sample' => array_map(function($key) use ($chart_data) {
+            return array_slice($chart_data[$key], 0, 5);
+        }, array_keys($chart_data))]);
         
         $warnings = [
             [
