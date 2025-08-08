@@ -30,6 +30,7 @@ class MarineController extends WeatherController
             'wave_height' => [],
             'sea_surface_temperature' => [],
             'sea_level_height_msl' => [],
+            'times' => [],
         ];
         
         $forecast_days = [];
@@ -39,9 +40,9 @@ class MarineController extends WeatherController
             if ($index >= 168) break; // Limit to 7 days
             $marineCarbon = Carbon::parse($time);
             $date = $marineCarbon->toDateString();
-            $hour = $marineCarbon->format('H:00'); // Round to nearest hour
+            $hour = $marineCarbon->format('H:00');
             
-            if (isset($forecast_days[$date][$hour])) continue; // Skip duplicates
+            if (isset($forecast_days[$date][$hour])) continue;
             
             $hourly = [
                 'time' => $marineCarbon->toIso8601String(),
@@ -56,6 +57,10 @@ class MarineController extends WeatherController
                 'temperature' => null,
                 'temp_class' => 'temp-cell-0',
                 'iconUrl' => asset("svg/unknown.svg"),
+                'wind_speed' => null,
+                'wind_gusts' => null,
+                'wind_direction' => null,
+                'beaufort' => 0,
             ];
             
             $closestWeather = null;
@@ -64,7 +69,7 @@ class MarineController extends WeatherController
                 foreach ($day['forecasts'] as $forecast) {
                     $weatherTime = Carbon::parse($day['date'] . ' ' . $forecast['time']);
                     $diff = abs($marineCarbon->diffInMinutes($weatherTime));
-                    if ($diff <= 60 && $diff < $minDiff) { // Find closest within 60 minutes
+                    if ($diff <= 60 && $diff < $minDiff) {
                         $closestWeather = $forecast;
                         $minDiff = $diff;
                         $hourly['time'] = $weatherTime->toIso8601String();
@@ -77,20 +82,25 @@ class MarineController extends WeatherController
                 $hourly['temperature'] = $closestWeather['temperature'] ?? null;
                 $hourly['temp_class'] = $this->getTemperatureClass($hourly['temperature']);
                 $hourly['iconUrl'] = asset("svg/" . ($this->iconMap[$closestWeather['condition']] ?? $this->iconMap['unknown']));
+                $hourly['wind_speed'] = $closestWeather['wind_speed'] ?? null;
+                $hourly['wind_gusts'] = $closestWeather['wind_gusts'] ?? null;
+                $hourly['wind_direction'] = $closestWeather['wind_direction'] ?? null;
+                $hourly['beaufort'] = $this->calculateBeaufort($hourly['wind_speed']);
             }
             
             $forecast_days[$date][$hour] = $hourly;
             
-            $chart_labels[] = $marineCarbon->format('M d H:i');
+            $chart_labels[] = $marineCarbon->format('Y-m-d H:i:s');
             $chart_data['wave_height'][] = $hourly['wave_height'] ?? null;
             $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'] ?? null;
             $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'] ?? null;
+            $chart_data['times'][] = $marineCarbon->toIso8601String();
             
-            Log::debug('Hourly data', ['time' => $hourly['time'], 'weather' => $hourly['weather'], 'temperature' => $hourly['temperature']]);
+            Log::debug('Hourly data', ['time' => $hourly['time'], 'weather' => $hourly['weather'], 'temperature' => $hourly['temperature'], 'wind_speed' => $hourly['wind_speed']]);
         }
         
         Log::info('Forecast days', ['count' => count($forecast_days)]);
-        Log::info('Chart labels', ['count' => count($chart_labels)]);
+        Log::info('Chart labels', ['count' => count($chart_labels), 'sample' => array_slice($chart_labels, 0, 5)]);
         
         $warnings = [
             [
@@ -122,6 +132,7 @@ class MarineController extends WeatherController
             'wave_height' => [],
             'sea_surface_temperature' => [],
             'sea_level_height_msl' => [],
+            'times' => [],
         ];
         
         $forecast_days = [];
@@ -148,6 +159,10 @@ class MarineController extends WeatherController
                 'temperature' => null,
                 'temp_class' => 'temp-cell-0',
                 'iconUrl' => asset("svg/unknown.svg"),
+                'wind_speed' => null,
+                'wind_gusts' => null,
+                'wind_direction' => null,
+                'beaufort' => 0,
             ];
             
             $closestWeather = null;
@@ -169,20 +184,25 @@ class MarineController extends WeatherController
                 $hourly['temperature'] = $closestWeather['temperature'] ?? null;
                 $hourly['temp_class'] = $this->getTemperatureClass($hourly['temperature']);
                 $hourly['iconUrl'] = asset("svg/" . ($this->iconMap[$closestWeather['condition']] ?? $this->iconMap['unknown']));
+                $hourly['wind_speed'] = $closestWeather['wind_speed'] ?? null;
+                $hourly['wind_gusts'] = $closestWeather['wind_gusts'] ?? null;
+                $hourly['wind_direction'] = $closestWeather['wind_direction'] ?? null;
+                $hourly['beaufort'] = $this->calculateBeaufort($hourly['wind_speed']);
             }
             
             $forecast_days[$date][$hour] = $hourly;
             
-            $chart_labels[] = $marineCarbon->format('M d H:i');
+            $chart_labels[] = $marineCarbon->format('Y-m-d H:i:s');
             $chart_data['wave_height'][] = $hourly['wave_height'] ?? null;
             $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'] ?? null;
             $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'] ?? null;
+            $chart_data['times'][] = $marineCarbon->toIso8601String();
             
-            Log::debug('Hourly data (slug)', ['time' => $hourly['time'], 'weather' => $hourly['weather'], 'temperature' => $hourly['temperature']]);
+            Log::debug('Hourly data (slug)', ['time' => $hourly['time'], 'weather' => $hourly['weather'], 'temperature' => $hourly['temperature'], 'wind_speed' => $hourly['wind_speed']]);
         }
         
         Log::info('Forecast days (slug)', ['count' => count($forecast_days)]);
-        Log::info('Chart labels (slug)', ['count' => count($chart_labels)]);
+        Log::info('Chart labels (slug)', ['count' => count($chart_labels), 'sample' => array_slice($chart_labels, 0, 5)]);
         
         $warnings = [
             [
@@ -238,5 +258,24 @@ class MarineController extends WeatherController
             ]);
             return ['hourly' => []];
         }
+    }
+    
+    protected function calculateBeaufort($windSpeed)
+    {
+        if ($windSpeed === null) return 0;
+        $windSpeedKnots = $windSpeed * 0.868976; // Convert mph to knots
+        if ($windSpeedKnots < 1) return 0;
+        if ($windSpeedKnots < 4) return 1;
+        if ($windSpeedKnots < 7) return 2;
+        if ($windSpeedKnots < 11) return 3;
+        if ($windSpeedKnots < 17) return 4;
+        if ($windSpeedKnots < 22) return 5;
+        if ($windSpeedKnots < 28) return 6;
+        if ($windSpeedKnots < 34) return 7;
+        if ($windSpeedKnots < 41) return 8;
+        if ($windSpeedKnots < 48) return 9;
+        if ($windSpeedKnots < 56) return 10;
+        if ($windSpeedKnots < 64) return 11;
+        return 12;
     }
 }
