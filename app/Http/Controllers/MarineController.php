@@ -86,7 +86,7 @@ class MarineController extends WeatherController
             $chart_labels[] = Carbon::parse($time)->format('M d H:i');
             $chart_data['wave_height'][] = $hourly['wave_height'];
             $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-            $chart_data['sea_level_height_msl'] = $hourly['sea_level_height_msl'];
+            $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
         }
         
         // Placeholder for weather warnings
@@ -99,7 +99,7 @@ class MarineController extends WeatherController
             ],
         ];
         
-        return view('marine-forecast', compact('lat', 'lon', 'title', 'forecast_days', 'chart_labels', 'chart_data', 'warnings'));
+        return view('locations.marine-forecast', compact('lat', 'lon', 'title', 'forecast_days', 'chart_labels', 'chart_data', 'warnings'));
     }
     
     /**
@@ -175,7 +175,7 @@ class MarineController extends WeatherController
             $chart_labels[] = Carbon::parse($time)->format('M d H:i');
             $chart_data['wave_height'][] = $hourly['wave_height'];
             $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-            $chart_data['sea_level_height_msl'] = $hourly['sea_level_height_msl'];
+            $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
         }
         
         // Placeholder for weather warnings
@@ -188,7 +188,11 @@ class MarineController extends WeatherController
             ],
         ];
         
-        return view('marine-forecast', compact('lat', 'lon', 'title', 'forecast_days', 'chart_labels', 'chart_data', 'warnings'));
+        // Support for different layouts (e.g., stacked) can be added here if needed
+        $template = 'locations.marine-forecast'; // Default template
+        // Example: if ($layout === 'stacked') { $template = 'locations.marine-stacked'; }
+        
+        return view($template, compact('lat', 'lon', 'title', 'forecast_days', 'chart_labels', 'chart_data', 'warnings'));
     }
     
     /**
