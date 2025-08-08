@@ -87,7 +87,7 @@
                     <ul class="sub-menu">
                         @foreach ($marine as $marineLocation)
                             <li class="side-nav-item">
-                                <a href="{{ route('forecast', Str::slug($marineLocation->name)) }}" class="side-nav-link">
+                                <a href="{{ route('marine-forecast', Str::slug($marineLocation->name)) }}" class="side-nav-link">
                                     <span class="menu-text">{{ $marineLocation->name }}</span>
                                 </a>
                             </li>
