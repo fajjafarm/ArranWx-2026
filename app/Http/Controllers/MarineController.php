@@ -1,4 +1,3 @@
-```php
 <?php
 
 namespace App\Http\Controllers;
@@ -267,19 +266,7 @@ class MarineController extends WeatherController
         }
     }
 }
-```
 
-### Changes in MarineController.php
-- Added `$hourly['temp_class'] = $this->getTemperatureClass($hourly['temperature']);` in both `index` and `indexBySlug` methods to compute the temperature class in the controller.
-- Kept the flexible timestamp matching (within 1 hour) to ensure weather and marine data align.
-- Retained logging to help diagnose data issues.
-- No changes to `getSevenDayMarineForecast`, as it’s functioning correctly based on your report that the page is working.
-
-### Step 2: Update marine-forecast.blade.php
-Update the Blade template to use `$hourly['temp_class']` instead of calling `$this->getTemperatureClass`. Also, add fallback messages for empty data to prevent a blank page, as you previously experienced.
-
-<xaiArtifact artifact_id="f6f7f28a-c151-44bd-a4d9-52ef3090f114" artifact_version_id="32efff12-3279-406e-b903-cdb264294210" title="locations/marine-forecast.blade.php" contentType="text/html">
-```blade
 @extends('layouts.vertical')
 
 @section('html-attribute')
@@ -514,41 +501,3 @@ Update the Blade template to use `$hourly['temp_class']` instead of calling `$th
           $lon = $response->json()[0]['lon'] ?? -5.1249847;
       }
   }
-  ```
-  Add this to the `index` method before fetching data.
-- **Assets**: Ensure `/public/svg/` contains the weather icons listed in `$this->iconMap` (e.g., `unknown.svg`). If icons are missing, create a fallback `unknown.svg` or update `$this->iconMap`.
-- **Testing**: Test the routes `/marine-forecast` and `/marine-forecast/arran`. Verify the `Location` model has an entry for `Isle of Arran`:
-  ```php
-  php artisan tinker
-  App\Models\Location::where('name', 'Isle of Arran')->first()
-  ```
-  If missing, add it:
-  ```php
-  App\Models\Location::create([
-      'name' => 'Isle of Arran',
-      'alternative_name' => 'Arran',
-      'type' => 'Island',
-      'latitude' => 55.541664,
-      'longitude' => -5.1249847,
-      'altitude' => 0,
-      'timezone' => 'Europe/London',
-  ]);
-  ```
-- **Logging**: The controller includes logs to help diagnose issues. Check `storage/logs/laravel.log` for entries like `Marine data`, `Weather data`, `Marine times`, `Weather times`, and `Forecast days` to confirm data is being fetched and merged correctly.
-
-### Verification
-The updated `MarineController.php` and `marine-forecast.blade.php` resolve the `Using $this when not in object context` error by moving the `getTemperatureClass` call to the controller. The view should now render the temperature column with the correct CSS classes (e.g., `temp-cell-10`, `temp-cell-minus-5`) based on the `WeatherController::getTemperatureClass` logic. The fallback messages ensure the page displays a warning if data is missing, preventing a blank page.
-
-### Next Steps
-1. Apply the updated `MarineController.php` and `marine-forecast.blade.php`.
-2. Clear caches to ensure no stale data:
-   ```bash
-   php artisan view:clear
-   php artisan cache:clear
-   ```
-3. Test the page at `/marine-forecast` and `/marine-forecast/arran`.
-4. Check the browser console (F12) for JavaScript errors (e.g., Chart.js or icon loading issues).
-5. Review `storage/logs/laravel.log` for any API errors or data mismatches.
-6. If you want to implement search functionality or integrate real weather warnings, let me know, and I can provide detailed code for those features.
-
-If the page still has issues or you encounter new errors, share the log output or browser console messages, and I'll help debug further!
