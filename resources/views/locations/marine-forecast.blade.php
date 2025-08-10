@@ -57,7 +57,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">7-Day Marine Forecast Overview</h5>
-                            <canvas id="marineChart" height="100"></canvas>
+                            <div id="marineChart" style="height: 300px;"></div>
                         </div>
                     </div>
                 </div>
@@ -172,7 +172,7 @@
 
     @if(!empty($chart_labels) && !empty($chart_data['wave_height']))
         @push('footer-scripts')
-            <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
                     try {
@@ -187,60 +187,78 @@
                             return;
                         }
                         
-                        const ctx = document.getElementById('marineChart').getContext('2d');
-                        new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                labels: labels,
-                                datasets: [
-                                    {
-                                        label: 'Wave Height (m)',
-                                        data: chartData.wave_height,
-                                        borderColor: '#007bff',
-                                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                                        fill: true,
-                                        tension: 0.4
-                                    },
-                                    {
-                                        label: 'Sea Surface Temperature (°C)',
-                                        data: chartData.sea_surface_temperature,
-                                        borderColor: '#28a745',
-                                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                                        fill: true,
-                                        tension: 0.4
-                                    },
-                                    {
-                                        label: 'Sea Level Height (m)',
-                                        data: chartData.sea_level_height_msl,
-                                        borderColor: '#dc3545',
-                                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                                        fill: true,
-                                        tension: 0.4
-                                    }
-                                ]
-                            },
-                            options: {
-                                responsive: true,
-                                scales: {
-                                    x: {
-                                        title: { display: true, text: 'Time' },
-                                        ticks: {
-                                            maxTicksLimit: 20
-                                        }
-                                    },
-                                    y: {
-                                        title: { display: true, text: 'Value' },
-                                        beginAtZero: false
-                                    }
+                        const options = {
+                            series: [
+                                {
+                                    name: 'Wave Height (m)',
+                                    data: chartData.wave_height
                                 },
-                                plugins: {
-                                    legend: { position: 'top' },
-                                    tooltip: { mode: 'index', intersect: false }
+                                {
+                                    name: 'Sea Surface Temperature (°C)',
+                                    data: chartData.sea_surface_temperature
+                                },
+                                {
+                                    name: 'Sea Level Height (m)',
+                                    data: chartData.sea_level_height_msl
                                 }
+                            ],
+                            chart: {
+                                height: 350,
+                                type: 'line',
+                                zoom: {
+                                    enabled: true
+                                },
+                                animations: {
+                                    enabled: true
+                                }
+                            },
+                            responsive: [{
+                                breakpoint: 480,
+                                options: {
+                                    legend: {
+                                        position: 'bottom',
+                                        offsetX: -10,
+                                        offsetY: 0
+                                    }
+                                }
+                            }],
+                            dataLabels: {
+                                enabled: false
+                            },
+                            stroke: {
+                                curve: 'smooth'
+                            },
+                            xaxis: {
+                                categories: labels,
+                                title: {
+                                    text: 'Time'
+                                },
+                                labels: {
+                                    rotate: -45,
+                                    rotateAlways: true
+                                }
+                            },
+                            yaxis: {
+                                title: {
+                                    text: 'Value'
+                                },
+                                min: undefined,
+                                forceNiceScale: true
+                            },
+                            legend: {
+                                position: 'top'
+                            },
+                            tooltip: {
+                                x: {
+                                    format: 'dd/MM/yy HH:mm'
+                                },
                             }
-                        });
+                        };
+
+                        const chart = new ApexCharts(document.querySelector("#marineChart"), options);
+                        chart.render();
                     } catch (error) {
-                        console.error('Chart.js error:', error);
+                        console.error('ApexCharts error:', error);
                     }
                 });
             </script>
