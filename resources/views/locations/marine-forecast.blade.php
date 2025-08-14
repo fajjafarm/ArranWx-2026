@@ -4,6 +4,43 @@
     lang="en"
 @endsection
 
+@section('css')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons.min.css">
+    <style>
+        .table-weather { 
+            width: 100%; 
+            border-collapse: collapse; 
+        }
+        .table-weather th, .table-weather td { 
+            padding: 8px; 
+            text-align: center; 
+            border: 1px solid #dee2e6; 
+            background-color: transparent;
+        }
+        .table-weather tr:nth-child(odd) td:nth-child(1),
+        .table-weather tr:nth-child(odd) td:nth-child(2) {
+            background-color: #f8f9fa;
+        }
+        .condition-cell img {
+            width: 36px;
+            height: 36px;
+            vertical-align: middle;
+        }
+        .direction-cell i {
+            font-size: 34px;
+            font-weight: bold;
+        }
+        .highlight-amber {
+            background-color: #FFC107 !important;
+        }
+        @media (max-width: 768px) {
+            .table-weather { display: block; overflow-x: auto; }
+            .table-weather th, .table-weather td { padding: 6px; font-size: 12px; }
+            .condition-cell img { width: 27px; height: 27px; }
+        }
+    </style>
+@endsection
+
 @section('content')
     <div class="container-fluid">
         <div class="row">
@@ -80,7 +117,7 @@
                             <div class="card-body">
                                 <h5 class="card-title">{{ \Carbon\Carbon::parse($date)->format('l, j F Y') }}</h5>
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-bordered table-sm">
+                                    <table class="table table-striped table-bordered table-sm table-weather">
                                         <thead class="table-light">
                                             <tr>
                                                 <th>Time</th>
@@ -90,50 +127,50 @@
                                                 <th>Wind Speed (mph)</th>
                                                 <th>Wind Gusts (mph)</th>
                                                 <th>Wind Dir</th>
-                                                <th>Beaufort</th>
                                                 <th>Wave Height (m)</th>
-                                                <th>Sea Level (m)</th>
                                                 <th>Wave Dir</th>
                                                 <th>Wave Period (s)</th>
                                                 <th>Current Vel (mph)</th>
                                                 <th>Current Dir</th>
+                                                <th>Sea Level (m)</th>
+                                                <th>Beaufort</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach($data as $hourly)
                                                 @php
                                                     $cardinal = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'];
-                                                    $windDir = is_numeric($hourly['wind_direction']) ? round($hourly['wind_direction'] / 45) * 45 : null;
-                                                    $windCardinal = $windDir !== null ? $cardinal[intval($windDir / 45) % 8] : 'N/A';
-                                                    $waveDir = is_numeric($hourly['wave_direction']) ? round($hourly['wave_direction'] / 45) * 45 : null;
-                                                    $waveCardinal = $waveDir !== null ? $cardinal[intval($waveDir / 45) % 8] : 'N/A';
-                                                    $currentDir = is_numeric($hourly['ocean_current_direction']) ? round($hourly['ocean_current_direction'] / 45) * 45 : null;
-                                                    $currentCardinal = $currentDir !== null ? $cardinal[intval($currentDir / 45) % 8] : 'N/A';
+                                                    $windDir = is_numeric($hourly['wind_direction']) ? $hourly['wind_direction'] : null;
+                                                    $windCardinal = $windDir !== null ? $cardinal[intval(round($windDir / 45)) % 8] : 'N/A';
+                                                    $waveDir = is_numeric($hourly['wave_direction']) ? $hourly['wave_direction'] : null;
+                                                    $waveCardinal = $waveDir !== null ? $cardinal[intval(round($waveDir / 45)) % 8] : 'N/A';
+                                                    $currentDir = is_numeric($hourly['ocean_current_direction']) ? $hourly['ocean_current_direction'] : null;
+                                                    $currentCardinal = $currentDir !== null ? $cardinal[intval(round($currentDir / 45)) % 8] : 'N/A';
+                                                    $isClonaigSlip = abs($lat - 55.6951) < 0.001 && abs($lon - (-5.3967)) < 0.001;
+                                                    $isLochranzaPier = abs($lat - 55.7059) < 0.001 && abs($lon - (-5.3022)) < 0.001;
+                                                    $highlightRow = ($isClonaigSlip || $isLochranzaPier) && is_numeric($hourly['sea_level_height_msl']) && $hourly['sea_level_height_msl'] < -0.9;
                                                 @endphp
-                                                <tr>
+                                                <tr @if($highlightRow) style="background-color: #FFC107;" @endif>
                                                     <td>{{ \Carbon\Carbon::parse($hourly['time'])->format('H:i') }}</td>
-                                                    <td>
-                                                        <img src="{{ $hourly['iconUrl'] }}" alt="{{ $hourly['weather'] }}" width="24" height="24" class="me-1">
-                                                        {{ $hourly['weather'] }}
+                                                    <td class="condition-cell">
+                                                        <img src="{{ $hourly['iconUrl'] }}" alt="{{ $hourly['weather'] }}" width="36" height="36">
                                                     </td>
                                                     <td class="{{ $hourly['temp_class'] }}">{{ $hourly['temperature'] ? number_format($hourly['temperature'], 1) : 'N/A' }}</td>
                                                     <td>{{ $hourly['sea_surface_temperature'] ? number_format($hourly['sea_surface_temperature'], 1) : 'N/A' }}</td>
                                                     <td>{{ $hourly['wind_speed'] ? number_format($hourly['wind_speed'], 1) : 'N/A' }}</td>
                                                     <td>{{ $hourly['wind_gusts'] ? number_format($hourly['wind_gusts'], 1) : 'N/A' }}</td>
-                                                    <td>
+                                                    <td class="direction-cell">
                                                         @if($windDir !== null)
-                                                            <i class="ti ti-arrow-up" style="transform: rotate({{ $windDir }}deg);"></i>
+                                                            <i class="wi wi-direction-up" style="transform: rotate({{ $windDir }}deg);"></i>
                                                             {{ $windCardinal }}
                                                         @else
                                                             N/A
                                                         @endif
                                                     </td>
-                                                    <td>{{ $hourly['beaufort'] }}</td>
                                                     <td>{{ $hourly['wave_height'] ? number_format($hourly['wave_height'], 2) : 'N/A' }}</td>
-                                                    <td>{{ $hourly['sea_level_height_msl'] ? number_format($hourly['sea_level_height_msl'], 2) : 'N/A' }}</td>
-                                                    <td>
+                                                    <td class="direction-cell">
                                                         @if($waveDir !== null)
-                                                            <i class="ti ti-arrow-up" style="transform: rotate({{ $waveDir }}deg);"></i>
+                                                            <i class="wi wi-direction-up" style="transform: rotate({{ $waveDir }}deg);"></i>
                                                             {{ $waveCardinal }}
                                                         @else
                                                             N/A
@@ -141,14 +178,16 @@
                                                     </td>
                                                     <td>{{ $hourly['wave_period'] ? number_format($hourly['wave_period'], 2) : 'N/A' }}</td>
                                                     <td>{{ $hourly['ocean_current_velocity'] ? number_format($hourly['ocean_current_velocity'], 2) : 'N/A' }}</td>
-                                                    <td>
+                                                    <td class="direction-cell">
                                                         @if($currentDir !== null)
-                                                            <i class="ti ti-arrow-up" style="transform: rotate({{ $currentDir }}deg);"></i>
+                                                            <i class="wi wi-direction-up" style="transform: rotate({{ $currentDir }}deg);"></i>
                                                             {{ $currentCardinal }}
                                                         @else
                                                             N/A
                                                         @endif
                                                     </td>
+                                                    <td>{{ $hourly['sea_level_height_msl'] ? number_format($hourly['sea_level_height_msl'], 2) : 'N/A' }}</td>
+                                                    <td>{{ $hourly['beaufort'] }}</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
