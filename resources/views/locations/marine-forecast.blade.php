@@ -33,10 +33,17 @@
         .highlight-amber {
             background-color: #FFC107 !important;
         }
+        .warning-icon {
+            color: #D32F2F;
+            margin-left: 5px;
+            font-size: 20px;
+            vertical-align: middle;
+        }
         @media (max-width: 768px) {
             .table-weather { display: block; overflow-x: auto; }
             .table-weather th, .table-weather td { padding: 6px; font-size: 12px; }
             .condition-cell img { width: 27px; height: 27px; }
+            .warning-icon { font-size: 16px; }
         }
     </style>
 @endsection
@@ -149,6 +156,7 @@
                                                     $isClonaigSlip = abs($lat - 55.6951) < 0.001 && abs($lon - (-5.3967)) < 0.001;
                                                     $isLochranzaPier = abs($lat - 55.7059) < 0.001 && abs($lon - (-5.3022)) < 0.001;
                                                     $highlightRow = ($isClonaigSlip || $isLochranzaPier) && is_numeric($hourly['sea_level_height_msl']) && $hourly['sea_level_height_msl'] < -0.9;
+                                                    $showWarning = ($isClonaigSlip || $isLochranzaPier) && is_numeric($hourly['sea_level_height_msl']) && $hourly['sea_level_height_msl'] < -1.0;
                                                 @endphp
                                                 <tr @if($highlightRow) style="background-color: #FFC107;" @endif>
                                                     <td>{{ \Carbon\Carbon::parse($hourly['time'])->format('H:i') }}</td>
@@ -186,7 +194,12 @@
                                                             N/A
                                                         @endif
                                                     </td>
-                                                    <td>{{ $hourly['sea_level_height_msl'] ? number_format($hourly['sea_level_height_msl'], 2) : 'N/A' }}</td>
+                                                    <td>
+                                                        {{ $hourly['sea_level_height_msl'] ? number_format($hourly['sea_level_height_msl'], 2) : 'N/A' }}
+                                                        @if($showWarning)
+                                                            <i class="wi wi-warning warning-icon"></i>
+                                                        @endif
+                                                    </td>
                                                     <td>{{ $hourly['beaufort'] }}</td>
                                                 </tr>
                                             @endforeach
