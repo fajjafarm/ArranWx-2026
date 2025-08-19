@@ -71,11 +71,67 @@
             color: #555;
             text-align: center;
         }
-        .chart-error {
-            color: #D32F2F;
-            font-size: 14px;
+        .chart-container {
+            position: relative;
+            height: 350px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 20px;
+        }
+        .chart {
+            display: flex;
+            align-items: flex-end;
+            height: 300px;
+            gap: 5px;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            position: relative;
+        }
+        .chart-bar {
+            flex: 1;
+            background-color: rgba(0, 123, 255, 0.5);
+            border: 1px solid #007bff;
+            position: relative;
+            max-width: 40px;
+            min-width: 20px;
+        }
+        .chart-bar-label {
+            position: absolute;
+            bottom: -20px;
+            transform: rotate(-45deg);
+            font-size: 12px;
+            white-space: nowrap;
+            left: 50%;
+            transform-origin: left;
+        }
+        .chart-y-axis {
+            position: absolute;
+            left: -40px;
+            top: 0;
+            height: 100%;
+            width: 40px;
+            text-align: right;
+            font-size: 12px;
+        }
+        .chart-y-label {
+            position: absolute;
+            right: 5px;
+            font-size: 12px;
+        }
+        .chart-x-axis-label {
             text-align: center;
-            margin-top: 10px;
+            margin-top: 40px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .chart-y-axis-title {
+            position: absolute;
+            top: 50%;
+            left: -60px;
+            transform: rotate(-90deg);
+            font-size: 14px;
+            font-weight: 600;
         }
         .fallback-table {
             width: 100%;
@@ -119,6 +175,15 @@
             }
             .top-card p {
                 font-size: 12px;
+            }
+            .chart-bar {
+                min-width: 15px;
+            }
+            .chart-bar-label {
+                font-size: 10px;
+            }
+            .chart-y-label {
+                font-size: 10px;
             }
         }
     </style>
@@ -183,17 +248,35 @@
                     <div class="card-body">
                         <h5 class="card-title">Hourly Wave Height Forecast</h5>
                         @if(!empty($chart_labels) && !empty($chart_data['wave_height']) && is_array($chart_data['wave_height']) && count($chart_data['wave_height']) > 0)
-                            <canvas id="marineChart" style="min-height: 350px;" 
-                                    data-chart-data="{{ json_encode($chart_data) }}" 
-                                    data-chart-labels="{{ json_encode($chart_labels) }}"></canvas>
-                            <div id="chartError" class="chart-error"></div>
-                        @else
-                            <div class="alert alert-warning">
-                                No wave height data available for the selected location. Please check data sources or try another location.
+                            @php
+                                $maxWaveHeight = max($chart_data['wave_height']);
+                                $scaleFactor = $maxWaveHeight > 0 ? 250 / $maxWaveHeight : 1; // Scale to 250px max height
+                                $yAxisTicks = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4]; // Static y-axis ticks
+                                if ($maxWaveHeight > 4) {
+                                    $yAxisTicks = array_map(function($i) use ($maxWaveHeight) {
+                                        return round($i * $maxWaveHeight / 8, 1);
+                                    }, range(0, 8));
+                                }
+                            @endphp
+                            <div class="chart-container">
+                                <div class="chart-y-axis">
+                                    <span class="chart-y-axis-title">Wave Height (m)</span>
+                                    @foreach(array_reverse($yAxisTicks) as $tick)
+                                        <span class="chart-y-label" style="top: {{ ((max($yAxisTicks) - $tick) / max($yAxisTicks)) * 250 }}px;">{{ $tick }}</span>
+                                    @endforeach
+                                </div>
+                                <div class="chart">
+                                    @foreach($chart_data['wave_height'] as $index => $height)
+                                        <div class="chart-bar" 
+                                             style="height: {{ $height * $scaleFactor }}px;"
+                                             title="{{ $chart_labels[$index] }}: {{ number_format($height, 2) }} m">
+                                            <span class="chart-bar-label">{{ $chart_labels[$index] }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div class="chart-x-axis-label">Time</div>
                             </div>
-                        @endif
-                        <!-- Fallback Table -->
-                        @if(!empty($chart_labels) && !empty($chart_data['wave_height']) && is_array($chart_data['wave_height']) && count($chart_data['wave_height']) > 0)
+                            <!-- Fallback Table -->
                             <table class="fallback-table">
                                 <thead>
                                     <tr>
@@ -210,6 +293,10 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        @else
+                            <div class="alert alert-warning">
+                                No wave height data available for the selected location. Please check data sources or try another location.
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -332,11 +419,4 @@
             and <a href="https://www.calmac.co.uk/" target="_blank">CalMac</a> for ferry updates (planned).
         </div>
     </div>
-
-    @if(!empty($chart_labels) && !empty($chart_data['wave_height']) && is_array($chart_data['wave_height']) && count($chart_data['wave_height']) > 0)
-        @push('footer-scripts')
-            <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-            <script src="{{ asset('js/marine-chart.js') }}"></script>
-        @endpush
-    @endif
 @endsection
