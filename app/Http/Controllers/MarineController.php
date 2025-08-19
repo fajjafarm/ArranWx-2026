@@ -92,6 +92,13 @@ class MarineController extends WeatherController
                     $chart_data['wave_height'][] = $hourly['wave_height'];
                     $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
                     $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
+                } else {
+                    Log::warning('Skipping chart data due to null values', [
+                        'time' => $hourly['time'],
+                        'wave_height' => $hourly['wave_height'],
+                        'sea_surface_temperature' => $hourly['sea_surface_temperature'],
+                        'sea_level_height_msl' => $hourly['sea_level_height_msl'],
+                    ]);
                 }
                 
                 Log::debug('Hourly data', [
@@ -211,6 +218,13 @@ class MarineController extends WeatherController
                     $chart_data['wave_height'][] = $hourly['wave_height'];
                     $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
                     $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
+                } else {
+                    Log::warning('Skipping chart data due to null values', [
+                        'time' => $hourly['time'],
+                        'wave_height' => $hourly['wave_height'],
+                        'sea_surface_temperature' => $hourly['sea_surface_temperature'],
+                        'sea_level_height_msl' => $hourly['sea_level_height_msl'],
+                    ]);
                 }
                 
                 Log::debug('Hourly data (slug)', [

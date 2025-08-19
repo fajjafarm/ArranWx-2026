@@ -1,15 +1,22 @@
 document.addEventListener('DOMContentLoaded', function () {
     try {
-        // Data is injected via data attributes in the canvas element
         const canvas = document.getElementById('marineChart');
-        const chartData = JSON.parse(canvas.dataset.chartData);
-        const labels = JSON.parse(canvas.dataset.chartLabels);
+        if (!canvas) {
+            console.error('Canvas element #marineChart not found');
+            return;
+        }
+        
+        const chartData = JSON.parse(canvas.dataset.chartData || '{}');
+        const labels = JSON.parse(canvas.dataset.chartLabels || '[]');
         
         console.log('Chart Data:', chartData);
         console.log('Chart Labels:', labels);
         
-        if (!labels || !labels.length || !chartData || !chartData.wave_height || !chartData.wave_height.length) {
+        if (!labels.length || !chartData.wave_height || !chartData.wave_height.length || 
+            !chartData.sea_surface_temperature || !chartData.sea_surface_temperature.length || 
+            !chartData.sea_level_height_msl || !chartData.sea_level_height_msl.length) {
             console.error('Invalid chart data:', { labels, chartData });
+            document.getElementById('chartError').textContent = 'Chart data is missing or invalid.';
             return;
         }
         
@@ -125,5 +132,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     } catch (error) {
         console.error('Chart.js error:', error);
+        document.getElementById('chartError').textContent = 'Failed to render chart: ' + error.message;
     }
 });

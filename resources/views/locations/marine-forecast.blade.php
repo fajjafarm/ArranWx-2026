@@ -71,6 +71,12 @@
             color: #555;
             text-align: center;
         }
+        .chart-error {
+            color: #D32F2F;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 10px;
+        }
         @media (max-width: 768px) {
             .table-weather { 
                 display: block; 
@@ -166,6 +172,7 @@
                             <canvas id="marineChart" style="min-height: 350px;" 
                                     data-chart-data="{{ json_encode($chart_data) }}" 
                                     data-chart-labels="{{ json_encode($chart_labels) }}"></canvas>
+                            <div id="chartError" class="chart-error"></div>
                         </div>
                     </div>
                 </div>
@@ -299,6 +306,7 @@
 
     @if(!empty($chart_labels) && !empty($chart_data['wave_height']) && is_array($chart_data['wave_height']) && count($chart_data['wave_height']) > 0)
         @push('footer-scripts')
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
             <script src="{{ asset('js/marine-chart.js') }}"></script>
         @endpush
     @endif
