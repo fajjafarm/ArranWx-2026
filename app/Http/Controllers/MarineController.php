@@ -85,11 +85,11 @@ class MarineController extends WeatherController
                 
                 $forecast_days[$date][$hour] = $hourly;
                 
-                if ($hourly['wave_height'] !== null) {
+                if ($hourly['wave_height'] !== null && is_numeric($hourly['wave_height']) && $hourly['wave_height'] >= 0) {
                     $chart_labels[] = $weatherTime->format('M d H:i');
                     $chart_data['wave_height'][] = $hourly['wave_height'];
                 } else {
-                    Log::warning('Skipping chart data due to null wave_height', [
+                    Log::warning('Skipping chart data due to invalid wave_height', [
                         'time' => $hourly['time'],
                         'wave_height' => $hourly['wave_height'],
                     ]);
@@ -203,11 +203,11 @@ class MarineController extends WeatherController
                 
                 $forecast_days[$date][$hour] = $hourly;
                 
-                if ($hourly['wave_height'] !== null) {
+                if ($hourly['wave_height'] !== null && is_numeric($hourly['wave_height']) && $hourly['wave_height'] >= 0) {
                     $chart_labels[] = $weatherTime->format('M d H:i');
                     $chart_data['wave_height'][] = $hourly['wave_height'];
                 } else {
-                    Log::warning('Skipping chart data due to null wave_height', [
+                    Log::warning('Skipping chart data due to invalid wave_height', [
                         'time' => $hourly['time'],
                         'wave_height' => $hourly['wave_height'],
                     ]);

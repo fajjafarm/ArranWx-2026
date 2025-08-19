@@ -77,13 +77,27 @@
             text-align: center;
             margin-top: 10px;
         }
+        .fallback-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .fallback-table th, .fallback-table td {
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+        .fallback-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
         @media (max-width: 768px) {
-            .table-weather { 
+            .table-weather, .fallback-table { 
                 display: block; 
                 overflow-x: auto; 
                 white-space: nowrap;
             }
-            .table-weather th, .table-weather td { 
+            .table-weather th, .table-weather td, .fallback-table th, .fallback-table td { 
                 padding: 6px; 
                 font-size: 12px; 
             }
@@ -163,29 +177,44 @@
             </div>
         </div>
 
-        @if(!empty($chart_labels) && !empty($chart_data['wave_height']) && is_array($chart_data['wave_height']) && count($chart_data['wave_height']) > 0)
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Hourly Wave Height Forecast</h5>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Hourly Wave Height Forecast</h5>
+                        @if(!empty($chart_labels) && !empty($chart_data['wave_height']) && is_array($chart_data['wave_height']) && count($chart_data['wave_height']) > 0)
                             <canvas id="marineChart" style="min-height: 350px;" 
                                     data-chart-data="{{ json_encode($chart_data) }}" 
                                     data-chart-labels="{{ json_encode($chart_labels) }}"></canvas>
                             <div id="chartError" class="chart-error"></div>
-                        </div>
+                        @else
+                            <div class="alert alert-warning">
+                                No wave height data available for the selected location. Please check data sources or try another location.
+                            </div>
+                        @endif
+                        <!-- Fallback Table -->
+                        @if(!empty($chart_labels) && !empty($chart_data['wave_height']) && is_array($chart_data['wave_height']) && count($chart_data['wave_height']) > 0)
+                            <table class="fallback-table">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Wave Height (m)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($chart_labels as $index => $label)
+                                        <tr>
+                                            <td>{{ $label }}</td>
+                                            <td>{{ number_format($chart_data['wave_height'][$index], 2) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @endif
                     </div>
                 </div>
             </div>
-        @else
-            <div class="row">
-                <div class="col-12">
-                    <div class="alert alert-warning">
-                        No wave height data available for the selected location. Please check data sources or try another location.
-                    </div>
-                </div>
-            </div>
-        @endif
+        </div>
 
         @if(!empty($forecast_days))
             @foreach($forecast_days as $date => $data)
