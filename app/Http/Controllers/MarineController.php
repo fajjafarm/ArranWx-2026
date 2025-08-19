@@ -34,7 +34,7 @@ class MarineController extends WeatherController
         
         $forecast_days = [];
         $marineTimes = $marineData['hourly']['time'] ?? [];
-        $currentTime = Carbon::now('Europe/London')->startOfHour(); // Start from current hour (2025-08-19 18:00 BST)
+        $currentTime = Carbon::now('Europe/London')->startOfHour(); // Start from current hour (2025-08-19 19:00 BST)
         
         foreach ($weatherData as $day) {
             $date = Carbon::parse($day['date'])->toDateString();
@@ -91,7 +91,7 @@ class MarineController extends WeatherController
                     $chart_labels[] = $weatherTime->format('M d H:i');
                     $chart_data['wave_height'][] = $hourly['wave_height'];
                     $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-                    $chart_data['sea_level_height_msl'] = $hourly['sea_level_height_msl'];
+                    $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl']; // Fixed: Append to array
                 }
                 
                 Log::debug('Hourly data', [
@@ -116,7 +116,7 @@ class MarineController extends WeatherController
         Log::info('Forecast days', ['count' => count($forecast_days)]);
         Log::info('Chart labels', ['count' => count($chart_labels), 'sample' => array_slice($chart_labels, 0, 5)]);
         Log::info('Chart data', ['sample' => array_map(function($key) use ($chart_data) {
-            return array_slice($chart_data[$key], 0, 5);
+            return is_array($chart_data[$key]) ? array_slice($chart_data[$key], 0, 5) : $chart_data[$key];
         }, array_keys($chart_data))]);
         
         $warnings = [
@@ -210,7 +210,7 @@ class MarineController extends WeatherController
                     $chart_labels[] = $weatherTime->format('M d H:i');
                     $chart_data['wave_height'][] = $hourly['wave_height'];
                     $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-                    $chart_data['sea_level_height_msl'] = $hourly['sea_level_height_msl'];
+                    $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl']; // Fixed: Append to array
                 }
                 
                 Log::debug('Hourly data (slug)', [
@@ -235,7 +235,7 @@ class MarineController extends WeatherController
         Log::info('Forecast days (slug)', ['count' => count($forecast_days)]);
         Log::info('Chart labels (slug)', ['count' => count($chart_labels), 'sample' => array_slice($chart_labels, 0, 5)]);
         Log::info('Chart data (slug)', ['sample' => array_map(function($key) use ($chart_data) {
-            return array_slice($chart_data[$key], 0, 5);
+            return is_array($chart_data[$key]) ? array_slice($chart_data[$key], 0, 5) : $chart_data[$key];
         }, array_keys($chart_data))]);
         
         $warnings = [
