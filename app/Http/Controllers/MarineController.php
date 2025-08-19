@@ -1,315 +1,469 @@
-<?php
+@extends('layouts.vertical')
 
-namespace App\Http\Controllers;
+@section('html-attribute')
+    lang="en"
+@endsection
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
-use App\Models\Location;
-use Illuminate\Support\Str;
-use Illuminate\Support\Carbon;
+@section('css')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.12/css/weather-icons.min.css">
+    <style>
+        .table-weather { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 14px;
+        }
+        .table-weather th, .table-weather td { 
+            padding: 10px; 
+            text-align: center; 
+            border: 1px solid #dee2e6; 
+            background-color: transparent;
+            vertical-align: middle;
+        }
+        .table-weather th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .table-weather tr:nth-child(odd) td:nth-child(1),
+        .table-weather tr:nth-child(odd) td:nth-child(2) {
+            background-color: #f8f9fa;
+        }
+        .condition-cell img {
+            width: 36px;
+            height: 36px;
+            vertical-align: middle;
+        }
+        .direction-cell i {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .cardinal-cell {
+            font-size: 14px;
+        }
+        .highlight-amber {
+            background-color: #FFC107 !important;
+        }
+        .warning-icon {
+            color: #D32F2F;
+            margin-left: 5px;
+            font-size: 18px;
+            vertical-align: middle;
+        }
+        .top-card {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .top-card h6 {
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .top-card p {
+            margin: 0;
+            font-size: 14px;
+        }
+        .api-source-footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #555;
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            .table-weather { 
+                display: block; 
+                overflow-x: auto; 
+                white-space: nowrap;
+            }
+            .table-weather th, .table-weather td { 
+                padding: 6px; 
+                font-size: 12px; 
+            }
+            .condition-cell img { 
+                width: 27px; 
+                height: 27px; 
+            }
+            .direction-cell i { 
+                font-size: 24px; 
+            }
+            .warning-icon { 
+                font-size: 16px; 
+            }
+            .top-card {
+                padding: 10px;
+            }
+            .top-card h6 {
+                font-size: 14px;
+            }
+            .top-card p {
+                font-size: 12px;
+            }
+        }
+    </style>
+@endsection
 
-class MarineController extends WeatherController
-{
-    public function index(Request $request)
-    {
-        $lat = $request->query('lat', 55.541664);
-        $lon = $request->query('lon', -5.1249847);
-        $locationName = $request->query('location', 'Isle of Arran');
-        $title = "Marine Forecast - $locationName";
-        
-        $marineData = $this->getSevenDayMarineForecast($lat, $lon);
-        $weatherData = $this->getTenDayForecast($lat, $lon, null, 'Europe/London');
-        
-        Log::info('Marine data', ['marineData' => $marineData]);
-        Log::info('Weather data', ['weatherData' => $weatherData]);
-        
-        $chart_labels = [];
-        $chart_data = [
-            'wave_height' => [],
-            'sea_surface_temperature' => [],
-            'sea_level_height_msl' => [],
-        ];
-        
-        $forecast_days = [];
-        $marineTimes = $marineData['hourly']['time'] ?? [];
-        $currentTime = Carbon::now('Europe/London')->startOfHour(); // Start from current hour (2025-08-19 00:00 BST)
-        
-        foreach ($weatherData as $day) {
-            $date = Carbon::parse($day['date'])->toDateString();
-            foreach ($day['forecasts'] as $forecast) {
-                $weatherTime = Carbon::parse($day['date'] . ' ' . $forecast['time']);
-                if ($weatherTime->lessThan($currentTime)) {
-                    Log::debug('Skipping past weather timestamp', ['weatherTime' => $weatherTime->toIso8601String()]);
-                    continue; // Skip timestamps before current hour
-                }
-                
-                $hour = $weatherTime->format('H:00');
-                
-                $closestMarine = null;
-                $minDiff = PHP_INT_MAX;
-                foreach ($marineTimes as $index => $marineTime) {
-                    if ($index >= 168) break;
-                    $marineCarbon = Carbon::parse($marineTime);
-                    $diff = abs($weatherTime->diffInMinutes($marineCarbon));
-                    if ($diff <= 60 && $diff < $minDiff) {
-                        $closestMarine = $index;
-                        $minDiff = $diff;
+@section('content')
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box">
+                    <h4 class="page-title">{{ $title }}</h4>
+                    <div class="page-title-right">
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="{{ route('dashboards.index') }}">Home</a></li>
+                            <li class="breadcrumb-item active">Marine Forecast</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Cards for Live Sea State Warnings, Tides, and Ferry Updates -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="top-card">
+                    <h6>Live Sea State Warnings</h6>
+                    <p>No warnings currently. (Integrate <a href="https://www.metoffice.gov.uk/services/data" target="_blank">Met Office API</a> for live updates)</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="top-card">
+                    <h6>Tide Updates</h6>
+                    <p>High Tide: 08:00 (2.5m) | Low Tide: 14:00 (0.5m). (Integrate <a href="https://admiraltyapi.portal.azure-api.net/" target="_blank">Admiralty Tide API</a>)</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="top-card">
+                    <h6>Ferry Updates</h6>
+                    <p>Arran Ferry: On time. (Integrate <a href="https://www.calmac.co.uk/" target="_blank">CalMac API</a>)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form id="location-search" action="{{ route('marine.forecast') }}" method="GET">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="location" placeholder="Search for a location (e.g., London)" value="{{ $title }}">
+                                <button class="btn btn-primary" type="submit">Search</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if(!empty($chart_labels) && !empty($chart_data['wave_height']))
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Hourly Marine Forecast Overview</h5>
+                            <div id="marineChart" style="min-height: 350px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @else
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-warning">
+                        No chart data available for the selected location. Please check data sources or try another location.
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if(!empty($forecast_days))
+            @foreach($forecast_days as $date => $data)
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ \Carbon\Carbon::parse($date)->format('l, j F Y') }}</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered table-sm table-weather">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Time</th>
+                                                <th>Weather</th>
+                                                <th>Air Temp (°C)</th>
+                                                <th>Sea Temp (°C)</th>
+                                                <th>Wind Speed (mph)</th>
+                                                <th>Wind Gusts (mph)</th>
+                                                <th>Wind Dir</th>
+                                                <th>Wind Cardinal</th>
+                                                <th>Wave Height (m)</th>
+                                                <th>Wave Dir</th>
+                                                <th>Wave Cardinal</th>
+                                                <th>Wave Period (s)</th>
+                                                <th>Current Vel (mph)</th>
+                                                <th>Current Dir</th>
+                                                <th>Current Cardinal</th>
+                                                <th>Sea Level (m)</th>
+                                                <th>Beaufort</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($data as $hourly)
+                                                @php
+                                                    $cardinal = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'];
+                                                    $windDir = is_numeric($hourly['wind_direction']) ? $hourly['wind_direction'] : null;
+                                                    $windCardinal = $windDir !== null ? $cardinal[intval(round($windDir / 45)) % 8] : 'N/A';
+                                                    $waveDir = is_numeric($hourly['wave_direction']) ? $hourly['wave_direction'] : null;
+                                                    $waveCardinal = $waveDir !== null ? $cardinal[intval(round($waveDir / 45)) % 8] : 'N/A';
+                                                    $currentDir = is_numeric($hourly['ocean_current_direction']) ? $hourly['ocean_current_direction'] : null;
+                                                    $currentCardinal = $currentDir !== null ? $cardinal[intval(round($currentDir / 45)) % 8] : 'N/A';
+                                                    $isClonaigSlip = abs($lat - 55.6951) < 0.001 && abs($lon - (-5.3967)) < 0.001;
+                                                    $isLochranzaPier = abs($lat - 55.7059) < 0.001 && abs($lon - (-5.3022)) < 0.001;
+                                                    $highlightRow = ($isClonaigSlip || $isLochranzaPier) && is_numeric($hourly['sea_level_height_msl']) && $hourly['sea_level_height_msl'] < -0.9;
+                                                    $showWarning = ($isClonaigSlip || $isLochranzaPier) && is_numeric($hourly['sea_level_height_msl']) && $hourly['sea_level_height_msl'] < -1.0;
+                                                @endphp
+                                                <tr @if($highlightRow) style="background-color: #FFC107;" @endif>
+                                                    <td>{{ \Carbon\Carbon::parse($hourly['time'])->format('H:i') }}</td>
+                                                    <td class="condition-cell">
+                                                        <img src="{{ $hourly['iconUrl'] }}" alt="{{ $hourly['weather'] }}" width="36" height="36">
+                                                    </td>
+                                                    <td class="{{ $hourly['temp_class'] }}">{{ $hourly['temperature'] ? number_format($hourly['temperature'], 1) : 'N/A' }}</td>
+                                                    <td>{{ $hourly['sea_surface_temperature'] ? number_format($hourly['sea_surface_temperature'], 1) : 'N/A' }}</td>
+                                                    <td>{{ $hourly['wind_speed'] ? number_format($hourly['wind_speed'], 1) : 'N/A' }}</td>
+                                                    <td>{{ $hourly['wind_gusts'] ? number_format($hourly['wind_gusts'], 1) : 'N/A' }}</td>
+                                                    <td class="direction-cell">
+                                                        @if($windDir !== null)
+                                                            <i class="wi wi-direction-up" style="transform: rotate({{ $windDir }}deg);"></i>
+                                                        @else
+                                                            N/A
+                                                        @endif
+                                                    </td>
+                                                    <td class="cardinal-cell">{{ $windCardinal }}</td>
+                                                    <td>{{ $hourly['wave_height'] ? number_format($hourly['wave_height'], 2) : 'N/A' }}</td>
+                                                    <td class="direction-cell">
+                                                        @if($waveDir !== null)
+                                                            <i class="wi wi-direction-up" style="transform: rotate({{ $waveDir }}deg);"></i>
+                                                        @else
+                                                            N/A
+                                                        @endif
+                                                    </td>
+                                                    <td class="cardinal-cell">{{ $waveCardinal }}</td>
+                                                    <td>{{ $hourly['wave_period'] ? number_format($hourly['wave_period'], 2) : 'N/A' }}</td>
+                                                    <td>{{ $hourly['ocean_current_velocity'] ? number_format($hourly['ocean_current_velocity'], 2) : 'N/A' }}</td>
+                                                    <td class="direction-cell">
+                                                        @if($currentDir !== null)
+                                                            <i class="wi wi-direction-up" style="transform: rotate({{ $currentDir }}deg);"></i>
+                                                        @else
+                                                            N/A
+                                                        @endif
+                                                    </td>
+                                                    <td class="cardinal-cell">{{ $currentCardinal }}</td>
+                                                    <td>
+                                                        {{ $hourly['sea_level_height_msl'] ? number_format($hourly['sea_level_height_msl'], 2) : 'N/A' }}
+                                                        @if($showWarning)
+                                                            <i class="wi wi-warning warning-icon"></i>
+                                                        @endif
+                                                    </td>
+                                                    <td>{{ $hourly['beaufort'] }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        @else
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-warning">
+                        No forecast data available for the selected location.
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <div class="api-source-footer">
+            Data sourced from <a href="https://api.met.no/" target="_blank">yr.no</a> for weather forecasts, 
+            <a href="https://marine-api.open-meteo.com/" target="_blank">Open-Meteo</a> for marine data, 
+            <a href="https://www.metoffice.gov.uk/services/data" target="_blank">Met Office</a> for sea state warnings (planned), 
+            <a href="https://admiraltyapi.portal.azure-api.net/" target="_blank">Admiralty Tide API</a> for tide data (planned), 
+            and <a href="https://www.calmac.co.uk/" target="_blank">CalMac</a> for ferry updates (planned).
+        </div>
+    </div>
+
+    @if(!empty($chart_labels) && !empty($chart_data['wave_height']))
+        @push('footer-scripts')
+            <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    try {
+                        const chartData = @json($chart_data);
+                        const labels = @json($chart_labels);
+                        
+                        console.log('Chart Data:', chartData);
+                        console.log('Chart Labels:', labels);
+                        
+                        if (!labels || !labels.length || !chartData || !chartData.wave_height || !chartData.wave_height.length) {
+                            console.error('Invalid chart data:', { labels, chartData });
+                            return;
+                        }
+                        
+                        const options = {
+                            series: [
+                                {
+                                    name: 'Wave Height (m)',
+                                    data: chartData.wave_height,
+                                    type: 'bar'
+                                },
+                                {
+                                    name: 'Sea Surface Temperature (°C)',
+                                    data: chartData.sea_surface_temperature,
+                                    type: 'line'
+                                },
+                                {
+                                    name: 'Sea Level Height (m)',
+                                    data: chartData.sea_level_height_msl,
+                                    type: 'line'
+                                }
+                            ],
+                            chart: {
+                                height: 350,
+                                type: 'line',
+                                zoom: {
+                                    enabled: true
+                                },
+                                animations: {
+                                    enabled: true,
+                                    easing: 'easeinout',
+                                    speed: 800
+                                },
+                                toolbar: {
+                                    show: true,
+                                    tools: {
+                                        download: false,
+                                        selection: true,
+                                        zoom: true,
+                                        zoomin: true,
+                                        zoomout: true,
+                                        pan: true
+                                    }
+                                }
+                            },
+                            responsive: [{
+                                breakpoint: 768,
+                                options: {
+                                    chart: {
+                                        height: 300
+                                    },
+                                    legend: {
+                                        position: 'bottom',
+                                        offsetX: -10,
+                                        offsetY: 0
+                                    },
+                                    xaxis: {
+                                        labels: {
+                                            rotate: -45,
+                                            rotateAlways: true,
+                                            style: {
+                                                fontSize: '10px'
+                                            }
+                                        }
+                                    }
+                                }
+                            }],
+                            dataLabels: {
+                                enabled: false
+                            },
+                            stroke: {
+                                curve: 'smooth',
+                                width: [0, 2, 2] // No stroke for bar, 2px for lines
+                            },
+                            fill: {
+                                opacity: [0.85, 1, 1] // Slightly transparent bars
+                            },
+                            colors: ['#007bff', '#28a745', '#dc3545'],
+                            xaxis: {
+                                categories: labels,
+                                title: {
+                                    text: 'Time',
+                                    style: {
+                                        fontSize: '14px'
+                                    }
+                                },
+                                labels: {
+                                    rotate: -45,
+                                    rotateAlways: true,
+                                    style: {
+                                        fontSize: '12px'
+                                    }
+                                }
+                            },
+                            yaxis: [
+                                {
+                                    title: {
+                                        text: 'Wave Height (m)',
+                                        style: {
+                                            fontSize: '14px'
+                                        }
+                                    },
+                                    min: 0,
+                                    forceNiceScale: true
+                                },
+                                {
+                                    opposite: true,
+                                    title: {
+                                        text: 'Sea Surface Temp (°C)',
+                                        style: {
+                                            fontSize: '14px'
+                                        }
+                                    },
+                                    min: 0,
+                                    forceNiceScale: true
+                                },
+                                {
+                                    opposite: true,
+                                    title: {
+                                        text: 'Sea Level (m)',
+                                        style: {
+                                            fontSize: '14px'
+                                        }
+                                    },
+                                    forceNiceScale: true
+                                }
+                            ],
+                            legend: {
+                                position: 'top',
+                                horizontalAlign: 'center',
+                                fontSize: '14px'
+                            },
+                            tooltip: {
+                                x: {
+                                    format: 'dd/MM/yy HH:mm'
+                                },
+                                y: {
+                                    formatter: function(value, { seriesIndex }) {
+                                        return seriesIndex === 0 ? value.toFixed(2) + ' m' :
+                                               seriesIndex === 1 ? value.toFixed(1) + ' °C' :
+                                               value.toFixed(2) + ' m';
+                                    }
+                                }
+                            },
+                            grid: {
+                                borderColor: '#e7e7e7'
+                            }
+                        };
+
+                        const chart = new ApexCharts(document.querySelector("#marineChart"), options);
+                        chart.render();
+                    } catch (error) {
+                        console.error('ApexCharts error:', error);
                     }
-                }
-                
-                if ($closestMarine === null) {
-                    Log::debug('No matching marine data for weather timestamp', ['weatherTime' => $weatherTime->toIso8601String()]);
-                    continue;
-                }
-                
-                $marineCarbon = Carbon::parse($marineTimes[$closestMarine]);
-                
-                $hourly = [
-                    'time' => $weatherTime->toIso8601String(),
-                    'wave_height' => is_numeric($marineData['hourly']['wave_height'][$closestMarine] ?? null) ? $marineData['hourly']['wave_height'][$closestMarine] : null,
-                    'sea_surface_temperature' => is_numeric($marineData['hourly']['sea_surface_temperature'][$closestMarine] ?? null) ? $marineData['hourly']['sea_surface_temperature'][$closestMarine] : null,
-                    'sea_level_height_msl' => is_numeric($marineData['hourly']['sea_level_height_msl'][$closestMarine] ?? null) ? $marineData['hourly']['sea_level_height_msl'][$closestMarine] : null,
-                    'wave_direction' => is_numeric($marineData['hourly']['wave_direction'][$closestMarine] ?? null) ? $marineData['hourly']['wave_direction'][$closestMarine] : null,
-                    'wave_period' => is_numeric($marineData['hourly']['wave_period'][$closestMarine] ?? null) ? $marineData['hourly']['wave_period'][$closestMarine] : null,
-                    'ocean_current_velocity' => is_numeric($marineData['hourly']['ocean_current_velocity'][$closestMarine] ?? null) ? $marineData['hourly']['ocean_current_velocity'][$closestMarine] : null,
-                    'ocean_current_direction' => is_numeric($marineData['hourly']['ocean_current_direction'][$closestMarine] ?? null) ? $marineData['hourly']['ocean_current_direction'][$closestMarine] : null,
-                    'weather' => $forecast['condition'] ?? 'N/A',
-                    'temperature' => is_numeric($forecast['temperature'] ?? null) ? $forecast['temperature'] : null,
-                    'temp_class' => $this->getTemperatureClass($forecast['temperature'] ?? null),
-                    'iconUrl' => asset("svg/" . ($this->iconMap[$forecast['condition']] ?? $this->iconMap['unknown'])),
-                    'wind_speed' => is_numeric($forecast['wind_speed'] ?? null) ? $forecast['wind_speed'] : null,
-                    'wind_gusts' => is_numeric($forecast['wind_speed'] ?? null) ? $forecast['wind_speed'] * 1.4 : null, // Reused gust formula
-                    'wind_direction' => is_numeric($forecast['wind_direction'] ?? null) ? $forecast['wind_direction'] : null,
-                    'beaufort' => $this->calculateBeaufort($forecast['wind_speed'] ?? null),
-                ];
-                
-                $forecast_days[$date][$hour] = $hourly;
-                
-                if ($hourly['wave_height'] !== null && $hourly['sea_surface_temperature'] !== null && $hourly['sea_level_height_msl'] !== null) {
-                    $chart_labels[] = $weatherTime->format('M d H:i');
-                    $chart_data['wave_height'][] = $hourly['wave_height'];
-                    $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-                    $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
-                }
-                
-                Log::debug('Hourly data', [
-                    'time' => $hourly['time'],
-                    'weather' => $hourly['weather'],
-                    'temperature' => $hourly['temperature'],
-                    'wind_speed' => $hourly['wind_speed'],
-                    'wind_gusts' => $hourly['wind_gusts'],
-                    'wind_direction' => $hourly['wind_direction'],
-                    'wave_direction' => $hourly['wave_direction'],
-                    'ocean_current_direction' => $hourly['ocean_current_direction'],
-                    'chart_entry' => [
-                        'label' => $weatherTime->format('M d H:i'),
-                        'wave_height' => $hourly['wave_height'],
-                        'sea_surface_temperature' => $hourly['sea_surface_temperature'],
-                        'sea_level_height_msl' => $hourly['sea_level_height_msl'],
-                    ],
-                ]);
-            }
-        }
-        
-        Log::info('Forecast days', ['count' => count($forecast_days)]);
-        Log::info('Chart labels', ['count' => count($chart_labels), 'sample' => array_slice($chart_labels, 0, 5)]);
-        Log::info('Chart data', ['sample' => array_map(function($key) use ($chart_data) {
-            return array_slice($chart_data[$key], 0, 5);
-        }, array_keys($chart_data))]);
-        
-        $warnings = [
-            [
-                'title' => 'High Wave Warning',
-                'description' => 'Wave heights expected to exceed 2 meters on August 10, 2025.',
-                'severity' => 'warning',
-                'time' => '2025-08-10T00:00:00Z',
-            ],
-        ];
-        
-        return view('locations.marine-forecast', compact('lat', 'lon', 'title', 'forecast_days', 'chart_labels', 'chart_data', 'warnings'));
-    }
-    
-    public function indexBySlug($slug, $layout = null)
-    {
-        $location = Location::whereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [Str::lower($slug)])->firstOrFail();
-        $lat = $location->latitude;
-        $lon = $location->longitude;
-        $title = "Marine Forecast - {$location->name}";
-        
-        $marineData = $this->getSevenDayMarineForecast($lat, $lon);
-        $weatherData = $this->getTenDayForecast($lat, $lon, $location->altitude, $location->timezone ?? 'Europe/London');
-        
-        Log::info('Marine data (slug)', ['marineData' => $marineData]);
-        Log::info('Weather data (slug)', ['weatherData' => $weatherData]);
-        
-        $chart_labels = [];
-        $chart_data = [
-            'wave_height' => [],
-            'sea_surface_temperature' => [],
-            'sea_level_height_msl' => [],
-        ];
-        
-        $forecast_days = [];
-        $marineTimes = $marineData['hourly']['time'] ?? [];
-        $currentTime = Carbon::now('Europe/London')->startOfHour(); // Start from current hour
-        
-        foreach ($weatherData as $day) {
-            $date = Carbon::parse($day['date'])->toDateString();
-            foreach ($day['forecasts'] as $forecast) {
-                $weatherTime = Carbon::parse($day['date'] . ' ' . $forecast['time']);
-                if ($weatherTime->lessThan($currentTime)) {
-                    Log::debug('Skipping past weather timestamp (slug)', ['weatherTime' => $weatherTime->toIso8601String()]);
-                    continue;
-                }
-                
-                $hour = $weatherTime->format('H:00');
-                
-                $closestMarine = null;
-                $minDiff = PHP_INT_MAX;
-                foreach ($marineTimes as $index => $marineTime) {
-                    if ($index >= 168) break;
-                    $marineCarbon = Carbon::parse($marineTime);
-                    $diff = abs($weatherTime->diffInMinutes($marineCarbon));
-                    if ($diff <= 60 && $diff < $minDiff) {
-                        $closestMarine = $index;
-                        $minDiff = $diff;
-                    }
-                }
-                
-                if ($closestMarine === null) {
-                    Log::debug('No matching marine data for weather timestamp (slug)', ['weatherTime' => $weatherTime->toIso8601String()]);
-                    continue;
-                }
-                
-                $marineCarbon = Carbon::parse($marineTimes[$closestMarine]);
-                
-                $hourly = [
-                    'time' => $weatherTime->toIso8601String(),
-                    'wave_height' => is_numeric($marineData['hourly']['wave_height'][$closestMarine] ?? null) ? $marineData['hourly']['wave_height'][$closestMarine] : null,
-                    'sea_surface_temperature' => is_numeric($marineData['hourly']['sea_surface_temperature'][$closestMarine] ?? null) ? $marineData['hourly']['sea_surface_temperature'][$closestMarine] : null,
-                    'sea_level_height_msl' => is_numeric($marineData['hourly']['sea_level_height_msl'][$closestMarine] ?? null) ? $marineData['hourly']['sea_level_height_msl'][$closestMarine] : null,
-                    'wave_direction' => is_numeric($marineData['hourly']['wave_direction'][$closestMarine] ?? null) ? $marineData['hourly']['wave_direction'][$closestMarine] : null,
-                    'wave_period' => is_numeric($marineData['hourly']['wave_period'][$closestMarine] ?? null) ? $marineData['hourly']['wave_period'][$closestMarine] : null,
-                    'ocean_current_velocity' => is_numeric($marineData['hourly']['ocean_current_velocity'][$closestMarine] ?? null) ? $marineData['hourly']['ocean_current_velocity'][$closestMarine] : null,
-                    'ocean_current_direction' => is_numeric($marineData['hourly']['ocean_current_direction'][$closestMarine] ?? null) ? $marineData['hourly']['ocean_current_direction'][$closestMarine] : null,
-                    'weather' => $forecast['condition'] ?? 'N/A',
-                    'temperature' => is_numeric($forecast['temperature'] ?? null) ? $forecast['temperature'] : null,
-                    'temp_class' => $this->getTemperatureClass($forecast['temperature'] ?? null),
-                    'iconUrl' => asset("svg/" . ($this->iconMap[$forecast['condition']] ?? $this->iconMap['unknown'])),
-                    'wind_speed' => is_numeric($forecast['wind_speed'] ?? null) ? $forecast['wind_speed'] : null,
-                    'wind_gusts' => is_numeric($forecast['wind_speed'] ?? null) ? $forecast['wind_speed'] * 1.4 : null, // Reused gust formula
-                    'wind_direction' => is_numeric($forecast['wind_direction'] ?? null) ? $forecast['wind_direction'] : null,
-                    'beaufort' => $this->calculateBeaufort($forecast['wind_speed'] ?? null),
-                ];
-                
-                $forecast_days[$date][$hour] = $hourly;
-                
-                if ($hourly['wave_height'] !== null && $hourly['sea_surface_temperature'] !== null && $hourly['sea_level_height_msl'] !== null) {
-                    $chart_labels[] = $weatherTime->format('M d H:i');
-                    $chart_data['wave_height'][] = $hourly['wave_height'];
-                    $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-                    $chart_data['sea_level_height_msl'] = $hourly['sea_level_height_msl'];
-                }
-                
-                Log::debug('Hourly data (slug)', [
-                    'time' => $hourly['time'],
-                    'weather' => $hourly['weather'],
-                    'temperature' => $hourly['temperature'],
-                    'wind_speed' => $hourly['wind_speed'],
-                    'wind_gusts' => $hourly['wind_gusts'],
-                    'wind_direction' => $hourly['wind_direction'],
-                    'wave_direction' => $hourly['wave_direction'],
-                    'ocean_current_direction' => $hourly['ocean_current_direction'],
-                    'chart_entry' => [
-                        'label' => $weatherTime->format('M d H:i'),
-                        'wave_height' => $hourly['wave_height'],
-                        'sea_surface_temperature' => $hourly['sea_surface_temperature'],
-                        'sea_level_height_msl' => $hourly['sea_level_height_msl'],
-                    ],
-                ]);
-            }
-        }
-        
-        Log::info('Forecast days (slug)', ['count' => count($forecast_days)]);
-        Log::info('Chart labels (slug)', ['count' => count($chart_labels), 'sample' => array_slice($chart_labels, 0, 5)]);
-        Log::info('Chart data (slug)', ['sample' => array_map(function($key) use ($chart_data) {
-            return array_slice($chart_data[$key], 0, 5);
-        }, array_keys($chart_data))]);
-        
-        $warnings = [
-            [
-                'title' => 'High Wave Warning',
-                'description' => 'Wave heights expected to exceed 2 meters on August 10, 2025.',
-                'severity' => 'warning',
-                'time' => '2025-08-10T00:00:00Z',
-            ],
-        ];
-        
-        $template = 'locations.marine-forecast';
-        return view($template, compact('lat', 'lon', 'title', 'forecast_days', 'chart_labels', 'chart_data', 'warnings'));
-    }
-    
-    protected function getSevenDayMarineForecast($lat, $lon)
-    {
-        $cacheKey = "marine_forecast_{$lat}_{$lon}";
-        $cacheTtl = 21600;
-        
-        $marineData = Cache::get($cacheKey);
-        if ($marineData !== null) {
-            $cacheAge = Carbon::now()->diffInSeconds(Carbon::createFromTimestamp(Cache::get($cacheKey . '_timestamp') ?? 0));
-            if ($cacheAge < $cacheTtl) {
-                Log::info('Returning cached marine forecast', ['key' => $cacheKey, 'age' => $cacheAge]);
-                return $marineData;
-            }
-        }
-        
-        try {
-            $url = "https://marine-api.open-meteo.com/v1/marine?latitude={$lat}&longitude={$lon}&hourly=wave_height,sea_surface_temperature,sea_level_height_msl,wave_direction,wave_period,ocean_current_velocity,ocean_current_direction&wind_speed_unit=mph";
-            $response = Http::get($url);
-            
-            if ($response->successful()) {
-                $marineData = $response->json();
-                Cache::put($cacheKey, $marineData, $cacheTtl);
-                Cache::put($cacheKey . '_timestamp', time(), $cacheTtl);
-                Log::info('Fetched and cached marine forecast', ['lat' => $lat, 'lon' => $lon]);
-                return $marineData;
-            } else {
-                Log::error('Open-Meteo API request failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                    'url' => $url,
-                ]);
-                return ['hourly' => []];
-            }
-        } catch (\Exception $e) {
-            Log::error('Error fetching marine forecast data', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'lat' => $lat,
-                'lon' => $lon,
-            ]);
-            return ['hourly' => []];
-        }
-    }
-    
-    protected function calculateBeaufort($windSpeed)
-    {
-        if ($windSpeed === null) return 0;
-        $windSpeedKnots = $windSpeed * 0.868976; // Convert mph to knots
-        if ($windSpeedKnots < 1) return 0;
-        if ($windSpeedKnots < 4) return 1;
-        if ($windSpeedKnots < 7) return 2;
-        if ($windSpeedKnots < 11) return 3;
-        if ($windSpeedKnots < 17) return 4;
-        if ($windSpeedKnots < 22) return 5;
-        if ($windSpeedKnots < 28) return 6;
-        if ($windSpeedKnots < 34) return 7;
-        if ($windSpeedKnots < 41) return 8;
-        if ($windSpeedKnots < 48) return 9;
-        if ($windSpeedKnots < 56) return 10;
-        if ($windSpeedKnots < 64) return 11;
-        return 12;
-    }
-}
+                });
+            </script>
+        @endpush
+    @endif
+@endsection
