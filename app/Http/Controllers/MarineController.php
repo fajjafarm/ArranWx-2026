@@ -33,6 +33,7 @@ class MarineController extends WeatherController
         $forecast_days = [];
         $marineTimes = $marineData['hourly']['time'] ?? [];
         $currentTime = Carbon::now('Europe/London')->startOfHour(); // Start from 19:00 BST, August 19, 2025
+        $hourCounter = 0; // Counter to track hours for every 2nd hour selection
         
         foreach ($weatherData as $day) {
             $date = Carbon::parse($day['date'])->toDateString();
@@ -86,8 +87,12 @@ class MarineController extends WeatherController
                 $forecast_days[$date][$hour] = $hourly;
                 
                 if ($hourly['wave_height'] !== null && is_numeric($hourly['wave_height']) && $hourly['wave_height'] >= 0) {
-                    $chart_labels[] = $weatherTime->format('M d H:i');
-                    $chart_data['wave_height'][] = $hourly['wave_height'];
+                    // Include every 2nd hour for chart
+                    if ($hourCounter % 2 === 0) {
+                        $chart_labels[] = $weatherTime->format('M d H:i');
+                        $chart_data['wave_height'][] = $hourly['wave_height'];
+                    }
+                    $hourCounter++;
                 } else {
                     Log::warning('Skipping chart data due to invalid wave_height', [
                         'time' => $hourly['time'],
@@ -151,6 +156,7 @@ class MarineController extends WeatherController
         $forecast_days = [];
         $marineTimes = $marineData['hourly']['time'] ?? [];
         $currentTime = Carbon::now('Europe/London')->startOfHour(); // Start from 19:00 BST, August 19, 2025
+        $hourCounter = 0; // Counter to track hours for every 2nd hour selection
         
         foreach ($weatherData as $day) {
             $date = Carbon::parse($day['date'])->toDateString();
@@ -204,8 +210,12 @@ class MarineController extends WeatherController
                 $forecast_days[$date][$hour] = $hourly;
                 
                 if ($hourly['wave_height'] !== null && is_numeric($hourly['wave_height']) && $hourly['wave_height'] >= 0) {
-                    $chart_labels[] = $weatherTime->format('M d H:i');
-                    $chart_data['wave_height'][] = $hourly['wave_height'];
+                    // Include every 2nd hour for chart
+                    if ($hourCounter % 2 === 0) {
+                        $chart_labels[] = $weatherTime->format('M d H:i');
+                        $chart_data['wave_height'][] = $hourly['wave_height'];
+                    }
+                    $hourCounter++;
                 } else {
                     Log::warning('Skipping chart data due to invalid wave_height', [
                         'time' => $hourly['time'],

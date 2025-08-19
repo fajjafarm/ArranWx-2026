@@ -82,7 +82,7 @@
             display: flex;
             align-items: flex-end;
             height: 300px;
-            gap: 5px;
+            gap: 2px; /* Reduced gap */
             padding: 10px;
             background: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -93,17 +93,17 @@
             background-color: rgba(0, 123, 255, 0.5);
             border: 1px solid #007bff;
             position: relative;
-            max-width: 40px;
-            min-width: 20px;
+            max-width: 20px; /* Reduced width */
+            min-width: 10px; /* Reduced width */
         }
         .chart-bar-label {
             position: absolute;
-            bottom: -20px;
-            transform: rotate(-45deg);
+            bottom: -50px;
+            writing-mode: vertical-rl; /* Vertical labels */
             font-size: 12px;
             white-space: nowrap;
             left: 50%;
-            transform-origin: left;
+            transform: translateX(-50%);
         }
         .chart-y-axis {
             position: absolute;
@@ -121,7 +121,7 @@
         }
         .chart-x-axis-label {
             text-align: center;
-            margin-top: 40px;
+            margin-top: 60px;
             font-size: 14px;
             font-weight: 600;
         }
@@ -177,10 +177,12 @@
                 font-size: 12px;
             }
             .chart-bar {
-                min-width: 15px;
+                max-width: 15px; /* Further reduced for mobile */
+                min-width: 8px;
             }
             .chart-bar-label {
                 font-size: 10px;
+                bottom: -40px;
             }
             .chart-y-label {
                 font-size: 10px;
