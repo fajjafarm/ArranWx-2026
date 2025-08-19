@@ -10,12 +10,18 @@
         .table-weather { 
             width: 100%; 
             border-collapse: collapse; 
+            font-size: 14px;
         }
         .table-weather th, .table-weather td { 
-            padding: 8px; 
+            padding: 10px; 
             text-align: center; 
             border: 1px solid #dee2e6; 
             background-color: transparent;
+            vertical-align: middle;
+        }
+        .table-weather th {
+            background: #f8f9fa;
+            font-weight: 600;
         }
         .table-weather tr:nth-child(odd) td:nth-child(1),
         .table-weather tr:nth-child(odd) td:nth-child(2) {
@@ -27,8 +33,11 @@
             vertical-align: middle;
         }
         .direction-cell i {
-            font-size: 34px;
+            font-size: 28px;
             font-weight: bold;
+        }
+        .cardinal-cell {
+            font-size: 14px;
         }
         .highlight-amber {
             background-color: #FFC107 !important;
@@ -36,7 +45,7 @@
         .warning-icon {
             color: #D32F2F;
             margin-left: 5px;
-            font-size: 20px;
+            font-size: 18px;
             vertical-align: middle;
         }
         .top-card {
@@ -50,17 +59,46 @@
         .top-card h6 {
             margin-bottom: 10px;
             font-weight: bold;
+            font-size: 16px;
         }
         .top-card p {
             margin: 0;
+            font-size: 14px;
+        }
+        .api-source-footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #555;
+            text-align: center;
         }
         @media (max-width: 768px) {
-            .table-weather { display: block; overflow-x: auto; }
-            .table-weather th, .table-weather td { padding: 6px; font-size: 12px; }
-            .condition-cell img { width: 27px; height: 27px; }
-            .warning-icon { font-size: 16px; }
+            .table-weather { 
+                display: block; 
+                overflow-x: auto; 
+                white-space: nowrap;
+            }
+            .table-weather th, .table-weather td { 
+                padding: 6px; 
+                font-size: 12px; 
+            }
+            .condition-cell img { 
+                width: 27px; 
+                height: 27px; 
+            }
+            .direction-cell i { 
+                font-size: 24px; 
+            }
+            .warning-icon { 
+                font-size: 16px; 
+            }
             .top-card {
                 padding: 10px;
+            }
+            .top-card h6 {
+                font-size: 14px;
+            }
+            .top-card p {
+                font-size: 12px;
             }
         }
     </style>
@@ -87,19 +125,19 @@
             <div class="col-md-4">
                 <div class="top-card">
                     <h6>Live Sea State Warnings</h6>
-                    <p>No warnings currently. (Integrate Met Office API for live updates)</p>
+                    <p>No warnings currently. (Integrate <a href="https://www.metoffice.gov.uk/services/data" target="_blank">Met Office API</a> for live updates)</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="top-card">
                     <h6>Tide Updates</h6>
-                    <p>High Tide: 08:00 (2.5m) | Low Tide: 14:00 (0.5m). (Integrate Admiralty Tide API)</p>
+                    <p>High Tide: 08:00 (2.5m) | Low Tide: 14:00 (0.5m). (Integrate <a href="https://admiraltyapi.portal.azure-api.net/" target="_blank">Admiralty Tide API</a>)</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="top-card">
                     <h6>Ferry Updates</h6>
-                    <p>Arran Ferry: On time. (Integrate CalMac API for live status)</p>
+                    <p>Arran Ferry: On time. (Integrate <a href="https://www.calmac.co.uk/" target="_blank">CalMac API</a>)</p>
                 </div>
             </div>
         </div>
@@ -124,8 +162,8 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">Hourly Wave Height (Bar Chart)</h5>
-                            <div id="marineChart" style="height: 300px;"></div>
+                            <h5 class="card-title">Hourly Marine Forecast Overview</h5>
+                            <div id="marineChart" style="min-height: 350px;"></div>
                         </div>
                     </div>
                 </div>
@@ -134,7 +172,7 @@
             <div class="row">
                 <div class="col-12">
                     <div class="alert alert-warning">
-                        No chart data available for the selected location.
+                        No chart data available for the selected location. Please check data sources or try another location.
                     </div>
                 </div>
             </div>
@@ -158,11 +196,14 @@
                                                 <th>Wind Speed (mph)</th>
                                                 <th>Wind Gusts (mph)</th>
                                                 <th>Wind Dir</th>
+                                                <th>Wind Cardinal</th>
                                                 <th>Wave Height (m)</th>
                                                 <th>Wave Dir</th>
+                                                <th>Wave Cardinal</th>
                                                 <th>Wave Period (s)</th>
                                                 <th>Current Vel (mph)</th>
                                                 <th>Current Dir</th>
+                                                <th>Current Cardinal</th>
                                                 <th>Sea Level (m)</th>
                                                 <th>Beaufort</th>
                                             </tr>
@@ -194,30 +235,30 @@
                                                     <td class="direction-cell">
                                                         @if($windDir !== null)
                                                             <i class="wi wi-direction-up" style="transform: rotate({{ $windDir }}deg);"></i>
-                                                            {{ $windCardinal }}
                                                         @else
                                                             N/A
                                                         @endif
                                                     </td>
+                                                    <td class="cardinal-cell">{{ $windCardinal }}</td>
                                                     <td>{{ $hourly['wave_height'] ? number_format($hourly['wave_height'], 2) : 'N/A' }}</td>
                                                     <td class="direction-cell">
                                                         @if($waveDir !== null)
                                                             <i class="wi wi-direction-up" style="transform: rotate({{ $waveDir }}deg);"></i>
-                                                            {{ $waveCardinal }}
                                                         @else
                                                             N/A
                                                         @endif
                                                     </td>
+                                                    <td class="cardinal-cell">{{ $waveCardinal }}</td>
                                                     <td>{{ $hourly['wave_period'] ? number_format($hourly['wave_period'], 2) : 'N/A' }}</td>
                                                     <td>{{ $hourly['ocean_current_velocity'] ? number_format($hourly['ocean_current_velocity'], 2) : 'N/A' }}</td>
                                                     <td class="direction-cell">
                                                         @if($currentDir !== null)
                                                             <i class="wi wi-direction-up" style="transform: rotate({{ $currentDir }}deg);"></i>
-                                                            {{ $currentCardinal }}
                                                         @else
                                                             N/A
                                                         @endif
                                                     </td>
+                                                    <td class="cardinal-cell">{{ $currentCardinal }}</td>
                                                     <td>
                                                         {{ $hourly['sea_level_height_msl'] ? number_format($hourly['sea_level_height_msl'], 2) : 'N/A' }}
                                                         @if($showWarning)
@@ -244,6 +285,14 @@
                 </div>
             </div>
         @endif
+
+        <div class="api-source-footer">
+            Data sourced from <a href="https://api.met.no/" target="_blank">yr.no</a> for weather forecasts, 
+            <a href="https://marine-api.open-meteo.com/" target="_blank">Open-Meteo</a> for marine data, 
+            <a href="https://www.metoffice.gov.uk/services/data" target="_blank">Met Office</a> for sea state warnings (planned), 
+            <a href="https://admiraltyapi.portal.azure-api.net/" target="_blank">Admiralty Tide API</a> for tide data (planned), 
+            and <a href="https://www.calmac.co.uk/" target="_blank">CalMac</a> for ferry updates (planned).
+        </div>
     </div>
 
     @if(!empty($chart_labels) && !empty($chart_data['wave_height']))
@@ -258,7 +307,7 @@
                         console.log('Chart Data:', chartData);
                         console.log('Chart Labels:', labels);
                         
-                        if (!labels.length || !chartData.wave_height.length) {
+                        if (!labels || !labels.length || !chartData || !chartData.wave_height || !chartData.wave_height.length) {
                             console.error('Invalid chart data:', { labels, chartData });
                             return;
                         }
@@ -288,16 +337,41 @@
                                     enabled: true
                                 },
                                 animations: {
-                                    enabled: true
+                                    enabled: true,
+                                    easing: 'easeinout',
+                                    speed: 800
+                                },
+                                toolbar: {
+                                    show: true,
+                                    tools: {
+                                        download: false,
+                                        selection: true,
+                                        zoom: true,
+                                        zoomin: true,
+                                        zoomout: true,
+                                        pan: true
+                                    }
                                 }
                             },
                             responsive: [{
-                                breakpoint: 480,
+                                breakpoint: 768,
                                 options: {
+                                    chart: {
+                                        height: 300
+                                    },
                                     legend: {
                                         position: 'bottom',
                                         offsetX: -10,
                                         offsetY: 0
+                                    },
+                                    xaxis: {
+                                        labels: {
+                                            rotate: -45,
+                                            rotateAlways: true,
+                                            style: {
+                                                fontSize: '10px'
+                                            }
+                                        }
                                     }
                                 }
                             }],
@@ -305,32 +379,81 @@
                                 enabled: false
                             },
                             stroke: {
-                                curve: 'smooth'
+                                curve: 'smooth',
+                                width: [0, 2, 2] // No stroke for bar, 2px for lines
                             },
+                            fill: {
+                                opacity: [0.85, 1, 1] // Slightly transparent bars
+                            },
+                            colors: ['#007bff', '#28a745', '#dc3545'],
                             xaxis: {
                                 categories: labels,
                                 title: {
-                                    text: 'Time'
+                                    text: 'Time',
+                                    style: {
+                                        fontSize: '14px'
+                                    }
                                 },
                                 labels: {
                                     rotate: -45,
-                                    rotateAlways: true
+                                    rotateAlways: true,
+                                    style: {
+                                        fontSize: '12px'
+                                    }
                                 }
                             },
-                            yaxis: {
-                                title: {
-                                    text: 'Value'
+                            yaxis: [
+                                {
+                                    title: {
+                                        text: 'Wave Height (m)',
+                                        style: {
+                                            fontSize: '14px'
+                                        }
+                                    },
+                                    min: 0,
+                                    forceNiceScale: true
                                 },
-                                min: undefined,
-                                forceNiceScale: true
-                            },
+                                {
+                                    opposite: true,
+                                    title: {
+                                        text: 'Sea Surface Temp (°C)',
+                                        style: {
+                                            fontSize: '14px'
+                                        }
+                                    },
+                                    min: 0,
+                                    forceNiceScale: true
+                                },
+                                {
+                                    opposite: true,
+                                    title: {
+                                        text: 'Sea Level (m)',
+                                        style: {
+                                            fontSize: '14px'
+                                        }
+                                    },
+                                    forceNiceScale: true
+                                }
+                            ],
                             legend: {
-                                position: 'top'
+                                position: 'top',
+                                horizontalAlign: 'center',
+                                fontSize: '14px'
                             },
                             tooltip: {
                                 x: {
                                     format: 'dd/MM/yy HH:mm'
                                 },
+                                y: {
+                                    formatter: function(value, { seriesIndex }) {
+                                        return seriesIndex === 0 ? value.toFixed(2) + ' m' :
+                                               seriesIndex === 1 ? value.toFixed(1) + ' °C' :
+                                               value.toFixed(2) + ' m';
+                                    }
+                                }
+                            },
+                            grid: {
+                                borderColor: '#e7e7e7'
                             }
                         };
 
