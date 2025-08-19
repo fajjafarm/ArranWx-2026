@@ -168,7 +168,7 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">Hourly Marine Forecast Overview</h5>
+                            <h5 class="card-title">Hourly Wave Height Forecast</h5>
                             <canvas id="marineChart" style="min-height: 350px;" 
                                     data-chart-data="{{ json_encode($chart_data) }}" 
                                     data-chart-labels="{{ json_encode($chart_labels) }}"></canvas>
@@ -181,7 +181,7 @@
             <div class="row">
                 <div class="col-12">
                     <div class="alert alert-warning">
-                        No chart data available for the selected location. Please check data sources or try another location.
+                        No wave height data available for the selected location. Please check data sources or try another location.
                     </div>
                 </div>
             </div>

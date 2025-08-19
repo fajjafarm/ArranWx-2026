@@ -28,8 +28,6 @@ class MarineController extends WeatherController
         $chart_labels = [];
         $chart_data = [
             'wave_height' => [],
-            'sea_surface_temperature' => [],
-            'sea_level_height_msl' => [],
         ];
         
         $forecast_days = [];
@@ -87,17 +85,13 @@ class MarineController extends WeatherController
                 
                 $forecast_days[$date][$hour] = $hourly;
                 
-                if ($hourly['wave_height'] !== null && $hourly['sea_surface_temperature'] !== null && $hourly['sea_level_height_msl'] !== null) {
+                if ($hourly['wave_height'] !== null) {
                     $chart_labels[] = $weatherTime->format('M d H:i');
                     $chart_data['wave_height'][] = $hourly['wave_height'];
-                    $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-                    $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
                 } else {
-                    Log::warning('Skipping chart data due to null values', [
+                    Log::warning('Skipping chart data due to null wave_height', [
                         'time' => $hourly['time'],
                         'wave_height' => $hourly['wave_height'],
-                        'sea_surface_temperature' => $hourly['sea_surface_temperature'],
-                        'sea_level_height_msl' => $hourly['sea_level_height_msl'],
                     ]);
                 }
                 
@@ -113,8 +107,6 @@ class MarineController extends WeatherController
                     'chart_entry' => [
                         'label' => $weatherTime->format('M d H:i'),
                         'wave_height' => $hourly['wave_height'],
-                        'sea_surface_temperature' => $hourly['sea_surface_temperature'],
-                        'sea_level_height_msl' => $hourly['sea_level_height_msl'],
                     ],
                 ]);
             }
@@ -154,8 +146,6 @@ class MarineController extends WeatherController
         $chart_labels = [];
         $chart_data = [
             'wave_height' => [],
-            'sea_surface_temperature' => [],
-            'sea_level_height_msl' => [],
         ];
         
         $forecast_days = [];
@@ -213,17 +203,13 @@ class MarineController extends WeatherController
                 
                 $forecast_days[$date][$hour] = $hourly;
                 
-                if ($hourly['wave_height'] !== null && $hourly['sea_surface_temperature'] !== null && $hourly['sea_level_height_msl'] !== null) {
+                if ($hourly['wave_height'] !== null) {
                     $chart_labels[] = $weatherTime->format('M d H:i');
                     $chart_data['wave_height'][] = $hourly['wave_height'];
-                    $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-                    $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
                 } else {
-                    Log::warning('Skipping chart data due to null values', [
+                    Log::warning('Skipping chart data due to null wave_height', [
                         'time' => $hourly['time'],
                         'wave_height' => $hourly['wave_height'],
-                        'sea_surface_temperature' => $hourly['sea_surface_temperature'],
-                        'sea_level_height_msl' => $hourly['sea_level_height_msl'],
                     ]);
                 }
                 
@@ -239,8 +225,6 @@ class MarineController extends WeatherController
                     'chart_entry' => [
                         'label' => $weatherTime->format('M d H:i'),
                         'wave_height' => $hourly['wave_height'],
-                        'sea_surface_temperature' => $hourly['sea_surface_temperature'],
-                        'sea_level_height_msl' => $hourly['sea_level_height_msl'],
                     ],
                 ]);
             }
