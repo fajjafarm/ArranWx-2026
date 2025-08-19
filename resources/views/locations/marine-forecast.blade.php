@@ -39,11 +39,29 @@
             font-size: 20px;
             vertical-align: middle;
         }
+        .top-card {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .top-card h6 {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .top-card p {
+            margin: 0;
+        }
         @media (max-width: 768px) {
             .table-weather { display: block; overflow-x: auto; }
             .table-weather th, .table-weather td { padding: 6px; font-size: 12px; }
             .condition-cell img { width: 27px; height: 27px; }
             .warning-icon { font-size: 16px; }
+            .top-card {
+                padding: 10px;
+            }
         }
     </style>
 @endsection
@@ -64,21 +82,27 @@
             </div>
         </div>
 
-        @if(!empty($warnings))
-            <div class="row mb-3">
-                @foreach($warnings as $warning)
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card border-{{ $warning['severity'] }} shadow-sm">
-                            <div class="card-body">
-                                <h5 class="card-title text-{{ $warning['severity'] }}">{{ $warning['title'] }}</h5>
-                                <p class="card-text">{{ $warning['description'] }}</p>
-                                <p class="card-text"><small class="text-muted">Issued: {{ \Carbon\Carbon::parse($warning['time'])->format('D, j M Y H:i') }}</small></p>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
+        <!-- Top Cards for Live Sea State Warnings, Tides, and Ferry Updates -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="top-card">
+                    <h6>Live Sea State Warnings</h6>
+                    <p>No warnings currently. (Integrate Met Office API for live updates)</p>
+                </div>
             </div>
-        @endif
+            <div class="col-md-4">
+                <div class="top-card">
+                    <h6>Tide Updates</h6>
+                    <p>High Tide: 08:00 (2.5m) | Low Tide: 14:00 (0.5m). (Integrate Admiralty Tide API)</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="top-card">
+                    <h6>Ferry Updates</h6>
+                    <p>Arran Ferry: On time. (Integrate CalMac API for live status)</p>
+                </div>
+            </div>
+        </div>
 
         <div class="row mb-3">
             <div class="col-12">
@@ -100,7 +124,7 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">7-Day Marine Forecast Overview</h5>
+                            <h5 class="card-title">Hourly Wave Height (Bar Chart)</h5>
                             <div id="marineChart" style="height: 300px;"></div>
                         </div>
                     </div>
@@ -243,15 +267,18 @@
                             series: [
                                 {
                                     name: 'Wave Height (m)',
-                                    data: chartData.wave_height
+                                    data: chartData.wave_height,
+                                    type: 'bar'
                                 },
                                 {
                                     name: 'Sea Surface Temperature (°C)',
-                                    data: chartData.sea_surface_temperature
+                                    data: chartData.sea_surface_temperature,
+                                    type: 'line'
                                 },
                                 {
                                     name: 'Sea Level Height (m)',
-                                    data: chartData.sea_level_height_msl
+                                    data: chartData.sea_level_height_msl,
+                                    type: 'line'
                                 }
                             ],
                             chart: {
