@@ -163,7 +163,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">Hourly Marine Forecast Overview</h5>
-                            <div id="marineChart" style="min-height: 350px;"></div>
+                            <canvas id="marineChart" style="min-height: 350px;"></canvas>
                         </div>
                     </div>
                 </div>
@@ -280,7 +280,7 @@
             <div class="row">
                 <div class="col-12">
                     <div class="alert alert-warning">
-                        No forecast data available for the selected location.
+                        No forecast data available for the selected location. Please check data sources or try another location.
                     </div>
                 </div>
             </div>
@@ -297,7 +297,7 @@
 
     @if(!empty($chart_labels) && !empty($chart_data['wave_height']))
         @push('footer-scripts')
-           
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
                     try {
@@ -312,155 +312,118 @@
                             return;
                         }
                         
-                        const options = {
-                            series: [
-                                {
-                                    name: 'Wave Height (m)',
-                                    data: chartData.wave_height,
-                                    type: 'bar'
-                                },
-                                {
-                                    name: 'Sea Surface Temperature (°C)',
-                                    data: chartData.sea_surface_temperature,
-                                    type: 'line'
-                                },
-                                {
-                                    name: 'Sea Level Height (m)',
-                                    data: chartData.sea_level_height_msl,
-                                    type: 'line'
-                                }
-                            ],
-                            chart: {
-                                height: 350,
-                                type: 'line',
-                                zoom: {
-                                    enabled: true
-                                },
-                                animations: {
-                                    enabled: true,
-                                    easing: 'easeinout',
-                                    speed: 800
-                                },
-                                toolbar: {
-                                    show: true,
-                                    tools: {
-                                        download: false,
-                                        selection: true,
-                                        zoom: true,
-                                        zoomin: true,
-                                        zoomout: true,
-                                        pan: true
+                        const ctx = document.getElementById('marineChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [
+                                    {
+                                        label: 'Wave Height (m)',
+                                        data: chartData.wave_height,
+                                        backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                                        borderColor: '#007bff',
+                                        borderWidth: 1,
+                                        type: 'bar',
+                                        yAxisID: 'y-wave'
+                                    },
+                                    {
+                                        label: 'Sea Surface Temperature (°C)',
+                                        data: chartData.sea_surface_temperature,
+                                        borderColor: '#28a745',
+                                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                                        fill: true,
+                                        tension: 0.4,
+                                        type: 'line',
+                                        yAxisID: 'y-temp'
+                                    },
+                                    {
+                                        label: 'Sea Level Height (m)',
+                                        data: chartData.sea_level_height_msl,
+                                        borderColor: '#dc3545',
+                                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                                        fill: true,
+                                        tension: 0.4,
+                                        type: 'line',
+                                        yAxisID: 'y-level'
                                     }
-                                }
+                                ]
                             },
-                            responsive: [{
-                                breakpoint: 768,
-                                options: {
-                                    chart: {
-                                        height: 300
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: 'Time',
+                                            font: { size: 14 }
+                                        },
+                                        ticks: {
+                                            maxTicksLimit: 20,
+                                            font: { size: 12 },
+                                            autoSkip: true
+                                        }
                                     },
+                                    'y-wave': {
+                                        title: {
+                                            display: true,
+                                            text: 'Wave Height (m)',
+                                            font: { size: 14 }
+                                        },
+                                        min: 0,
+                                        position: 'left'
+                                    },
+                                    'y-temp': {
+                                        title: {
+                                            display: true,
+                                            text: 'Sea Surface Temp (°C)',
+                                            font: { size: 14 }
+                                        },
+                                        min: 0,
+                                        position: 'right'
+                                    },
+                                    'y-level': {
+                                        title: {
+                                            display: true,
+                                            text: 'Sea Level (m)',
+                                            font: { size: 14 }
+                                        },
+                                        position: 'right'
+                                    }
+                                },
+                                plugins: {
                                     legend: {
-                                        position: 'bottom',
-                                        offsetX: -10,
-                                        offsetY: 0
-                                    },
-                                    xaxis: {
+                                        position: 'top',
                                         labels: {
-                                            rotate: -45,
-                                            rotateAlways: true,
-                                            style: {
-                                                fontSize: '10px'
+                                            font: { size: 14 }
+                                        }
+                                    },
+                                    tooltip: {
+                                        mode: 'index',
+                                        intersect: false,
+                                        callbacks: {
+                                            label: function(context) {
+                                                let label = context.dataset.label || '';
+                                                if (label) {
+                                                    label += ': ';
+                                                }
+                                                if (context.datasetIndex === 0) {
+                                                    label += context.parsed.y.toFixed(2) + ' m';
+                                                } else if (context.datasetIndex === 1) {
+                                                    label += context.parsed.y.toFixed(1) + ' °C';
+                                                } else {
+                                                    label += context.parsed.y.toFixed(2) + ' m';
+                                                }
+                                                return label;
                                             }
                                         }
                                     }
                                 }
-                            }],
-                            dataLabels: {
-                                enabled: false
-                            },
-                            stroke: {
-                                curve: 'smooth',
-                                width: [0, 2, 2] // No stroke for bar, 2px for lines
-                            },
-                            fill: {
-                                opacity: [0.85, 1, 1] // Slightly transparent bars
-                            },
-                            colors: ['#007bff', '#28a745', '#dc3545'],
-                            xaxis: {
-                                categories: labels,
-                                title: {
-                                    text: 'Time',
-                                    style: {
-                                        fontSize: '14px'
-                                    }
-                                },
-                                labels: {
-                                    rotate: -45,
-                                    rotateAlways: true,
-                                    style: {
-                                        fontSize: '12px'
-                                    }
-                                }
-                            },
-                            yaxis: [
-                                {
-                                    title: {
-                                        text: 'Wave Height (m)',
-                                        style: {
-                                            fontSize: '14px'
-                                        }
-                                    },
-                                    min: 0,
-                                    forceNiceScale: true
-                                },
-                                {
-                                    opposite: true,
-                                    title: {
-                                        text: 'Sea Surface Temp (°C)',
-                                        style: {
-                                            fontSize: '14px'
-                                        }
-                                    },
-                                    min: 0,
-                                    forceNiceScale: true
-                                },
-                                {
-                                    opposite: true,
-                                    title: {
-                                        text: 'Sea Level (m)',
-                                        style: {
-                                            fontSize: '14px'
-                                        }
-                                    },
-                                    forceNiceScale: true
-                                }
-                            ],
-                            legend: {
-                                position: 'top',
-                                horizontalAlign: 'center',
-                                fontSize: '14px'
-                            },
-                            tooltip: {
-                                x: {
-                                    format: 'dd/MM/yy HH:mm'
-                                },
-                                y: {
-                                    formatter: function(value, { seriesIndex }) {
-                                        return seriesIndex === 0 ? value.toFixed(2) + ' m' :
-                                               seriesIndex === 1 ? value.toFixed(1) + ' °C' :
-                                               value.toFixed(2) + ' m';
-                                    }
-                                }
-                            },
-                            grid: {
-                                borderColor: '#e7e7e7'
                             }
-                        };
-
-                        const chart = new ApexCharts(document.querySelector("#marineChart"), options);
-                        chart.render();
+                        });
                     } catch (error) {
-                        console.error('ApexCharts error:', error);
+                        console.error('Chart.js error:', error);
                     }
                 });
             </script>

@@ -34,7 +34,7 @@ class MarineController extends WeatherController
         
         $forecast_days = [];
         $marineTimes = $marineData['hourly']['time'] ?? [];
-        $currentTime = Carbon::now('Europe/London')->startOfHour(); // Start from current hour (2025-08-19 00:00 BST)
+        $currentTime = Carbon::now('Europe/London')->startOfHour(); // Start from current hour (2025-08-19 18:00 BST)
         
         foreach ($weatherData as $day) {
             $date = Carbon::parse($day['date'])->toDateString();
@@ -91,7 +91,7 @@ class MarineController extends WeatherController
                     $chart_labels[] = $weatherTime->format('M d H:i');
                     $chart_data['wave_height'][] = $hourly['wave_height'];
                     $chart_data['sea_surface_temperature'][] = $hourly['sea_surface_temperature'];
-                    $chart_data['sea_level_height_msl'][] = $hourly['sea_level_height_msl'];
+                    $chart_data['sea_level_height_msl'] = $hourly['sea_level_height_msl'];
                 }
                 
                 Log::debug('Hourly data', [
@@ -122,9 +122,9 @@ class MarineController extends WeatherController
         $warnings = [
             [
                 'title' => 'High Wave Warning',
-                'description' => 'Wave heights expected to exceed 2 meters on August 10, 2025.',
+                'description' => 'Wave heights expected to exceed 2 meters on August 20, 2025.',
                 'severity' => 'warning',
-                'time' => '2025-08-10T00:00:00Z',
+                'time' => '2025-08-20T00:00:00Z',
             ],
         ];
         
@@ -241,9 +241,9 @@ class MarineController extends WeatherController
         $warnings = [
             [
                 'title' => 'High Wave Warning',
-                'description' => 'Wave heights expected to exceed 2 meters on August 10, 2025.',
+                'description' => 'Wave heights expected to exceed 2 meters on August 20, 2025.',
                 'severity' => 'warning',
-                'time' => '2025-08-10T00:00:00Z',
+                'time' => '2025-08-20T00:00:00Z',
             ],
         ];
         
