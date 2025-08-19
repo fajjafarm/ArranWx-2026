@@ -297,7 +297,7 @@
 
     @if(!empty($chart_labels) && !empty($chart_data['wave_height']))
         @push('footer-scripts')
-            <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+           
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
                     try {
